@@ -3,118 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluasi Tajwid</title>
-    <!-- Tailwind CSS Terbaru via CDN -->
+    <title>Evaluasi Pre-Test Tajwid</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Google Fonts untuk kesan anggun & islami -->
+    <!-- Google Fonts untuk kesan islami & modern -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- File CSS Eksternal Anda (Didukung Firebase Hosting) -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .arabic { font-family: 'Amiri', serif; font-size: 1.35rem; }
+    </style>
 </head>
 <body class="bg-[#FFF5F5] text-gray-700 min-h-screen">
 
-    <!-- Tombol Navigasi Mode (Mahasiswi / Pengajar) -->
-    <div class="max-w-3xl mx-auto px-4 pt-4 flex justify-end">
-        <button id="btnSwitchMode" onclick="togglePengajarPanel()" class="bg-white border border-pink-200 text-pink-600 px-4 py-1.5 rounded-full text-xs font-semibold shadow-xs hover:bg-pink-50 cursor-pointer transition-all">
-            🔐 Laman Penilaian
-        </button>
-    </div>
-
     <!-- Header Cantik / Estetik -->
-    <header class="bg-white border-b border-pink-100 shadow-xs relative overflow-hidden mt-2">
+    <header class="bg-white border-b border-pink-100 shadow-xs relative overflow-hidden">
         <div class="absolute -top-10 -right-10 w-40 h-40 bg-pink-100 rounded-full opacity-50 blur-xl"></div>
         <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-100 rounded-full opacity-40 blur-lg"></div>
         
         <div class="max-w-3xl mx-auto px-4 py-8 text-center relative z-10">
             <span class="text-xs font-bold text-pink-500 uppercase tracking-widest bg-pink-50 px-3 py-1 rounded-full">Evaluasi ✨</span>
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mt-3 tracking-wide">pre-test tajwid</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-850 mt-3 tracking-wide">pre-test tajwid</h1>
             <p class="text-xs md:text-sm text-pink-600/80 italic mt-2 font-medium">
                 "Bersungguh-sungguhlah pada hal yang bermanfaat bagimu dan mintalah pertolongan Allah" (Al-Hadits)
             </p>
         </div>
     </header>
 
-    <!-- KONTEN UTAMA: PANEL PENGAJAR -->
-    <main id="pengajarPanel" class="max-w-4xl mx-auto px-4 py-8 hidden space-y-6">
-        <!-- Form Login Pengajar -->
-        <div id="pengajarLoginCard" class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100 max-w-sm mx-auto space-y-4">
-            <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider text-center">Login Akun Pengajar</h3>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Username / Email</label>
-                <input type="text" id="pengajarUser" placeholder="pengajar@tajwid.com" class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-pink-400">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Password</label>
-                <input type="password" id="pengajarPass" placeholder="••••••••" class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-pink-400">
-            </div>
-            <!-- Tombol Lupa Password Mandiri -->
-            <div class="text-right">
-                <button type="button" onclick="forgotPassword()" class="text-[10px] text-pink-500 hover:underline cursor-pointer">
-                    Lupa Password?
-                </button>
-            </div>
-            <button onclick="loginPengajar()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold py-2.5 rounded-xl transition-all cursor-pointer shadow-sm">
-                Masuk Dashboard
-            </button>
-        </div>
-
-        <!-- Dashboard Utama Pengajar -->
-        <div id="pengajarDashboard" class="hidden space-y-8">
-            <div class="flex flex-wrap justify-between items-center bg-white p-4 rounded-xl border border-pink-100 gap-2">
-                <div>
-                    <h2 class="text-md font-bold text-gray-800">Selamat Datang, Ustadzah/Pengajar Penilai 👋</h2>
-                    <p class="text-xs text-gray-400">Kelola nilai evaluasi, periksa jawaban esai, dan pantau peringkat secara real-time.</p>
-                </div>
-                <button onclick="logoutPengajar()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all">
-                    Keluar Dashboard
-                </button>
-            </div>
-
-            <!-- LEADERBOARD MAHASISWI -->
-            <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                <div class="flex flex-wrap justify-between items-center gap-4">
-                    <h3 class="text-xs font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1">🏆 Peringkat Nilai Akhir &amp; Waktu Tercepat</h3>
-                    <input type="text" id="searchLeaderboard" oninput="filterLeaderboard()" placeholder="Cari nama mahasiswi..." class="px-3 py-1.5 border border-pink-100 rounded-xl text-xs focus:outline-none focus:border-pink-400 w-full sm:w-48 bg-pink-50/10">
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="border-b border-gray-100 bg-gray-50/50 text-gray-500 uppercase font-semibold">
-                                <th class="p-3">Rank</th>
-                                <th class="p-3">Nama &amp; NIM</th>
-                                <th class="p-3 text-center">Skor PG</th>
-                                <th class="p-3 text-center">Skor Uraian</th>
-                                <th class="p-3 text-center">Total Nilai</th>
-                                <th class="p-3 text-center">Waktu Pengerjaan</th>
-                                <th class="p-3 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboardBody">
-                            <!-- Diisi otomatis oleh Firebase secara real-time -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- DAFTAR KOREKSI LEMBAR JAWABAN -->
-            <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                <div class="flex flex-wrap justify-between items-center gap-4">
-                    <h3 class="text-xs font-bold text-pink-600 uppercase tracking-widest">📝 Penilaian Lembar Jawaban Mahasiswi</h3>
-                    <input type="text" id="searchGrading" oninput="filterGradingList()" placeholder="Cari nama mahasiswi..." class="px-3 py-1.5 border border-pink-100 rounded-xl text-xs focus:outline-none focus:border-pink-400 w-full sm:w-48 bg-pink-50/10">
-                </div>
-                <div id="essayGradingList" class="space-y-6">
-                    <!-- Diisi otomatis oleh Firebase secara real-time -->
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- KONTEN UTAMA: FORM MAHASISWI (Default View) -->
-    <main id="mahasiswiPanel" class="max-w-3xl mx-auto px-4 py-8">
-        <form id="quizForm" onsubmit="calculateScore(event)" class="space-y-6">
+    <!-- KONTEN UTAMA: FORM MAHASISWI -->
+    <main class="max-w-3xl mx-auto px-4 py-8">
+        <form id="quizForm" onsubmit="calculateAndSend(event)" class="space-y-6">
             
             <!-- Identitas Peserta -->
             <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
@@ -150,20 +69,20 @@
                     <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">2.</span> Huruf yang memiliki sifat hams dan syiddah</p>
                     <div class="grid grid-cols-1 gap-2 text-sm">
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q2" value="A" required class="accent-pink-500"> <span>د ت</span>
+                            <input type="radio" name="q2" value="A" required class="accent-pink-500"> <span class="arabic">د ت</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q2" value="B" class="accent-pink-500"> <span>ق ك</span>
+                            <input type="radio" name="q2" value="B" class="accent-pink-500"> <span class="arabic">ق ك</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q2" value="C" class="accent-pink-500"> <span>ك ت</span>
+                            <input type="radio" name="q2" value="C" class="accent-pink-500"> <span class="arabic">ك ت</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Soal 3 -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
-                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">3.</span> Kata <span>بُنْيَانٌ</span> dibaca dengan izhar bukan idgham, karena <span>نْ</span> dengan <span>ي</span> terdapat dalam satu kata yang artinya ....</p>
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">3.</span> Kata <span class="arabic">بُنْيَانٌ</span> dibaca dengan izhar bukan idgham, karena <span class="arabic">نْ</span> dengan <span class="arabic">ي</span> terdapat dalam satu kata yang artinya ....</p>
                     <div class="grid grid-cols-1 gap-2 text-sm">
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
                             <input type="radio" name="q3" value="A" required class="accent-pink-500"> <span>Bangunan</span>
@@ -198,13 +117,13 @@
                     <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">5.</span> Huruf yang memiliki 7 shifat yaitu ....</p>
                     <div class="grid grid-cols-1 gap-2 text-sm">
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q5" value="A" required class="accent-pink-500"> <span>ص</span>
+                            <input type="radio" name="q5" value="A" required class="accent-pink-500"> <span class="arabic">ص</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q5" value="B" class="accent-pink-500"> <span>ز</span>
+                            <input type="radio" name="q5" value="B" class="accent-pink-500"> <span class="arabic">ز</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q5" value="C" class="accent-pink-500"> <span>ر</span>
+                            <input type="radio" name="q5" value="C" class="accent-pink-500"> <span class="arabic">ر</span>
                         </label>
                     </div>
                 </div>
@@ -228,15 +147,15 @@
                 <!-- Soal 7 -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
                     <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">7.</span> Huruf-huruf muqaththa'ah</p>
-                   <div class="grid grid-cols-1 gap-2 text-sm">
+                    <div class="grid grid-cols-1 gap-2 text-sm">
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q7" value="A" required class="accent-pink-500"> <span>سنقص لكم</span>
+                            <input type="radio" name="q7" value="A" required class="accent-pink-500"> <span class="arabic">سنقص لكم</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q7" value="B" class="accent-pink-500"> <span>نص حكيم قطعا له سر</span>
+                            <input type="radio" name="q7" value="B" class="accent-pink-500"> <span class="arabic">نص حكيم قطعا له سر</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q7" value="C" class="accent-pink-500"> <span>أجد قط بكت</span>
+                            <input type="radio" name="q7" value="C" class="accent-pink-500"> <span class="arabic">أجد قط بكت</span>
                         </label>
                     </div>
                 </div>
@@ -246,20 +165,20 @@
                     <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">8.</span> Menyimpangnya suara karena terhalang oleh lidah, terjadi pada huruf ....</p>
                     <div class="grid grid-cols-1 gap-2 text-sm">
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q8" value="A" required class="accent-pink-500"> <span>ث ذ</span>
+                            <input type="radio" name="q8" value="A" required class="accent-pink-500"> <span class="arabic">ث ذ</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q8" value="B" class="accent-pink-500"> <span>ل ر</span>
+                            <input type="radio" name="q8" value="B" class="accent-pink-500"> <span class="arabic">ل ر</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q8" value="C" class="accent-pink-500"> <span>ت ط</span>
+                            <input type="radio" name="q8" value="C" class="accent-pink-500"> <span class="arabic">ت ط</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Soal 9 -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
-                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">9.</span> <span>فَإِذَا قَرَأْتَ الْقُرْآنَ فَاسْتَعِذْ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيْمِ ...</span> Ayat tersebut merupakan surah ....</p>
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">9.</span> <span class="arabic flex justify-end mb-2">فَإِذَا قَرَأْتَ الْقُرْآنَ   فَاسْتَعِذْ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيْمِ ...</span> Ayat tersebut merupakan perintah untuk meminta perlindungan kepada Allah dari godaan syaithan yang terkutuk, terdapat dalam surah ....</p>
                     <div class="grid grid-cols-1 gap-2 text-sm">
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
                             <input type="radio" name="q9" value="A" required class="accent-pink-500"> <span>An-Naml : 89</span>
@@ -268,68 +187,430 @@
                             <input type="radio" name="q9" value="B" class="accent-pink-500"> <span>An-Nahl : 98</span>
                         </label>
                         <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
-                            <input type="radio" name="q9" value="C" class="accent-pink-500"> <span>Al-Isra : 45</span>
+                            <input type="radio" name="q9" value="C" class="accent-pink-500"> <span>An-Nahl : 89</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 10 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">10.</span> Huruf yang dilafalkan dari ujung dua gigi seri atas, <strong>kecuali</strong> ....</p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q10" value="A" required class="accent-pink-500"> <span class="arabic">ل</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q10" value="B" class="accent-pink-500"> <span class="arabic">ف</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q10" value="C" class="accent-pink-500"> <span class="arabic">ث</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 11 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">11.</span> Surah Al-Qalam ayat pertama apabila diwashalkan dibaca dengan <span class="arabic">نٓ وَالْقَلَمِ وَمَايَسْطُرُوْن</span></p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q11" value="A" required class="accent-pink-500"> <span>Izhar</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q11" value="B" class="accent-pink-500"> <span>Idgham</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q11" value="C" class="accent-pink-500"> <span>Ikhfa'</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 12 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">12.</span> Penambahan huruf dan tidak diucapkan, baik ketika waqaf maupun washal</p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q12" value="A" required class="accent-pink-500"> <span>Shifr mustathil</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q12" value="B" class="accent-pink-500"> <span>Shifr mustadir</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q12" value="C" class="accent-pink-500"> <span>Hamzah washal</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 13 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">13.</span> Hukum pada kata <span class="arabic">الَّذِي يُوَسْوِسُ</span></p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q13" value="A" required class="accent-pink-500"> <span>Idgham mutamatsilain</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q13" value="B" class="accent-pink-500"> <span>Idgham mutajanisain</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q13" value="C" class="accent-pink-500"> <span>Tidak ada jawaban benar</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 14 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">14.</span> Contoh idgham naqish</p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q14" value="A" required class="accent-pink-500"> <span class="arabic">مِنْ وَاحِدٍ</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q14" value="B" class="accent-pink-500"> <span class="arabic">أَلَمْ نَخْلُقْكُمْ</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q14" value="C" class="accent-pink-500"> <span class="arabic">غَفُوْرٌ رَحِيْمٌ</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 15 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">15.</span> Hukum pada kata <span class="arabic">ءَآلئٰنَ</span></p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q15" value="A" required class="accent-pink-500"> <span>Mad lazim kalimi mukhaffaf</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q15" value="B" class="accent-pink-500"> <span>Mad lazim kalimi mutsaqqal</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q15" value="C" class="accent-pink-500"> <span>Mad lazim harfi mukhaffaf</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 16 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">16.</span> Kata <span class="arabic">لَا تَأْمَنَّا</span> dapat dibaca dengan dua cara, yaitu ....</p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q16" value="A" required class="accent-pink-500"> <span>Isymam dan Naql</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q16" value="B" class="accent-pink-500"> <span>Ikhtilas dan Raum</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q16" value="C" class="accent-pink-500"> <span>Isymam dan Raum</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 17 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">17.</span> Contoh kata yang dibaca dengan nabr</p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q17" value="A" required class="accent-pink-500"> <span class="arabic">َءَآلئٰن</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q17" value="B" class="accent-pink-500"> <span class="arabic">حُيِّيْتُمْ</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q17" value="C" class="accent-pink-500"> <span class="arabic">مِنَ الْحًقِّ (waqaf)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 18 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">18.</span> Membaca hamzah antara hamzah dan alif, disebut ....</p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q18" value="A" required class="accent-pink-500"> <span>Tashiil</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q18" value="B" class="accent-pink-500"> <span>Naql</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q18" value="C" class="accent-pink-500"> <span>Imalah</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 19 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">19.</span> <span class="arabic flex justify-end mb-2">وَقَالُوا اتَّخَذَ اللّهُ وَلَدًا (البقرة : ١١٦)</span> Berhenti pada kata <span class="arabic">وَقَالُوا</span> termasuk waqaf ....</p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q19" value="A" required class="accent-pink-500"> <span>Qabih</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q19" value="B" class="accent-pink-500"> <span>Hasan</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q19" value="C" class="accent-pink-500"> <span>Tam</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Soal 20 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">20.</span> Pada kata <span class="arabic">فِيْهِ هُدًى</span> terdapat hukum ....</p>
+                    <div class="grid grid-cols-1 gap-2 text-sm">
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q20" value="A" required class="accent-pink-500"> <span>Mad shilah sughro</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q20" value="B" class="accent-pink-500"> <span>Mad thobi'i</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-colors">
+                            <input type="radio" name="q20" value="C" class="accent-pink-500"> <span>Ha kinayah (bukan mad)</span>
                         </label>
                     </div>
                 </div>
             </div>
 
-            <!-- Bagian B: Jawaban Esai/Uraian -->
-            <div class="space-y-4 mt-8">
-                <h2 class="text-xs font-bold text-pink-600 uppercase tracking-widest pl-2">Bagian II: Jawaban Uraian / Esai</h2>
+            <!-- Bagian B: Soal Esai -->
+            <div class="space-y-4">
+                <h2 class="text-xs font-bold text-pink-600 uppercase tracking-widest pl-2 mt-8">Bagian II: Uraian / Esai</h2>
                 
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-800 mb-1">1. Sebutkan shifat huruf غ !</label>
-                        <textarea id="essay1" required placeholder="Ketik jawaban Anda..." class="w-full p-3 border border-pink-200/60 rounded-xl text-sm focus:outline-none focus:border-pink-400 bg-pink-50/5 min-h-[80px]"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-800 mb-1">2. Sebutkan contoh mad shilah kubro, mad iwadh, dan mad lazim kalimi mukhaffaf!</label>
-                        <textarea id="essay2" required placeholder="Ketik jawaban Anda..." class="w-full p-3 border border-pink-200/60 rounded-xl text-sm focus:outline-none focus:border-pink-400 bg-pink-50/5 min-h-[80px]"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-800 mb-1">3. Jelaskan pengertian waqaf!</label>
-                        <textarea id="essay3" required placeholder="Ketik jawaban Anda..." class="w-full p-3 border border-pink-200/60 rounded-xl text-sm focus:outline-none focus:border-pink-400 bg-pink-50/5 min-h-[80px]"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-800 mb-1">4. Tuliskan contoh idgham mutamatsilan dan idgham mutajanisan!</label>
-                        <textarea id="essay4" required placeholder="Ketik jawaban Anda..." class="w-full p-3 border border-pink-200/60 rounded-xl text-sm focus:outline-none focus:border-pink-400 bg-pink-50/5 min-h-[80px]"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-800 mb-1">5. Jelaskan hukum pada kata berikut ini: الْأَحْقَاف : ٤</label>
-                        <textarea id="essay5" required placeholder="Ketik jawaban Anda..." class="w-full p-3 border border-pink-200/60 rounded-xl text-sm focus:outline-none focus:border-pink-400 bg-pink-50/5 min-h-[80px]"></textarea>
-                    </div>
+                <!-- Esai 1 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">1.</span> Sebutkan shifat huruf <span class="arabic">غ</span> !</p>
+                    <textarea id="essay1" required placeholder="Tuliskan jawaban Anda di sini..." rows="3" class="w-full p-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:border-pink-300 bg-pink-50/5"></textarea>
                 </div>
+
+                <!-- Esai 2 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">2.</span> Sebutkan contoh mad shilah kubro, mad iwadh, dan mad lazim kalimi mukhaffaf!</p>
+                    <textarea id="essay2" required placeholder="Tuliskan jawaban Anda di sini..." rows="3" class="w-full p-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:border-pink-300 bg-pink-50/5"></textarea>
+                </div>
+
+                <!-- Esai 3 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">3.</span> Jelaskan pengertian waqaf!</p>
+                    <textarea id="essay3" required placeholder="Tuliskan jawaban Anda di sini..." rows="3" class="w-full p-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:border-pink-300 bg-pink-50/5"></textarea>
+                </div>
+
+                <!-- Esai 4 -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <p class="text-sm font-medium text-gray-800"><span class="text-pink-400 font-bold mr-1">4.</span> Tuliskan contoh idgham mutamasilan dan idgham mutajanisan!</p>
+                    <textarea id="essay4" required placeholder="Tuliskan jawaban Anda di sini..." rows="3" class="w-full p-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:border-pink-300 bg-pink-50/5"></textarea>
+                </div>
+
+           <!-- Esai 5 -->
+<div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+    <p class="text-sm font-medium text-gray-800">
+        <span class="text-pink-400 font-bold mr-1">5.</span> 
+        Jelaskan hukum bacaan tajwid pada kata yang dilingkari merah pada gambar berikut! 
+        <span class="arabic flex justify-end mt-1 text-pink-600 font-bold">(الْأَحْقَاف : ٤)</span>
+    </p>
+
+    <!-- TAMPILAN GAMBAR SOAL -->
+    <div class="overflow-hidden rounded-xl border border-pink-100/80 my-3">
+        <img 
+            src=https://cdn.phototourl.com/free/2026-07-20-8856c52a-6354-4603-afda-85dfd0956f38.jpg
+            alt="Surah Al-Ahqaf ayat 4" 
+            class="w-full h-auto max-w-lg mx-auto object-cover"
+        >
+    </div>
+
+    <textarea id="essay5" required placeholder="Tuliskan penjelasan hukum bacaannya di sini..." rows="3" class="w-full p-3 border border-pink-100 rounded-xl text-sm focus:outline-none focus:border-pink-300 bg-pink-50/5"></textarea>
+</div>    
             </div>
 
-            <!-- Tombol Kirim Ujian (ID btnSubmitQuiz) -->
-            <div class="pt-4">
-                <button id="btnSubmitQuiz" type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all cursor-pointer shadow-md text-sm uppercase tracking-wider">
-                    Kirim Lembar Jawaban ✨
+            <!-- Tombol Submit -->
+            <div class="pt-4 text-center">
+                <button type="submit" class="bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-semibold px-8 py-3 rounded-xl text-sm transition-all shadow-md transform hover:-translate-y-0.5 cursor-pointer">
+                    Kirim Jawaban Evaluasi 🌼
                 </button>
             </div>
         </form>
+
+        <!-- Modal Hasil / Popup -->
+        <div id="resultModal" class="fixed inset-0 bg-pink-900/20 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
+            <div class="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-xl border border-pink-100">
+                <span class="text-4xl">🎉</span>
+                <h3 class="text-lg font-bold text-gray-850 mt-4">Jawaban Berhasil Diproses!</h3>
+                <p class="text-xs text-gray-400 mt-1">Langkah Terakhir:</p>
+                <div class="my-6 p-4 bg-pink-50/50 rounded-2xl border border-pink-100/50">
+                    <p class="text-xs text-pink-600 font-bold uppercase tracking-wider">Skor Mandiri Pilihan Ganda</p>
+                    <p class="text-3xl font-extrabold text-rose-500 mt-1"><span id="scoreDisplay">0</span> / 100</p>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed mb-6">Silakan tekan tombol di bawah jika jendela WhatsApp Anda tidak terbuka otomatis untuk mengirim lembar jawaban ke Ustadzah.</p>
+                <button onclick="closeModal()" class="w-full bg-pink-400 hover:bg-pink-500 text-white text-xs font-semibold py-2.5 rounded-xl transition-colors cursor-pointer">
+                    Selesai & Tutup
+                </button>
+            </div>
+        </div>
     </main>
 
-    <!-- POPUP MODAL HASIL -->
-    <div id="resultModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-        <div class="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-xl border border-pink-50 space-y-6">
-            <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto text-2xl">✨</div>
-            <div>
-                <h3 class="text-lg font-bold text-gray-800">Alhamdulillah!</h3>
-                <p class="text-xs text-gray-400 mt-1">Jawaban Anda berhasil dikirim ke Ustadzah penilai.</p>
-            </div>
-            <div class="bg-pink-50/50 p-4 rounded-2xl">
-                <span class="text-[10px] text-pink-500 uppercase tracking-widest font-bold block mb-1">Skor Sementara (Pilihan Ganda)</span>
-                <div class="text-3xl font-black text-pink-600"><span id="scoreDisplay">0</span> <span class="text-sm font-normal text-gray-400">/ 100</span></div>
-            </div>
-            <button onclick="closeModal()" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl transition-all cursor-pointer text-xs">
-                Kembali ke Halaman Utama
-            </button>
-        </div>
-    </div>
+    <script>
+        const STORAGE_KEY = 'tajwid_quiz_answers';
 
-    <!-- PANGGIL JAVASCRIPT MODUL FIREBASE -->
-    <script type="module" src="script.js"></script>
+        // Mencatat atau memulihkan waktu mulai
+        let startTime = localStorage.getItem('tajwid_quiz_start_time');
+        if (!startTime) {
+            startTime = Date.now();
+            localStorage.setItem('tajwid_quiz_start_time', startTime);
+        } else {
+            startTime = parseInt(startTime);
+        }
+
+        // Kunci jawaban resmi Pilihan Ganda (1-20)
+        const correctAnswers = {
+            q1: 'B', q2: 'C', q3: 'A', q4: 'B', q5: 'C',
+            q6: 'C', q7: 'B', q8: 'B', q9: 'B', q10: 'A',
+            q11: 'A', q12: 'B', q13: 'C', q14: 'A', q15: 'A',
+            q16: 'C', q17: 'B', q18: 'A', q19: 'A', q20: 'C'
+        };
+
+        const questionsText = [
+            "1. Sebutkan shifat huruf غ !",
+            "2. Sebutkan contoh mad shilah kubro, mad iwadh, dan mad lazim kalimi mukhaffaf!",
+            "3. Jelaskan pengertian waqaf!",
+            "4. Tuliskan contoh idgham mutamasilan dan idgham mutajanisan!",
+            "5. Jelaskan hukum pada kata berikut ini: الْأَحْقَاف : ٤"
+        ];
+
+        // --- MANAJEMEN AUTO-SAVE LOCALSTORAGE ---
+        function saveAnswers() {
+            const formData = {};
+            
+            // Simpan Input Nama
+            formData['studentName'] = document.getElementById('studentName').value;
+
+            // Simpan Radio Button Pilihan Ganda
+            for (let i = 1; i <= 20; i++) {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                if (selected) {
+                    formData[`q${i}`] = selected.value;
+                }
+            }
+
+            // Simpan Textarea Esai
+            for (let i = 1; i <= 5; i++) {
+                formData[`essay${i}`] = document.getElementById(`essay${i}`).value;
+            }
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+        }
+
+        function restoreAnswers() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (!savedData) return;
+
+            const formData = JSON.parse(savedData);
+
+            // Pulihkan Nama
+            if (formData['studentName']) {
+                document.getElementById('studentName').value = formData['studentName'];
+            }
+
+            // Pulihkan Radio Button
+            for (let i = 1; i <= 20; i++) {
+                if (formData[`q${i}`]) {
+                    const radio = document.querySelector(`input[name="q${i}"][value="${formData[`q${i}`]}"]`);
+                    if (radio) radio.checked = true;
+                }
+            }
+
+            // Pulihkan Textarea
+            for (let i = 1; i <= 5; i++) {
+                if (formData[`essay${i}`]) {
+                    document.getElementById(`essay${i}`).value = formData[`essay${i}`];
+                }
+            }
+        }
+
+        // Pasang listener saat halaman selesai dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            restoreAnswers();
+
+            // Dengarkan perubahan pada seluruh elemen form
+            const form = document.getElementById('quizForm');
+            form.addEventListener('input', saveAnswers);
+            form.addEventListener('change', saveAnswers);
+        });
+
+        // --- LOGIKA UTAMA ---
+        function formatDuration(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}m ${s}s`;
+        }
+
+        function calculateAndSend(e) {
+            e.preventDefault();
+            
+            const endTime = Date.now();
+            const durationInSeconds = Math.round((endTime - startTime) / 1000);
+            const formattedTime = formatDuration(durationInSeconds);
+
+            let scorePg = 0;
+            const totalQuestions = Object.keys(correctAnswers).length;
+            let pgReport = "";
+
+            // 1. Olah Jawaban Pilihan Ganda
+            for (let key in correctAnswers) {
+                const selected = document.querySelector(`input[name="${key}"]:checked`);
+                const answeredValue = selected ? selected.value : '-';
+                const keyNumber = key.replace('q', '');
+                const isCorrect = selected && selected.value === correctAnswers[key];
+                
+                if (isCorrect) {
+                    scorePg++;
+                    pgReport += `No.${keyNumber}: [${answeredValue}] ✓\n`;
+                } else {
+                    pgReport += `No.${keyNumber}: [${answeredValue}] ✗ (Kunci: ${correctAnswers[key]})\n`;
+                }
+            }
+
+            const finalScorePg = Math.round((scorePg / totalQuestions) * 100);
+            const studentName = document.getElementById('studentName').value;
+
+            // 2. Olah Lembar Jawaban Esai
+            let essayReport = "";
+            for (let i = 1; i <= 5; i++) {
+                const answer = document.getElementById(`essay${i}`).value || "(Kosong)";
+                essayReport += `${questionsText[i-1]}\n↳ Jwb: "${answer}"\n\n`;
+            }
+
+            // 3. Menyusun Laporan Utama
+            const targetWhatsapp = "6283832179007";
+            const messageTemplate = 
+`📝 *LEMBAR JAWABAN MAHASISWI (PENILAIAN)*
+--------------------------------------------
+👤 *Nama & NIM :* ${studentName}
+⏱️ *Durasi Kerja :* ${formattedTime}
+🎯 *Skor Akhir PG :* ${finalScorePg} / 100
+--------------------------------------------
+
+🎯 *REVIEW PILIHAN GANDA :*
+${pgReport}
+📝 *JAWABAN SOAL URAIAN / ESAI :*
+${essayReport}
+_Dimohon Ustadzah/Pengajar untuk memeriksa & memberikan Nilai Uraian._`;
+
+            // 4. Redirect Link API WhatsApp
+            const waUrl = `https://wa.me/${targetWhatsapp}?text=${encodeURIComponent(messageTemplate)}`;
+            window.open(waUrl, '_blank');
+            
+            // Tampilkan popup informasi mandiri ke siswa
+            document.getElementById('scoreDisplay').innerText = finalScorePg;
+            document.getElementById('resultModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').classList.add('hidden');
+            
+            // Hapus simpanan temporary dari localStorage setelah dikirim
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem('tajwid_quiz_start_time');
+
+            document.getElementById('quizForm').reset();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            startTime = Date.now();
+        }
+    </script>
 </body>
 </html>
