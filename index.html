@@ -431,8 +431,16 @@
     </main>
 
     <script>
-        // Mencatat waktu mulai saat halaman dibuka
-        let startTime = Date.now();
+        const STORAGE_KEY = 'tajwid_quiz_answers';
+
+        // Mencatat atau memulihkan waktu mulai
+        let startTime = localStorage.getItem('tajwid_quiz_start_time');
+        if (!startTime) {
+            startTime = Date.now();
+            localStorage.setItem('tajwid_quiz_start_time', startTime);
+        } else {
+            startTime = parseInt(startTime);
+        }
 
         // Kunci jawaban resmi Pilihan Ganda (1-20)
         const correctAnswers = {
@@ -450,6 +458,67 @@
             "5. Jelaskan hukum pada kata berikut ini: الْأَحْقَاف : ٤"
         ];
 
+        // --- MANAJEMEN AUTO-SAVE LOCALSTORAGE ---
+        function saveAnswers() {
+            const formData = {};
+            
+            // Simpan Input Nama
+            formData['studentName'] = document.getElementById('studentName').value;
+
+            // Simpan Radio Button Pilihan Ganda
+            for (let i = 1; i <= 20; i++) {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                if (selected) {
+                    formData[`q${i}`] = selected.value;
+                }
+            }
+
+            // Simpan Textarea Esai
+            for (let i = 1; i <= 5; i++) {
+                formData[`essay${i}`] = document.getElementById(`essay${i}`).value;
+            }
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+        }
+
+        function restoreAnswers() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (!savedData) return;
+
+            const formData = JSON.parse(savedData);
+
+            // Pulihkan Nama
+            if (formData['studentName']) {
+                document.getElementById('studentName').value = formData['studentName'];
+            }
+
+            // Pulihkan Radio Button
+            for (let i = 1; i <= 20; i++) {
+                if (formData[`q${i}`]) {
+                    const radio = document.querySelector(`input[name="q${i}"][value="${formData[`q${i}`]}"]`);
+                    if (radio) radio.checked = true;
+                }
+            }
+
+            // Pulihkan Textarea
+            for (let i = 1; i <= 5; i++) {
+                if (formData[`essay${i}`]) {
+                    document.getElementById(`essay${i}`).value = formData[`essay${i}`];
+                }
+            }
+        }
+
+        // Pasang listener saat halaman selesai dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            restoreAnswers();
+
+            // Dengarkan perubahan pada seluruh elemen form
+            const form = document.getElementById('quizForm');
+            form.addEventListener('input', saveAnswers);
+            form.addEventListener('change', saveAnswers);
+        });
+
+        // --- LOGIKA UTAMA ---
         function formatDuration(seconds) {
             const m = Math.floor(seconds / 60);
             const s = seconds % 60;
@@ -467,7 +536,7 @@
             const totalQuestions = Object.keys(correctAnswers).length;
             let pgReport = "";
 
-            // 1. Olah Jawaban Pilihan Ganda dan buat template koreksi seperti akun penilai
+            // 1. Olah Jawaban Pilihan Ganda
             for (let key in correctAnswers) {
                 const selected = document.querySelector(`input[name="${key}"]:checked`);
                 const answeredValue = selected ? selected.value : '-';
@@ -492,7 +561,7 @@
                 essayReport += `${questionsText[i-1]}\n↳ Jwb: "${answer}"\n\n`;
             }
 
-            // 3. Menyusun Laporan Utama Persis seperti format Panel Pemeriksa/Penilai
+            // 3. Menyusun Laporan Utama
             const targetWhatsapp = "6283832179007";
             const messageTemplate = 
 `📝 *LEMBAR JAWABAN MAHASISWI (PENILAIAN)*
@@ -519,6 +588,11 @@ _Dimohon Ustadzah/Pengajar untuk memeriksa & memberikan Nilai Uraian._`;
 
         function closeModal() {
             document.getElementById('resultModal').classList.add('hidden');
+            
+            // Hapus simpanan temporary dari localStorage setelah dikirim
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem('tajwid_quiz_start_time');
+
             document.getElementById('quizForm').reset();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             startTime = Date.now();
