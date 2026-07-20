@@ -3,18 +3,18 @@
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // ==========================================
 // KONFIGURASI PROYEK FIREBASE (evavo-dc806)
 // ==========================================
 const firebaseConfig = {
-    apiKey: "API_KEY_ANDA", // Ganti dengan API Key Anda dari konsol Firebase
+    apiKey: "API_KEY_ANDA", // Ganti dengan API Key proyek evavo-dc806 Anda
     authDomain: "evavo-dc806.firebaseapp.com",
     projectId: "evavo-dc806",
     storageBucket: "evavo-dc806.firebasestorage.app",
     messagingSenderId: "96634564743",
-    appId: "APP_ID_ANDA" // Ganti dengan App ID Anda dari konsol Firebase
+    appId: "APP_ID_ANDA" // Ganti dengan App ID proyek evavo-dc806 Anda
 };
 
 // Inisialisasi Firebase
@@ -27,7 +27,7 @@ const auth = getAuth(app);
 // ==========================================
 let startTime = Date.now();
 let isPengajarMode = false;
-let unsubscribeSubmissions = null; // Menyimpan fungsi pembatalan listener real-time
+let unsubscribeSubmissions = null;
 
 // Kunci jawaban resmi untuk Pilihan Ganda (1-20)
 const correctAnswers = {
@@ -42,16 +42,13 @@ const correctAnswers = {
 // ==========================================
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // Jika Pengajar login
         document.getElementById('pengajarLoginCard').classList.add('hidden');
         document.getElementById('pengajarDashboard').classList.remove('hidden');
         loadPengajarData();
     } else {
-        // Jika Pengajar logout atau belum login
         document.getElementById('pengajarLoginCard').classList.remove('hidden');
         document.getElementById('pengajarDashboard').classList.add('hidden');
         
-        // Matikan pendengar real-time Firestore untuk menghemat kuota jika logout
         if (unsubscribeSubmissions) {
             unsubscribeSubmissions();
             unsubscribeSubmissions = null;
@@ -65,7 +62,12 @@ onAuthStateChanged(auth, (user) => {
 async function calculateScore(e) {
     e.preventDefault();
     
-    // Hitung Durasi Waktu Pengerjaan (Detik)
+    // Sembunyikan tombol Kirim setelah diklik agar tidak diklik dua kali
+    const btnSubmit = document.getElementById('btnSubmitQuiz');
+    if (btnSubmit) {
+        btnSubmit.classList.add('hidden');
+    }
+    
     const endTime = Date.now();
     const durationInSeconds = Math.round((endTime - startTime) / 1000);
 
@@ -73,7 +75,6 @@ async function calculateScore(e) {
     const totalQuestions = Object.keys(correctAnswers).length;
     const studentAnswers = {};
 
-    // Hitung jawaban benar & rekam jawaban siswa
     for (let key in correctAnswers) {
         const selected = document.querySelector(`input[name="${key}"]:checked`);
         const answeredValue = selected ? selected.value : '-';
@@ -87,7 +88,6 @@ async function calculateScore(e) {
     const finalScorePg = Math.round((scorePg / totalQuestions) * 100);
     const studentName = document.getElementById('studentName').value;
 
-    // Kumpulan Data Jawaban Esai/Uraian
     const essayAnswers = [
         document.getElementById('essay1').value,
         document.getElementById('essay2').value,
@@ -96,32 +96,40 @@ async function calculateScore(e) {
         document.getElementById('essay5').value
     ];
 
-    // Objek Mahasiswi baru (ID dokumen akan otomatis dibuat oleh Firestore)
     const submissionData = {
         name: studentName,
         scorePg: finalScorePg,
         pgAnswers: studentAnswers,
         essayAnswers: essayAnswers,
-        essayScore: null, // Default null sampai diperiksa oleh pengajar
+        essayScore: null,
         duration: durationInSeconds,
         timestamp: new Date().toISOString()
     };
 
     try {
-        // Simpan langsung ke koleksi Cloud Firestore
         await addDoc(collection(db, "tajwidSubmissions"), submissionData);
+        localStorage.removeItem('tajwidDraft'); // Hapus draf setelah berhasil kirim
         
-        // Tampilkan popup hasil jika berhasil disimpan ke Cloud
         document.getElementById('scoreDisplay').innerText = finalScorePg;
         document.getElementById('resultModal').classList.remove('hidden');
     } catch (error) {
         alert("Gagal mengirim lembar jawaban: " + error.message);
+        if (btnSubmit) {
+            btnSubmit.classList.remove('hidden');
+        }
     }
 }
 
 function closeModal() {
     document.getElementById('resultModal').classList.add('hidden');
     document.getElementById('quizForm').reset();
+    localStorage.removeItem('tajwidDraft');
+    
+    const btnSubmit = document.getElementById('btnSubmitQuiz');
+    if (btnSubmit) {
+        btnSubmit.classList.remove('hidden');
+    }
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
     startTime = Date.now();
 }
@@ -149,8 +157,6 @@ function togglePengajarPanel() {
 async function loginPengajar() {
     const username = document.getElementById('pengajarUser').value;
     const pass = document.getElementById('pengajarPass').value;
-
-    // Konversi username sederhana menjadi format email jika diperlukan oleh Firebase Auth
     const email = username.includes('@') ? username : `${username}@tajwid.com`;
 
     try {
@@ -168,6 +174,21 @@ async function logoutPengajar() {
     }
 }
 
+async function forgotPassword() {
+    const username = document.getElementById('pengajarUser').value;
+    if (!username) {
+        alert("Silakan masukkan email/username pengajar terlebih dahulu di kolom Username!");
+        return;
+    }
+    const email = username.includes('@') ? username : `${username}@tajwid.com`;
+    try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Link reset password telah dikirim ke email: " + email);
+    } catch (error) {
+        alert("Gagal mengirim email reset: " + error.message);
+    }
+}
+
 function formatTime(seconds) {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -175,20 +196,17 @@ function formatTime(seconds) {
 }
 
 // ==========================================
-// MENGAMBIL & MENYINKRONKAN DATA FIRESTORE (REAL-TIME)
+// REAL-TIME FIRESTORE UPDATES
 // ==========================================
 function loadPengajarData() {
     const submissionsCollection = collection(db, "tajwidSubmissions");
 
-    // Gunakan onSnapshot untuk memantau data secara real-time
     unsubscribeSubmissions = onSnapshot(submissionsCollection, (snapshot) => {
         const submissions = [];
         snapshot.forEach((doc) => {
-            // Kita petakan doc.id dari Firestore sebagai ID data
             submissions.push({ id: doc.id, ...doc.data() });
         });
 
-        // Urutkan nilai tertinggi & waktu pengerjaan tercepat
         const sortedSubmissions = [...submissions].sort((a, b) => {
             const totalA = a.scorePg + (a.essayScore || 0);
             const totalB = b.scorePg + (b.essayScore || 0);
@@ -196,7 +214,6 @@ function loadPengajarData() {
             return a.duration - b.duration;
         });
 
-        // Render tabel Leaderboard
         const leaderboardBody = document.getElementById('leaderboardBody');
         leaderboardBody.innerHTML = '';
 
@@ -229,7 +246,6 @@ function loadPengajarData() {
 
         filterLeaderboard();
 
-        // Render Panel Evaluasi Esai
         const essayGradingList = document.getElementById('essayGradingList');
         essayGradingList.innerHTML = '';
 
@@ -282,123 +298,4 @@ function loadPengajarData() {
                         </div>
                         <div class="flex items-center gap-2">
                             <label class="text-xs font-medium text-gray-500">Nilai Uraian (0-100):</label>
-                            <input type="number" id="input_${sub.id}" value="${sub.essayScore !== null ? sub.essayScore : ''}" min="0" max="100" placeholder="Skor" class="w-16 px-2 py-1 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:border-pink-400">
-                            <button onclick="saveEssayScore('${sub.id}')" class="bg-pink-500 hover:bg-pink-600 text-white text-xs px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer shadow-xs">
-                                Simpan
-                            </button>
-                            <button onclick="deleteSubmission('${sub.id}')" class="bg-red-50 hover:bg-red-100 text-red-500 text-xs px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer shadow-xs border border-red-200">
-                                Hapus
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-2">
-                        <h5 class="text-[11px] font-bold text-pink-500 uppercase tracking-wider">🎯 Review Jawaban Pilihan Ganda (Skor: ${sub.scorePg}/100)</h5>
-                        <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-1.5">
-                            ${pgReviewBlocks}
-                        </div>
-                    </div>
-
-                    <div class="space-y-3">
-                        <h5 class="text-[11px] font-bold text-pink-500 uppercase tracking-wider">📝 Jawaban Soal Uraian / Esai</h5>
-                        <div class="space-y-2.5">
-                            ${essayBlocks}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        filterGradingList();
-    });
-}
-
-// ==========================================
-// MANAJEMEN DATA (UPDATE & DELETE DI FIRESTORE)
-// ==========================================
-async function saveEssayScore(submissionId) {
-    const scoreInput = document.getElementById(`input_${submissionId}`).value;
-    if(scoreInput === '') {
-        alert('Silakan masukkan nilai angka terlebih dahulu!');
-        return;
-    }
-
-    const parsedScore = parseInt(scoreInput);
-    if(parsedScore < 0 || parsedScore > 100) {
-        alert('Nilai uraian berkisar antara skala 0 hingga 100!');
-        return;
-    }
-
-    try {
-        const docRef = doc(db, "tajwidSubmissions", submissionId);
-        // Memperbarui hanya field essayScore di Firestore
-        await updateDoc(docRef, { essayScore: parsedScore });
-        alert(`Berhasil memberikan nilai uraian!`);
-    } catch (error) {
-        alert("Gagal menyimpan nilai esai: " + error.message);
-    }
-}
-
-async function deleteSubmission(submissionId) {
-    if (confirm("Apakah Anda yakin ingin menghapus data jawaban mahasiswa ini secara permanen dari server?")) {
-        try {
-            const docRef = doc(db, "tajwidSubmissions", submissionId);
-            // Menghapus dokumen dari Firestore secara permanen
-            await deleteDoc(docRef);
-            alert("Data berhasil terhapus dari server!");
-        } catch (error) {
-            alert("Gagal menghapus data: " + error.message);
-        }
-    }
-}
-
-// ==========================================
-// FITUR FILTER & PENCARIAN (LOKAL DOM)
-// ==========================================
-function filterLeaderboard() {
-    const keyword = document.getElementById('searchLeaderboard').value.toLowerCase();
-    const rows = document.querySelectorAll('#leaderboardBody tr');
-    
-    rows.forEach(row => {
-        const nameCell = row.cells[1];
-        if (nameCell) {
-            const nameText = nameCell.textContent.toLowerCase();
-            if (nameText.includes(keyword)) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        }
-    });
-}
-
-function filterGradingList() {
-    const keyword = document.getElementById('searchGrading').value.toLowerCase();
-    const cards = document.querySelectorAll('#essayGradingList .grading-card');
-    
-    cards.forEach(card => {
-        const nameHeading = card.querySelector('.student-name-header');
-        if (nameHeading) {
-            const nameText = nameHeading.textContent.toLowerCase();
-            if (nameText.includes(keyword)) {
-                card.style.display = "";
-            } else {
-                card.style.display = "none";
-            }
-        }
-    });
-}
-
-// ==========================================
-// BRIDGE KE CAKUPAN GLOBAL WINDOW
-// Agar event HTML (onclick/onsubmit) tetap mengenali fungsi modul ini
-// ==========================================
-window.calculateScore = calculateScore;
-window.closeModal = closeModal;
-window.togglePengajarPanel = togglePengajarPanel;
-window.loginPengajar = loginPengajar;
-window.logoutPengajar = logoutPengajar;
-window.saveEssayScore = saveEssayScore;
-window.deleteSubmission = deleteSubmission;
-window.filterLeaderboard = filterLeaderboard;
-window.filterGradingList = filterGradingList;
+                            <input type="number" id="input_${sub.id}" value="${sub.essayScore !== null ? sub.essayScore : ''}" min="No response
