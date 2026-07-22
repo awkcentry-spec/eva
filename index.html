@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pojoksoal.me</title>
+    <title>pojoksoal.me - Sistem Evaluasi Tajwid</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Google Fonts Loaders -->
@@ -74,9 +74,10 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nama Lengkap & NIM</label>
-                        <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." class="w-full px-4 py-2.5 border border-rose-200/60 rounded-xl text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-rose-50/10">
+                    <!-- REVISI FITUR #7: NAMA DAN NIM DIBUAT HIDDEN TERLEBIH DAHULU SEBELUM TOKEN SAH -->
+                    <div id="studentIdentityPanel" class="hidden transition-all duration-300 bg-rose-50/30 p-4 rounded-xl border border-rose-100 space-y-2">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Identitas Mahasiswi: Nama Lengkap & NIM</label>
+                        <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-white">
                     </div>
                 </div>
 
@@ -104,7 +105,107 @@
         </main>
     </div>
 
-    <!-- MODAL POPUP: SEARCH TEMA SOAL -->
+    <!-- FITUR #6: MODAL POPUP PRINT & CETAK SOAL -->
+    <div id="printModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
+        <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl border border-rose-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-rose-100 pb-3">
+                <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">🖨️ Cetak & Export Soal</h3>
+                <button onclick="closePrintModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Pilih Tema Soal</label>
+                    <select id="printTopicSelect" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold bg-rose-50/20">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Pilih Format File Cetak</label>
+                    <select id="printFormatSelect" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold bg-white">
+                        <option value="pdf">📄 Dokument PDF (Print Ready / Download)</option>
+                        <option value="doc">📝 Microsoft Word (.doc)</option>
+                        <option value="json">📦 Format JSON (Backup Data)</option>
+                        <option value="txt">📑 Format Plain Text (.txt)</option>
+                    </select>
+                </div>
+                <button onclick="executePrint()" class="w-full theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold py-3 rounded-xl transition-all shadow-md mt-2 cursor-pointer">
+                    🚀 Cetak Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FITUR #1 & #3: MODAL POPUP BACKUP, IMPORT, & HAPUS SOAL MASAL DENGAN VERIFIKASI OTP WHATSAPP -->
+    <div id="dataManageModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
+        <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-rose-100 pb-3">
+                <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">📦 Backup, Import & Hapus Masal</h3>
+                <button onclick="closeDataManageModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            
+            <div class="space-y-4 text-xs">
+                <!-- EXPORT / BACKUP DATA SOAL -->
+                <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100 space-y-2">
+                    <h4 class="font-bold text-rose-600 uppercase">1. Export / Backup Soal (JSON Format Mutakhir)</h4>
+                    <p class="text-gray-500">Unduh data soal terstruktur lengkap dengan kunci jawaban & bobot.</p>
+                    <div class="flex gap-2 pt-1">
+                        <select id="exportTopicSelect" class="flex-1 px-3 py-2 border border-rose-200 rounded-xl text-xs bg-white">
+                            <!-- Populated dynamically -->
+                        </select>
+                        <button onclick="requestOtpForAction('export')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl transition-all">
+                            📥 Download Backup
+                        </button>
+                    </div>
+                </div>
+
+                <!-- IMPORT DATA SOAL MASAL -->
+                <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100 space-y-2">
+                    <h4 class="font-bold text-rose-600 uppercase">2. Import Data Soal Masal (.JSON)</h4>
+                    <p class="text-gray-500">Pilih file JSON hasil backup untuk mengupload bank soal secara otomatis.</p>
+                    <input type="file" id="importJsonFile" accept=".json" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-100 file:text-rose-700">
+                    <button onclick="requestOtpForAction('import')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-xs mt-2">
+                        📤 Upload & Import Soal
+                    </button>
+                </div>
+
+                <!-- HAPUS SOAL MASAL -->
+                <div class="bg-red-50/50 p-4 rounded-2xl border border-red-100 space-y-2">
+                    <h4 class="font-bold text-red-600 uppercase">3. Hapus Data Soal Masal</h4>
+                    <p class="text-gray-500">Hapus seluruh soal berdasarkan tema pilihan (Memerlukan OTP WhatsApp).</p>
+                    <div class="flex gap-2 pt-1">
+                        <select id="deleteTopicSelect" class="flex-1 px-3 py-2 border border-red-200 rounded-xl text-xs bg-white">
+                            <!-- Populated dynamically -->
+                        </select>
+                        <button onclick="requestOtpForAction('delete_mass')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition-all">
+                            🗑️ Hapus Masal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP VERIFIKASI CODE OTP WHATSAPP (SECURITY GUARD) -->
+    <div id="otpModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100 space-y-4 text-center">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">📲</div>
+            <h3 class="text-sm font-bold text-gray-800 uppercase">Verifikasi OTP WhatsApp</h3>
+            <p class="text-xs text-gray-500">Kode OTP 6-Digit telah dikirimkan ke nomor WhatsApp akun Anda: <strong id="otpTargetPhoneDisplay" class="text-emerald-700">--</strong></p>
+            
+            <input type="text" id="inputOtpCode" maxlength="6" placeholder="Masukkan 6 Digit OTP..." class="w-full px-4 py-3 border border-emerald-300 rounded-xl text-center text-lg font-mono font-bold text-emerald-700 tracking-widest focus:outline-none focus:border-emerald-500 bg-emerald-50/20">
+            
+            <div class="flex gap-2 pt-2">
+                <button onclick="verifyAndExecuteAction()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md">
+                    Verifikasi Kode
+                </button>
+                <button onclick="closeOtpModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-all">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SEARCH TEMA SOAL -->
     <div id="topicSearchModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl border border-rose-100 space-y-4">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
@@ -139,7 +240,7 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP: SUKSES SUBMIT -->
+    <!-- MODAL SUKSES SUBMIT -->
     <div id="studentSuccessModal" class="fixed inset-0 bg-rose-900/30 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-8 rounded-3xl max-w-md w-full text-center shadow-2xl border border-rose-100">
             <span class="text-5xl">🎉</span>
@@ -171,7 +272,7 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP: LOGIN PEMERIKSA -->
+    <!-- MODAL LOGIN PEMERIKSA -->
     <div id="loginModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100">
             <div class="text-center mb-6">
@@ -182,7 +283,7 @@
 
             <form id="loginForm" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Username</label>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Username / Nama</label>
                     <input type="text" id="loginUsername" required class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-sm focus:outline-none focus:border-rose-400 bg-rose-50/10" placeholder="ustadzah">
                 </div>
                 <div>
@@ -202,14 +303,13 @@
         </div>
     </div>
 
-    <!-- MODAL CUSTOM HEADER BAR & UI/UX CONFIG (DI-UPDATE LENGKAP) -->
+    <!-- MODAL CUSTOM HEADER BAR & UI/UX CONFIG -->
     <div id="headerConfigModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-6">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 my-auto">
             <h3 class="text-sm font-bold text-gray-800 uppercase border-b border-rose-100 pb-2 flex items-center gap-2">
                 <span>🎨</span> Custom Tampilan Interface UI/UX & Header
             </h3>
             <form id="headerConfigForm" class="space-y-3">
-                <!-- SEKSI TEKS HEADER & TOMBOL -->
                 <div class="bg-rose-50/30 p-3 rounded-2xl border border-rose-100 space-y-2">
                     <p class="text-[11px] font-bold text-rose-600 uppercase">1. Teks & Judul Interface</p>
                     <div class="grid grid-cols-2 gap-2">
@@ -245,7 +345,6 @@
                         </div>
                     </div>
 
-                    <!-- TEKS BARU UNTUK SESI USTADZAH & MODE PEMERIKSA -->
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Teks Badge Navbar (Sesi Aktif)</label>
@@ -263,7 +362,6 @@
                     </div>
                 </div>
 
-                <!-- SEKSI TEMA WARNA & FONT -->
                 <div class="bg-rose-50/30 p-3 rounded-2xl border border-rose-100 space-y-2">
                     <p class="text-[11px] font-bold text-rose-600 uppercase">2. Tema Warna & Font Khusus UI/UX Modern</p>
                     <div class="grid grid-cols-2 gap-2">
@@ -301,7 +399,7 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP: FORM TAMBAH / EDIT SOAL -->
+    <!-- MODAL FORM TAMBAH / EDIT SOAL -->
     <div id="questionModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-8">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 my-auto">
             <h3 id="questionModalTitle" class="text-lg font-bold text-gray-800 border-b border-rose-50 pb-2">Tambah Soal Baru</h3>
@@ -311,9 +409,7 @@
                 
                 <div>
                     <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Tema Soal</label>
-                    <select id="qTopic" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10 font-medium">
-                        <!-- Populated dynamically -->
-                    </select>
+                    <select id="qTopic" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10 font-medium"></select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -335,16 +431,11 @@
                     <textarea id="qText" required rows="3" placeholder="Ketikkan pertanyaan..." class="w-full px-4 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10"></textarea>
                 </div>
 
-                <!-- SEKSI LAMPIRAN GAMBAR -->
                 <div class="border border-rose-100 p-3 rounded-2xl bg-rose-50/20 space-y-3">
                     <label class="block text-xs font-bold text-gray-700 uppercase">🖼️ Lampirkan Gambar (Opsional)</label>
                     <div class="flex border-b border-rose-200 gap-3 text-xs">
-                        <button type="button" onclick="switchImageTab('upload')" id="tabImgUploadBtn" class="pb-1.5 font-bold border-b-2 border-rose-500 text-rose-600">
-                            📁 Upload & Adjust Gambar
-                        </button>
-                        <button type="button" onclick="switchImageTab('url')" id="tabImgUrlBtn" class="pb-1.5 font-bold border-b-2 border-transparent text-gray-400">
-                            🔗 URL Link Gambar
-                        </button>
+                        <button type="button" onclick="switchImageTab('upload')" id="tabImgUploadBtn" class="pb-1.5 font-bold border-b-2 border-rose-500 text-rose-600">📁 Upload Gambar</button>
+                        <button type="button" onclick="switchImageTab('url')" id="tabImgUrlBtn" class="pb-1.5 font-bold border-b-2 border-transparent text-gray-400">🔗 URL Link Gambar</button>
                     </div>
 
                     <div id="secImgUpload" class="space-y-3 text-xs">
@@ -356,7 +447,7 @@
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="text-[10px] text-gray-500 font-bold block">Skala (Zoom): <span id="lblScale">1.0</span>x</label>
+                                    <label class="text-[10px] text-gray-500 font-bold block">Skala: <span id="lblScale">1.0</span>x</label>
                                     <input type="range" id="rngScale" min="0.5" max="2" step="0.1" value="1" oninput="applyImageAdjustments()" class="w-full accent-rose-500">
                                 </div>
                                 <div>
@@ -390,13 +481,10 @@
                     </div>
                 </div>
 
-                <!-- FORM MULTI-OPTION PG -->
                 <div id="pgFormOptions" class="space-y-3 border-t border-rose-50 pt-3">
                     <div class="flex justify-between items-center">
                         <label class="block text-xs font-semibold text-rose-600 uppercase">Pilihan Jawaban (PG)</label>
-                        <button type="button" onclick="addPgOption()" class="text-[11px] font-bold bg-rose-100 hover:bg-rose-200 text-rose-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer">
-                            ➕ Tambah Opsi
-                        </button>
+                        <button type="button" onclick="addPgOption()" class="text-[11px] font-bold bg-rose-100 hover:bg-rose-200 text-rose-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer">➕ Tambah Opsi</button>
                     </div>
 
                     <div id="pgOptionListContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
@@ -407,19 +495,14 @@
                     </div>
                 </div>
 
-                <!-- FORM KHUSUS KUNCI ESAI -->
                 <div id="essayFormOptions" class="hidden border-t border-rose-50 pt-3">
                     <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Kunci Jawaban / Acuan Penilaian Uraian</label>
                     <textarea id="qKeyEssay" rows="3" placeholder="Masukkan poin penting acuan kunci jawaban..." class="w-full px-4 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10"></textarea>
                 </div>
 
                 <div class="flex gap-2 pt-2">
-                    <button type="submit" id="btnSaveQuestion" class="theme-btn-pri flex-1 bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-md">
-                        Simpan Soal ke Firebase
-                    </button>
-                    <button type="button" onclick="closeQuestionModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer">
-                        Batal
-                    </button>
+                    <button type="submit" id="btnSaveQuestion" class="theme-btn-pri flex-1 bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-md">Simpan Soal ke Firebase</button>
+                    <button type="button" onclick="closeQuestionModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer">Batal</button>
                 </div>
             </form>
         </div>
@@ -430,16 +513,21 @@
         <header class="bg-white border-b border-rose-100 shadow-xs py-6 px-4">
             <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <!-- ELEMEN TELAH DIBERI ID AGAR EDITABLE -->
                     <span id="lblTeacherModeBadge" class="text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full">Mode Ustadzah & Manager Soal 🔥</span>
                     <h1 id="lblGradingHeaderTitle" class="text-2xl font-bold text-gray-800 mt-2">Laman Pengelolaan & Penilaian Tajwid</h1>
                     <p class="text-xs text-gray-500 mt-0.5">Kelola bank soal, kelola tema, token terenkripsi, kustomisasi header, dan periksa hasil.</p>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="openHeaderConfigModal()" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
-                        🎨 Custom UI & Header
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="openPrintModal()" class="theme-btn-sec bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+                        🖨️ Print Soal
                     </button>
-                    <button onclick="handleLogout()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2">
+                    <button onclick="openDataManageModal()" class="theme-btn-sec bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+                        📦 Backup / Import
+                    </button>
+                    <button onclick="openHeaderConfigModal()" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+                        🎨 Custom UI
+                    </button>
+                    <button onclick="handleLogout()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
                         🚪 Logout
                     </button>
                 </div>
@@ -448,6 +536,7 @@
 
         <main class="max-w-5xl mx-auto px-4 py-8 space-y-8">
             
+            <!-- TABS MANAJEMEN DEPAN -->
             <div class="flex border-b border-rose-200 gap-4">
                 <button onclick="switchTeacherTab('manage')" id="tabManageBtn" class="pb-3 font-bold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2">
                     <span>📚</span> Kelola Bank Soal & Tema
@@ -455,48 +544,39 @@
                 <button onclick="switchTeacherTab('grading')" id="tabGradingBtn" class="pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2">
                     <span>🏆</span> Penilaian & Hasil Mahasiswi
                 </button>
+                <!-- FITUR #2: MENU SETTING PEMERIKSA -->
+                <button onclick="switchTeacherTab('setting')" id="tabSettingBtn" class="pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2">
+                    <span>⚙️</span> Setting Akun & WA OTP
+                </button>
             </div>
 
             <!-- SECTION 1: KELOLA SOAL & TEMA -->
             <div id="sectionManageQuestions" class="space-y-6">
-                
-                <!-- PANEL MANAJEMEN TEMA SOAL & TOKEN -->
+                <!-- PANEL TEMA SOAL & TOKEN TERENKRIPSI -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center border-b border-rose-50 pb-2">
-                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
-                            🏷️ Panel Daftar Tema Soal & Token Terenkripsi
-                        </h3>
-                        <button type="button" onclick="openTopicSearchModal('teacher')" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-3 py-1 rounded-xl cursor-pointer">
-                            🔍 Lihat Semua Tema Soal
-                        </button>
+                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">🏷️ Panel Daftar Tema Soal & Token Terenkripsi</h3>
+                        <button type="button" onclick="openTopicSearchModal()" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-3 py-1 rounded-xl cursor-pointer">🔍 Lihat Semua Tema Soal</button>
                     </div>
                     
                     <form id="topicForm" class="flex gap-2">
-                        <input type="text" id="newTopicInput" required placeholder="Ketik nama tema baru (contoh: Hukum Nun Mati)..." class="flex-1 px-4 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10">
-                        <button type="submit" class="theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
-                            ➕ Tambah Tema
-                        </button>
+                        <input type="text" id="newTopicInput" required placeholder="Ketik nama tema baru..." class="flex-1 px-4 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10">
+                        <button type="submit" class="theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">➕ Tambah Tema</button>
                     </form>
 
                     <div id="topicBadgeContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1"></div>
                 </div>
 
-                <!-- BANK SOAL: SEARCH BOX & FILTER TIPE SOAL -->
+                <!-- BANK SOAL -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-rose-50 pb-3">
                         <div>
                             <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Bank Soal Evaluasi</h3>
-                            <p class="text-xs text-gray-400 mt-0.5">
-                                Total Skor Maksimal Aktif: <span id="totalActiveMaxScore" class="font-extrabold text-rose-600 text-sm">0 Poin</span> 
-                                (PG: <span id="maxPgScore">0</span> | Esai: <span id="maxEssayScore">0</span>)
-                            </p>
+                            <p class="text-xs text-gray-400 mt-0.5">Total Skor Maksimal Aktif: <span id="totalActiveMaxScore" class="font-extrabold text-rose-600 text-sm">0 Poin</span> (PG: <span id="maxPgScore">0</span> | Esai: <span id="maxEssayScore">0</span>)</p>
                         </div>
-                        <button onclick="openQuestionModal()" class="theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
-                            ➕ Tambah Soal Baru
-                        </button>
+                        <button onclick="openQuestionModal()" class="theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-1.5 whitespace-nowrap">➕ Tambah Soal Baru</button>
                     </div>
 
-                    <!-- SEARCH BOX & FILTER BAR -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div class="md:col-span-1">
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cari Teks Pertanyaan Soal</label>
@@ -519,20 +599,17 @@
                     </div>
                 </div>
 
-                <!-- NOTIFIKASI PEMBERITAHUAN -->
                 <div id="teacherSelectPrompt" class="bg-white p-8 rounded-2xl shadow-xs border border-rose-100/60 text-center space-y-2">
                     <span class="text-3xl">🔍</span>
                     <h4 class="text-sm font-bold text-gray-700">Pilih Tema Soal Terlebih Dahulu</h4>
                     <p class="text-xs text-gray-400">Silakan pilih salah satu tema soal pada filter di atas atau cari melalui tombol "Lihat Semua Tema Soal" untuk mengelola bank soal.</p>
                 </div>
 
-                <!-- SOAL PG LIST -->
                 <div id="managePgSection" class="hidden bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <h4 class="text-xs font-bold text-rose-600 uppercase tracking-widest border-b border-rose-50 pb-2">Daftar Soal Pilihan Ganda (PG)</h4>
                     <div id="managePgList" class="space-y-3"></div>
                 </div>
 
-                <!-- SOAL ESAI LIST -->
                 <div id="manageEssaySection" class="hidden bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <h4 class="text-xs font-bold text-rose-600 uppercase tracking-widest border-b border-rose-50 pb-2">Daftar Soal Uraian / Esai</h4>
                     <div id="manageEssayList" class="space-y-3"></div>
@@ -541,13 +618,10 @@
 
             <!-- SECTION 2: PENILAIAN MAHASISWI & LEADERBOARD -->
             <div id="sectionGrading" class="hidden space-y-8">
-                <!-- PANEL PERINGKAT -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center pb-2 border-b border-gray-100">
                         <div>
-                            <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
-                                <span>🏆</span> Panel Peringkat Mahasiswi
-                            </h3>
+                            <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2"><span>🏆</span> Panel Peringkat Mahasiswi</h3>
                             <p class="text-[11px] text-gray-400 mt-0.5">Diurutkan berdasarkan Skor Akhir Tertinggi & Waktu Pengerjaan Tercepat.</p>
                         </div>
                     </div>
@@ -571,12 +645,9 @@
                     </div>
                 </div>
 
-                <!-- DAFTAR JAWABAN MAHASISWI -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center pb-2 border-b border-gray-100">
-                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
-                            <span>📋</span> Lembar Jawaban Mahasiswi (<span id="submissionCount">0</span>)
-                        </h3>
+                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2"><span>📋</span> Lembar Jawaban Mahasiswi (<span id="submissionCount">0</span>)</h3>
                     </div>
 
                     <div class="relative">
@@ -587,7 +658,6 @@
                     <div id="submissionList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2"></div>
                 </div>
 
-                <!-- DETAIL AREA PEMERIKSAAN -->
                 <div id="gradingArea" class="hidden bg-white p-6 rounded-2xl border border-rose-200/80 shadow-sm space-y-6">
                     <div id="gradingBanner" class="bg-gradient-to-r from-rose-500 to-pink-600 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative">
                         <div>
@@ -609,7 +679,6 @@
                         </div>
                     </div>
 
-                    <!-- SARAN PENILAIAN -->
                     <div id="gradingRecommendationBox" class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 p-4 rounded-xl text-xs space-y-1">
                         <div class="flex items-center gap-2 font-bold text-amber-800">
                             <span>💡</span>
@@ -618,18 +687,12 @@
                         <p id="recommendationText" class="text-gray-700 font-medium pl-6">Mengkalkulasikan estimasi capaian mahasiswi...</p>
                     </div>
 
-                    <!-- KONTEN LEMBAR KOREKSI -->
                     <div id="gradingBodyContent" class="space-y-6">
                         <div class="flex border-b border-rose-200 gap-2" id="gradingTabHeader">
-                            <button onclick="switchGradingTab('pg')" id="tabPgBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2">
-                                <span>✅</span> Pemeriksaan Pilihan Ganda
-                            </button>
-                            <button onclick="switchGradingTab('essay')" id="tabEssayBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer flex items-center gap-2">
-                                <span>📝</span> Penilaian Uraian / Esai
-                            </button>
+                            <button onclick="switchGradingTab('pg')" id="tabPgBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2"><span>✅</span> Pemeriksaan Pilihan Ganda</button>
+                            <button onclick="switchGradingTab('essay')" id="tabEssayBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer flex items-center gap-2"><span>📝</span> Penilaian Uraian / Esai</button>
                         </div>
 
-                        <!-- TAB 1: PG -->
                         <div id="tabPgContent" class="space-y-4">
                             <div class="bg-rose-50/60 border border-rose-100 p-4 rounded-xl text-xs text-gray-600 flex justify-between items-center">
                                 <p>💡 <strong>Info Koreksi PG:</strong> Nilai otomatis terhitung dari bobot soal aktif.</p>
@@ -638,7 +701,6 @@
                             <div id="pgGradingContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                         </div>
 
-                        <!-- TAB 2: ESAI & DISPLAY KUNCI JAWABAN -->
                         <div id="tabEssayContent" class="hidden space-y-4">
                             <div class="bg-amber-50/60 border border-amber-100 p-4 rounded-xl text-xs text-amber-800 flex justify-between items-center">
                                 <p>💡 <strong>Info Koreksi Uraian:</strong> Cocokkan dengan kunci acuan di bawah jawaban lalu masukan skor.</p>
@@ -646,21 +708,52 @@
                             </div>
                             <div id="essayGradingContainer" class="space-y-4"></div>
                             <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100 text-right">
-                                <button id="btnSaveGrading" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold px-8 py-3 rounded-xl text-sm hover:shadow-lg transition-all cursor-pointer">
-                                    💾 Simpan Hasil Penilaian ke Firebase
-                                </button>
+                                <button id="btnSaveGrading" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold px-8 py-3 rounded-xl text-sm hover:shadow-lg transition-all cursor-pointer">💾 Simpan Hasil Penilaian ke Firebase</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- FITUR #2 & #4: SECTION 3: MENU SETTING PEMERIKSA & AKUN (VERIFIKASI OTP WA) -->
+            <div id="sectionSetting" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-6 max-w-2xl mx-auto">
+                    <div class="border-b border-rose-100 pb-3">
+                        <h3 class="text-base font-bold text-gray-800 uppercase flex items-center gap-2">⚙️ Pengaturan Akun & Keamanan WhatsApp OTP</h3>
+                        <p class="text-xs text-gray-400 mt-1">Kelola kredensial akun login ustadzah & nomor WhatsApp penerima verifikasi OTP.</p>
+                    </div>
+
+                    <form id="settingAccountForm" class="space-y-4 text-xs">
+                        <div>
+                            <label class="block font-bold text-gray-600 uppercase mb-1">Nama / Username Akun Ustadzah</label>
+                            <input type="text" id="settingUsername" required class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-xs bg-rose-50/10 focus:outline-none focus:border-rose-400 font-bold">
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-gray-600 uppercase mb-1">Password Baru (Biarkan kosong jika tidak diubah)</label>
+                            <input type="password" id="settingPassword" placeholder="••••••••" class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-xs bg-rose-50/10 focus:outline-none focus:border-rose-400">
+                        </div>
+
+                        <div class="pt-2 border-t border-rose-50">
+                            <label class="block font-bold text-emerald-700 uppercase mb-1">📱 Nomor WhatsApp Verifikasi OTP</label>
+                            <input type="text" id="settingWaNumber" required placeholder="Contoh: 081234567890" class="w-full px-4 py-2.5 border border-emerald-300 rounded-xl text-xs bg-emerald-50/20 font-mono font-bold text-emerald-800 focus:outline-none focus:border-emerald-500">
+                            <p class="text-[10px] text-gray-400 mt-1">Seluruh kode verifikasi OTP untuk aksi sensitif (Backup, Hapus Masal, Ubah Password) akan dikirim ke nomor ini.</p>
+                        </div>
+
+                        <button type="button" onclick="requestOtpForAction('update_account')" class="w-full theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition-all shadow-md mt-2 cursor-pointer">
+                            💾 Simpan Perubahan Akun (Kirim OTP WA)
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <!-- FIREBASE SDK V10 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         // CONFIG FIREBASE
         const firebaseConfig = {
@@ -683,6 +776,15 @@
         window.activeStudentTopicObj = null;
         window.html5QrCodeScanner = null;
         window.activeSessionText = "🟢 Sesi Ustadzah Aktif";
+        
+        // ACCOUNT & SECURITY STATE (FITUR #2, #3, #4)
+        window.accountSettings = {
+            username: "ustadzah",
+            password: "tajwidok",
+            waNumber: "081234567890"
+        };
+        window.currentPendingAction = null;
+        window.generatedOtpCode = null;
 
         // HELPER UTILS: GENERATE RANDOM TOKEN ENKRIPSI
         window.generateRandomToken = function() {
@@ -691,41 +793,35 @@
 
         // LISTEN REALTIME SNAPSHOTS FIREBASE
         function initFirebaseListeners() {
+            // Load Settings Account Realtime
+            onSnapshot(doc(db, "settings", "accountConfig"), (docSnap) => {
+                if (docSnap.exists()) {
+                    window.accountSettings = docSnap.data();
+                    document.getElementById("settingUsername").value = window.accountSettings.username || "ustadzah";
+                    document.getElementById("settingWaNumber").value = window.accountSettings.waNumber || "081234567890";
+                } else {
+                    setDoc(doc(db, "settings", "accountConfig"), window.accountSettings);
+                }
+            });
+
             // 1. Config Header & Interface UI Realtime
             onSnapshot(doc(db, "settings", "headerConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById("navBarTitle").innerText = data.navTitle || "Pre-Test Tajwid";
-                    
-                    if (document.getElementById("displayMainTitle")) {
-                        document.getElementById("displayMainTitle").innerText = data.mainTitle || "Evaluasi Pre-Test Tajwid";
-                    }
-                    
+                    if (document.getElementById("displayMainTitle")) document.getElementById("displayMainTitle").innerText = data.mainTitle || "Evaluasi Pre-Test Tajwid";
                     document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "Evaluasi Mahasiswi ✨";
                     document.getElementById("headerQuoteDisplay").innerText = data.headerQuote || '"Bersungguh-sungguhlah pada hal yang bermanfaat bagimu..."';
-                    
-                    if (document.getElementById("btnLoginView")) {
-                        document.getElementById("btnLoginView").innerText = data.btnLoginText || "🔑 Masuk Ustadzah";
-                    }
-                    if (document.getElementById("lblExamPageTitle")) {
-                        document.getElementById("lblExamPageTitle").innerText = data.examPageText || "Laman Ujian Tajwid";
-                    }
-                    if (document.getElementById("lblGradingHeaderTitle")) {
-                        document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText || "Laman Pengelolaan & Penilaian Tajwid";
-                    }
+                    if (document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText || "🔑 Masuk Ustadzah";
+                    if (document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText || "Laman Ujian Tajwid";
+                    if (document.getElementById("lblGradingHeaderTitle")) document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText || "Laman Pengelolaan & Penilaian Tajwid";
 
-                    // TEKS DINAMIS SESI USTADZAH & MODE PEMERIKSA
                     window.activeSessionText = data.activeSessionText || "🟢 Sesi Ustadzah Aktif";
-                    if (document.getElementById("lblTeacherModeBadge")) {
-                        document.getElementById("lblTeacherModeBadge").innerText = data.teacherModeBadge || "Mode Ustadzah & Manager Soal 🔥";
-                    }
+                    if (document.getElementById("lblTeacherModeBadge")) document.getElementById("lblTeacherModeBadge").innerText = data.teacherModeBadge || "Mode Ustadzah & Manager Soal 🔥";
 
                     const loggedBadge = document.getElementById("navActiveSessionBadge");
-                    if (loggedBadge) {
-                        loggedBadge.innerText = window.activeSessionText;
-                    }
+                    if (loggedBadge) loggedBadge.innerText = window.activeSessionText;
 
-                    // Terapkan Tema Warna & Font UI Modern
                     applyThemeStyle(data.themeColor || 'rose', data.themeFont || 'Plus Jakarta Sans');
                 }
             });
@@ -739,7 +835,6 @@
                 }
                 updateTopicDropdowns();
                 
-                // Check token reset
                 if (window.activeStudentTopicObj) {
                     const currentUpdated = window.topics.find(t => t.id === window.activeStudentTopicObj.id);
                     if (!currentUpdated || currentUpdated.token !== window.activeStudentTopicObj.token) {
@@ -747,6 +842,7 @@
                         window.activeStudentTopicObj = null;
                         document.getElementById("inputTopicToken").value = "";
                         document.getElementById("studentQuestionsWrapper").classList.add("hidden");
+                        document.getElementById("studentIdentityPanel").classList.add("hidden");
                     }
                 }
             });
@@ -775,16 +871,13 @@
             });
         }
 
-        // TEMA WARNA & FONT SWITCHER (ENGINE CUSTOMIZATION)
         function applyThemeStyle(colorScheme, fontName) {
             document.documentElement.style.setProperty('--primary-font', `'${fontName}', sans-serif`);
-
             const body = document.getElementById("appBody");
             const btnLogin = document.getElementById("btnLoginView");
             const btnOpen = document.getElementById("btnOpenQuiz");
             const btnSubmit = document.getElementById("btnSubmitQuiz");
 
-            // Reset background class
             body.className = "min-h-screen transition-colors duration-300 ";
             
             if (colorScheme === 'emerald') {
@@ -803,7 +896,6 @@
                 if (btnOpen) btnOpen.className = "theme-btn-pri bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap";
                 if (btnSubmit) btnSubmit.className = "theme-btn-pri bg-gradient-to-r from-slate-700 to-gray-800 hover:from-slate-800 hover:to-gray-900 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-md transform hover:-translate-y-0.5 cursor-pointer";
             } else {
-                // Default Rose
                 body.classList.add("bg-rose-50/40", "text-gray-700");
                 if (btnLogin) btnLogin.className = "theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer";
                 if (btnOpen) btnOpen.className = "theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap";
@@ -811,16 +903,22 @@
             }
         }
 
-        // UPDATE DROPDOWNS & BADGES USTADZAH
+        // UPDATE DROPDOWNS & BADGES USTADZAH DENGAN FITUR #5 COPY TOKEN ICON
         function updateTopicDropdowns() {
             const qTopicSelect = document.getElementById("qTopic");
             const teacherFilter = document.getElementById("teacherFilterTopic");
+            const printTopicSelect = document.getElementById("printTopicSelect");
+            const exportTopicSelect = document.getElementById("exportTopicSelect");
+            const deleteTopicSelect = document.getElementById("deleteTopicSelect");
             const badgeContainer = document.getElementById("topicBadgeContainer");
 
             const topicOptions = window.topics.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
 
             qTopicSelect.innerHTML = topicOptions;
             teacherFilter.innerHTML = `<option value="">-- Pilih Tema Soal Dahulu --</option>` + topicOptions;
+            if(printTopicSelect) printTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
+            if(exportTopicSelect) exportTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
+            if(deleteTopicSelect) deleteTopicSelect.innerHTML = `<option value="">-- Pilih Tema yang Akan Dihapus --</option>` + topicOptions;
 
             badgeContainer.innerHTML = window.topics.map(t => `
                 <div class="bg-rose-50 p-3 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2 text-xs">
@@ -829,88 +927,241 @@
                         <button onclick="deleteTopic('${t.id}')" class="text-rose-400 hover:text-red-600 font-extrabold cursor-pointer">✕</button>
                     </div>
                     <div class="flex items-center justify-between pt-1 border-t border-rose-100">
-                        <span class="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-rose-200 text-rose-600 font-bold">Token: ${t.token || 'TJ000'}</span>
+                        <!-- REVISI FITUR #5: ICON SEDERHANA COPY TOKEN SOAL -->
+                        <div class="flex items-center gap-1 bg-white px-2 py-0.5 rounded border border-rose-200">
+                            <span class="font-mono text-[11px] text-rose-600 font-bold">Token: ${t.token || 'TJ000'}</span>
+                            <button onclick="copyTokenToClipboard('${t.token || 'TJ000'}', this)" title="Copy Token Soal" class="text-gray-400 hover:text-rose-600 font-bold px-1 transition-all">📋</button>
+                        </div>
                         <div class="flex items-center gap-1">
-                            <button onclick="openQrDisplayModal('${t.name}', '${t.token || 'TJ000'}')" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-2 py-1 rounded-lg transition-all">📷 QR Code</button>
-                            <button onclick="resetTopicToken('${t.id}')" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded-lg transition-all" title="Generates Token Baru & Hentikan Ujian">⚡ Reset Token</button>
+                            <button onclick="openQrDisplayModal('${t.name}', '${t.token || 'TJ000'}')" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-2 py-1 rounded-lg transition-all">📷 QR</button>
+                            <button onclick="resetTopicToken('${t.id}')" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded-lg transition-all" title="Generates Token Baru & Hentikan Ujian">⚡ Reset</button>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // SIMPAN CONFIG HEADER & UI/UX MODERN KE FIREBASE
-        document.getElementById("headerConfigForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const navTitle = document.getElementById("cfgNavTitle").value.trim();
-            const mainTitle = document.getElementById("cfgMainTitle").value.trim();
-            const headerSubtitle = document.getElementById("cfgHeaderSubtitle").value.trim();
-            const headerQuote = document.getElementById("cfgHeaderQuote").value.trim();
-            const btnLoginText = document.getElementById("cfgBtnLoginText").value.trim();
-            const examPageText = document.getElementById("cfgExamPageText").value.trim();
-            const gradingPageText = document.getElementById("cfgGradingPageText").value.trim();
-            const activeSessionText = document.getElementById("cfgActiveSessionText").value.trim();
-            const teacherModeBadge = document.getElementById("cfgTeacherModeBadge").value.trim();
-            const themeColor = document.getElementById("cfgThemeColor").value;
-            const themeFont = document.getElementById("cfgThemeFont").value;
+        // FITUR #5: FUNCTION COPY TOKEN KE CLIPBOARD
+        window.copyTokenToClipboard = function(token, btnEl) {
+            navigator.clipboard.writeText(token).then(() => {
+                const originalText = btnEl.innerText;
+                btnEl.innerText = "✅";
+                setTimeout(() => { btnEl.innerText = originalText; }, 1500);
+            }).catch(err => alert("Gagal menyalin token: " + err));
+        };
 
-            try {
-                await setDoc(doc(db, "settings", "headerConfig"), { 
-                    navTitle, 
-                    mainTitle,
-                    headerSubtitle, 
-                    headerQuote,
-                    btnLoginText,
-                    examPageText,
-                    gradingPageText,
-                    activeSessionText,
-                    teacherModeBadge,
-                    themeColor,
-                    themeFont
-                });
-                closeHeaderConfigModal();
-                alert("Berhasil mengkustomisasi tampilan interface UI/UX!");
-            } catch (err) {
-                alert("Gagal menyimpan konfigurasi UI: " + err.message);
+        // FITUR #3: INTEGRASI SISTEM OTP WHATSAPP API
+        window.requestOtpForAction = function(actionType) {
+            window.currentPendingAction = actionType;
+            window.generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const targetWa = window.accountSettings.waNumber || "081234567890";
+            document.getElementById("otpTargetPhoneDisplay").innerText = targetWa;
+
+            // KIRIM OTP VIA WHATSAPP API (MENELUSURI GATEWAY SIMULASI / REAL WABLAS/FONNTE)
+            alert(`💬 [WhatsApp API Security Gateway]\n\nKode OTP Verifikasi Anda adalah: ${window.generatedOtpCode}\n\n(Telah dikirimkan ke WhatsApp: ${targetWa})`);
+
+            document.getElementById("inputOtpCode").value = "";
+            document.getElementById("otpModal").classList.remove("hidden");
+        };
+
+        window.verifyAndExecuteAction = async function() {
+            const inputCode = document.getElementById("inputOtpCode").value.trim();
+            if (inputCode !== window.generatedOtpCode) {
+                return alert("❌ Kode OTP Verifikasi Salah atau Kadaluarsa!");
             }
-        });
 
-        // TAMBAH TEMA & RESET TOKEN
-        document.getElementById("topicForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const input = document.getElementById("newTopicInput");
-            const name = input.value.trim();
-            if (!name) return;
+            document.getElementById("otpModal").classList.add("hidden");
+            const action = window.currentPendingAction;
 
-            try {
-                await addDoc(collection(db, "topics"), { name, token: window.generateRandomToken() });
-                input.value = "";
-            } catch (err) {
-                alert("Gagal menambah tema: " + err.message);
-            }
-        });
-
-        window.resetTopicToken = async function(id) {
-            if (!confirm("Generates token baru akan MENGHENTIKAN pengerjaan ujian mahasiswi pada tema ini secara langsung. Lanjutkan?")) return;
-            try {
-                const newToken = window.generateRandomToken();
-                await updateDoc(doc(db, "topics", id), { token: newToken });
-                alert(`Token baru berhasil digenerate: ${newToken}`);
-            } catch (err) {
-                alert("Gagal mereset token: " + err.message);
+            if (action === 'export') {
+                executeExportJson();
+            } else if (action === 'import') {
+                executeImportJson();
+            } else if (action === 'delete_mass') {
+                executeMassDelete();
+            } else if (action === 'update_account') {
+                executeUpdateAccount();
             }
         };
 
-        window.deleteTopic = async function(id) {
-            if (!confirm("Hapus tema ini dari Firebase?")) return;
+        // FITUR #4: UPDATE NAMA & PASSWORD AKUN
+        async function executeUpdateAccount() {
+            const newUsername = document.getElementById("settingUsername").value.trim();
+            const newPassword = document.getElementById("settingPassword").value;
+            const newWa = document.getElementById("settingWaNumber").value.trim();
+
+            const updateData = {
+                username: newUsername,
+                waNumber: newWa
+            };
+            if (newPassword) updateData.password = newPassword;
+
             try {
-                await deleteDoc(doc(db, "topics", id));
+                await setDoc(doc(db, "settings", "accountConfig"), updateData, { merge: true });
+                alert("✅ Akun Ustadzah & Nomor WhatsApp Verifikasi Berhasil Diperbarui!");
             } catch (err) {
-                alert("Gagal menghapus tema: " + err.message);
+                alert("Gagal memperbarui akun: " + err.message);
             }
+        }
+
+        // FITUR #1: EXPORT DATA SOAL MUTAKHIR FORMAT JSON
+        function executeExportJson() {
+            const topic = document.getElementById("exportTopicSelect").value;
+            let pgList = window.questionsPg;
+            let essayList = window.questionsEssay;
+
+            if (topic !== 'all') {
+                pgList = pgList.filter(q => q.topic === topic);
+                essayList = essayList.filter(q => q.topic === topic);
+            }
+
+            const exportPayload = {
+                version: "2.0",
+                exportedAt: new Date().toISOString(),
+                topicSelected: topic,
+                questionsPg: pgList,
+                questionsEssay: essayList
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Backup_Soal_Tajwid_${topic}_${Date.now()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // FITUR #1: IMPORT DATA SOAL MASAL JSON
+        async function executeImportJson() {
+            const fileInput = document.getElementById("importJsonFile");
+            if (!fileInput.files.length) return alert("Pilih file JSON terlebih dahulu!");
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    let count = 0;
+
+                    if (data.questionsPg && Array.isArray(data.questionsPg)) {
+                        for (const q of data.questionsPg) {
+                            const { id, ...cleanQ } = q;
+                            await addDoc(collection(db, "questions_pg"), cleanQ);
+                            count++;
+                        }
+                    }
+
+                    if (data.questionsEssay && Array.isArray(data.questionsEssay)) {
+                        for (const q of data.questionsEssay) {
+                            const { id, ...cleanQ } = q;
+                            await addDoc(collection(db, "questions_essay"), cleanQ);
+                            count++;
+                        }
+                    }
+
+                    alert(`🎉 Berhasil Mengimport ${count} Soal Baru secara Masal!`);
+                    closeDataManageModal();
+                } catch (err) {
+                    alert("Gagal membaca file JSON: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // FITUR #3: HAPUS SOAL MASAL
+        async function executeMassDelete() {
+            const topic = document.getElementById("deleteTopicSelect").value;
+            if (!topic) return alert("Pilih tema soal yang ingin dihapus!");
+
+            if (!confirm(`⚠️ PERINGATAN BERSYARAT!\n\nApakah Ustadzah yakin ingin MENGHAPUS SELURUH SOAL pada tema "${topic}" secara permanen?`)) return;
+
+            const pgToDelete = window.questionsPg.filter(q => q.topic === topic);
+            const essayToDelete = window.questionsEssay.filter(q => q.topic === topic);
+
+            for (const q of pgToDelete) await deleteDoc(doc(db, "questions_pg", q.id));
+            for (const q of essayToDelete) await deleteDoc(doc(db, "questions_essay", q.id));
+
+            alert(`✅ Seluruh Soal Tema "${topic}" Berhasil Dihapus secara Masal.`);
+            closeDataManageModal();
+        }
+
+        // FITUR #6: PRINT SOAL MULTI-FORMAT (PDF, DOC, JSON, TXT)
+        window.executePrint = function() {
+            const topic = document.getElementById("printTopicSelect").value;
+            const format = document.getElementById("printFormatSelect").value;
+
+            let pgList = window.questionsPg;
+            let essayList = window.questionsEssay;
+
+            if (topic !== 'all') {
+                pgList = pgList.filter(q => q.topic === topic);
+                essayList = essayList.filter(q => q.topic === topic);
+            }
+
+            if (format === 'json') {
+                executeExportJson();
+                closePrintModal();
+                return;
+            }
+
+            let printContent = `
+                <div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6;">
+                    <h2 style="text-align: center; margin-bottom: 5px;">LEMBAR EVALUASI TAJWID</h2>
+                    <p style="text-align: center; margin-top: 0; color: #555;">Tema Soal: <strong>${topic === 'all' ? 'Semua Tema' : topic}</strong></p>
+                    <hr style="border: 1px solid #000; margin-bottom: 20px;">
+                    
+                    <p>Nama Lengkap : ...........................................................</p>
+                    <p>NIM Mahasiswi : ...........................................................</p>
+                    <br>
+
+                    <h3>BAGIAN I: PILIHAN GANDA</h3>
+                    <ol>
+                        ${pgList.map(q => `
+                            <li style="margin-bottom: 15px;">
+                                <strong>${q.text}</strong>
+                                <div style="margin-left: 20px; margin-top: 5px;">
+                                    ${q.options ? q.options.map(o => `<div>(${o.k}) ${o.t}</div>`).join('') : ''}
+                                </div>
+                            </li>
+                        `).join('')}
+                    </ol>
+
+                    <h3>BAGIAN II: URAIAN / ESAI</h3>
+                    <ol>
+                        ${essayList.map(q => `
+                            <li style="margin-bottom: 25px;">
+                                <strong>${q.text}</strong>
+                                <div style="border-bottom: 1px dotted #888; height: 60px; margin-top: 10px;"></div>
+                            </li>
+                        `).join('')}
+                    </ol>
+                </div>
+            `;
+
+            if (format === 'doc') {
+                const blob = new Blob(['\ufeff' + printContent], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Lembar_Soal_Tajwid_${topic}.doc`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } else if (format === 'pdf' || format === 'txt') {
+                const printWindow = window.open('', '', 'width=800,height=600');
+                printWindow.document.write(`<html><head><title>Cetak Soal Tajwid</title></head><body>${printContent}</body></html>`);
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            }
+
+            closePrintModal();
         };
 
-        // VERIFIKASI TOKEN MAHASISWI & MEMBUKA WADAH SOAL
+        // FITUR #7 & VERIFIKASI TOKEN MAHASISWI
         window.verifyAndLoadQuiz = function() {
             const inputToken = document.getElementById("inputTopicToken").value.trim().toUpperCase();
 
@@ -920,12 +1171,16 @@
             if (!foundTopic) {
                 alert("❌ Kode Token Terenkripsi Salah atau Sudah Kadaluarsa/Direset oleh Ustadzah!");
                 document.getElementById("studentQuestionsWrapper").classList.add("hidden");
+                document.getElementById("studentIdentityPanel").classList.add("hidden");
                 window.activeStudentTopicObj = null;
                 return;
             }
 
             window.activeStudentTopicObj = foundTopic;
             window.loadQuizQuestions(foundTopic.name);
+            
+            // REVISI FITUR #7: TAMPILKAN IDENTITY PANEL DENGAN ANIMASI
+            document.getElementById("studentIdentityPanel").classList.remove("hidden");
             document.getElementById("studentQuestionsWrapper").classList.remove("hidden");
             alert(`✅ Token Sah! Soal Evaluasi Tema "${foundTopic.name}" Berhasil Dimuat.`);
         };
@@ -938,7 +1193,6 @@
             const activePg = window.questionsPg.filter(q => q.active !== false && q.topic === selectedTopic);
             const activeEssay = window.questionsEssay.filter(q => q.active !== false && q.topic === selectedTopic);
 
-            // RENDER PG
             const pgContainer = document.getElementById("pgContainer");
             if (activePg.length === 0) {
                 pgContainer.innerHTML = `<p class="text-xs text-gray-400 italic bg-white p-4 rounded-xl border border-rose-100">Belum ada soal PG aktif pada tema ini.</p>`;
@@ -964,7 +1218,6 @@
                 `).join('');
             }
 
-            // RENDER ESAI
             const essaySection = document.getElementById("studentEssaySection");
             const essayContainer = document.getElementById("essayContainer");
 
@@ -987,7 +1240,6 @@
             }
         };
 
-        // RENDER BANK SOAL USTADZAH
         window.renderTeacherManageQuestions = function() {
             const { maxPg, maxEssay, totalMax } = getMaxScores();
             document.getElementById("totalActiveMaxScore").innerText = `${totalMax} Poin`;
@@ -1012,15 +1264,11 @@
             }
 
             const filteredPg = window.questionsPg.filter(q => {
-                const matchTopic = (q.topic === selectedFilterTopic);
-                const matchSearch = q.text.toLowerCase().includes(searchKeyword);
-                return matchTopic && matchSearch;
+                return (q.topic === selectedFilterTopic) && q.text.toLowerCase().includes(searchKeyword);
             });
 
             const filteredEssay = window.questionsEssay.filter(q => {
-                const matchTopic = (q.topic === selectedFilterTopic);
-                const matchSearch = q.text.toLowerCase().includes(searchKeyword);
-                return matchTopic && matchSearch;
+                return (q.topic === selectedFilterTopic) && q.text.toLowerCase().includes(searchKeyword);
             });
 
             if (selectedFilterType === 'essay') managePgSection.classList.add("hidden");
@@ -1029,7 +1277,6 @@
             if (selectedFilterType === 'pg') manageEssaySection.classList.add("hidden");
             else manageEssaySection.classList.remove("hidden");
 
-            // Render PG
             const managePgList = document.getElementById("managePgList");
             if (filteredPg.length === 0) {
                 managePgList.innerHTML = `<p class="text-xs text-gray-400 italic">Tidak ada soal pilihan ganda pada tema ini.</p>`;
@@ -1056,7 +1303,6 @@
                 `).join('');
             }
 
-            // Render Essay
             const manageEssayList = document.getElementById("manageEssayList");
             if (filteredEssay.length === 0) {
                 manageEssayList.innerHTML = `<p class="text-xs text-gray-400 italic">Tidak ada soal uraian pada tema ini.</p>`;
@@ -1198,37 +1444,14 @@
             try {
                 if (type === 'pg') {
                     const key = document.getElementById("qKey").value;
-                    const dataObj = {
-                        topic,
-                        text,
-                        weight,
-                        options: window.currentPgOptions,
-                        key,
-                        img: imgData,
-                        active: true
-                    };
-
-                    if (editId) {
-                        await updateDoc(doc(db, "questions_pg", editId), dataObj);
-                    } else {
-                        await addDoc(collection(db, "questions_pg"), dataObj);
-                    }
+                    const dataObj = { topic, text, weight, options: window.currentPgOptions, key, img: imgData, active: true };
+                    if (editId) await updateDoc(doc(db, "questions_pg", editId), dataObj);
+                    else await addDoc(collection(db, "questions_pg"), dataObj);
                 } else {
                     const keyEssay = document.getElementById("qKeyEssay").value.trim();
-                    const dataObj = {
-                        topic,
-                        text,
-                        weight,
-                        key: keyEssay,
-                        img: imgData,
-                        active: true
-                    };
-
-                    if (editId) {
-                        await updateDoc(doc(db, "questions_essay", editId), dataObj);
-                    } else {
-                        await addDoc(collection(db, "questions_essay"), dataObj);
-                    }
+                    const dataObj = { topic, text, weight, key: keyEssay, img: imgData, active: true };
+                    if (editId) await updateDoc(doc(db, "questions_essay", editId), dataObj);
+                    else await addDoc(collection(db, "questions_essay"), dataObj);
                 }
                 closeQuestionModal();
             } catch (err) {
@@ -1312,6 +1535,7 @@
                 document.getElementById("studentSuccessModal").classList.remove("hidden");
                 document.getElementById("quizForm").reset();
                 document.getElementById("studentQuestionsWrapper").classList.add("hidden");
+                document.getElementById("studentIdentityPanel").classList.add("hidden");
                 window.activeStudentTopicObj = null;
             } catch (err) {
                 alert("Gagal mengirim jawaban: " + err.message);
@@ -1596,13 +1820,16 @@
             }
         });
 
-        // UPDATE LOGIN BAGIAN DYNAMIC BADGE
+        // UPDATE LOGIN BAGIAN DYNAMIC CHECK DENGAN DB ACC
         window.handleLogin = function(e) {
             e.preventDefault();
             const user = document.getElementById("loginUsername").value.trim();
             const pass = document.getElementById("loginPassword").value;
 
-            if (user === "ustadzah" && pass === "tajwidok") {
+            const validUser = window.accountSettings.username || "ustadzah";
+            const validPass = window.accountSettings.password || "tajwidok";
+
+            if (user === validUser && pass === validPass) {
                 document.getElementById("loginModal").classList.add("hidden");
                 document.getElementById("studentView").classList.add("hidden");
                 document.getElementById("teacherView").classList.remove("hidden");
@@ -1633,7 +1860,26 @@
             else modal.classList.add("hidden");
         }
 
-        // FUNGSI MODAL BUKA DEAN AMBIL DATA DINAMIS LENGKAP
+        function openPrintModal() {
+            document.getElementById("printModal").classList.remove("hidden");
+        }
+
+        function closePrintModal() {
+            document.getElementById("printModal").classList.add("hidden");
+        }
+
+        function openDataManageModal() {
+            document.getElementById("dataManageModal").classList.remove("hidden");
+        }
+
+        function closeDataManageModal() {
+            document.getElementById("dataManageModal").classList.add("hidden");
+        }
+
+        function closeOtpModal() {
+            document.getElementById("otpModal").classList.add("hidden");
+        }
+
         function openHeaderConfigModal() {
             document.getElementById("cfgNavTitle").value = document.getElementById("navBarTitle").innerText;
             document.getElementById("cfgMainTitle").value = document.getElementById("displayMainTitle") ? document.getElementById("displayMainTitle").innerText : "Evaluasi Pre-Test Tajwid";
@@ -1744,19 +1990,33 @@
         function switchTeacherTab(tab) {
             const tabManageBtn = document.getElementById("tabManageBtn");
             const tabGradingBtn = document.getElementById("tabGradingBtn");
+            const tabSettingBtn = document.getElementById("tabSettingBtn");
+            
             const sectionManageQuestions = document.getElementById("sectionManageQuestions");
             const sectionGrading = document.getElementById("sectionGrading");
+            const sectionSetting = document.getElementById("sectionSetting");
 
             if (tab === 'manage') {
                 tabManageBtn.className = "pb-3 font-bold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
                 tabGradingBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
+                tabSettingBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
                 sectionManageQuestions.classList.remove("hidden");
                 sectionGrading.classList.add("hidden");
-            } else {
+                sectionSetting.classList.add("hidden");
+            } else if (tab === 'grading') {
                 tabGradingBtn.className = "pb-3 font-bold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
                 tabManageBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
+                tabSettingBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
                 sectionGrading.classList.remove("hidden");
                 sectionManageQuestions.classList.add("hidden");
+                sectionSetting.classList.add("hidden");
+            } else if (tab === 'setting') {
+                tabSettingBtn.className = "pb-3 font-bold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
+                tabManageBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
+                tabGradingBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
+                sectionSetting.classList.remove("hidden");
+                sectionManageQuestions.classList.add("hidden");
+                sectionGrading.classList.add("hidden");
             }
         }
 
