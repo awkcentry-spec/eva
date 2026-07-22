@@ -71,7 +71,8 @@
                     <div id="pgContainer" class="space-y-4"></div>
                 </div>
 
-                <div class="space-y-4">
+                <!-- PANEL ESAI MAHASISWI (BISA TERSEMBUNYI OTOMATIS) -->
+                <div id="studentEssaySection" class="space-y-4">
                     <h2 class="text-xs font-bold text-pink-600 uppercase tracking-widest pl-2 mt-8">Bagian II: Uraian / Esai</h2>
                     <div id="essayContainer" class="space-y-4"></div>
                 </div>
@@ -104,6 +105,11 @@
                 <div class="flex justify-between items-center text-xs">
                     <span class="text-gray-500">Waktu Pengerjaan:</span>
                     <span id="modalStudentDuration" class="font-bold text-gray-800"></span>
+                </div>
+                <!-- DI TAMPILKAN JIKA ADA SOAL ESAI ATAU LANGSUNG NILAI JIKA TIDAK ADA ESAI -->
+                <div class="flex justify-between items-center text-xs pt-1 border-t border-pink-200">
+                    <span class="text-gray-500">Skor Akhir:</span>
+                    <span id="modalStudentScore" class="font-extrabold text-pink-600 text-sm"></span>
                 </div>
             </div>
 
@@ -144,7 +150,7 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP: FORM TAMBAH / EDIT SOAL (DENGAN TEMA, MULTI-OPSI & MEDIA) -->
+    <!-- MODAL POPUP: FORM TAMBAH / EDIT SOAL -->
     <div id="questionModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-8">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-pink-100 space-y-4 my-auto">
             <h3 id="questionModalTitle" class="text-lg font-bold text-gray-800 border-b border-pink-50 pb-2">Tambah Soal Baru</h3>
@@ -341,8 +347,8 @@
                     <div id="managePgList" class="space-y-3"></div>
                 </div>
 
-                <!-- SOAL ESAI LIST -->
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
+                <!-- SOAL ESAI LIST (TERSEMBUNYI OTOMATIS JIKA KOSONG) -->
+                <div id="manageEssaySection" class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
                     <h4 class="text-xs font-bold text-pink-600 uppercase tracking-widest border-b border-pink-50 pb-2">Daftar Soal Uraian / Esai</h4>
                     <div id="manageEssayList" class="space-y-3"></div>
                 </div>
@@ -371,7 +377,7 @@
                                     <th class="py-3 px-4 font-bold text-center">Durasi</th>
                                     <th class="py-3 px-4 font-bold text-center">Status</th>
                                     <th class="py-3 px-4 font-bold text-center">Skor PG</th>
-                                    <th class="py-3 px-4 font-bold text-center">Skor Uraian</th>
+                                    <th class="py-3 px-4 font-bold text-center th-essay-col">Skor Uraian</th>
                                     <th class="py-3 px-4 font-bold text-right">Skor Total</th>
                                 </tr>
                             </thead>
@@ -409,7 +415,7 @@
                             <div class="bg-white text-gray-800 p-4 rounded-xl shadow-xs text-center min-w-[140px]">
                                 <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider block">Total Skor Akhir</span>
                                 <span id="gradingTotalScore" class="text-3xl font-extrabold text-pink-600">0</span>
-                                <span class="text-xs text-gray-400 font-medium block mt-0.5">(PG: <span id="gradingPgScore">0</span> | Uraian: <span id="gradingEssayScore">0</span>)</span>
+                                <span class="text-xs text-gray-400 font-medium block mt-0.5" id="scoreBreakdownText">(PG: <span id="gradingPgScore">0</span> | Uraian: <span id="gradingEssayScore">0</span>)</span>
                             </div>
                             
                             <button onclick="toggleMinimizeGrading()" id="btnMinimizeGrading" title="Minimize / Lipat Lembar Koreksi" class="bg-white/20 hover:bg-white/30 text-white p-3 rounded-xl transition-all cursor-pointer flex items-center justify-center font-bold text-sm">
@@ -429,7 +435,7 @@
 
                     <!-- KONTEN LEMBAR KOREKSI -->
                     <div id="gradingBodyContent" class="space-y-6">
-                        <div class="flex border-b border-pink-200 gap-2">
+                        <div class="flex border-b border-pink-200 gap-2" id="gradingTabHeader">
                             <button onclick="switchGradingTab('pg')" id="tabPgBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-pink-500 text-pink-600 cursor-pointer flex items-center gap-2">
                                 <span>✅</span> Pemeriksaan Pilihan Ganda
                             </button>
@@ -466,14 +472,12 @@
         </main>
     </div>
 
-    <!-- FIREBASE SDK V10 (FIREBASE DATABASE REALTIME) -->
+    <!-- FIREBASE SDK V10 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // =============================================================
-        // CONFIG FIREBASE PROYEK PRETEST-TAJWID ANDA
-        // =============================================================
+        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "SILAKAN_TEMPEL_API_KEY_ANDA_DI_SINI",
             authDomain: "pretest-tajwid.firebaseapp.com",
@@ -494,18 +498,15 @@
 
         // LISTEN REALTIME SNAPSHOTS FIREBASE
         function initFirebaseListeners() {
-            // 1. Load Topics
             onSnapshot(collection(db, "topics"), (snapshot) => {
                 window.topics = [];
                 snapshot.forEach(doc => window.topics.push({ id: doc.id, ...doc.data() }));
                 if (window.topics.length === 0) {
-                    // Seed initial topic
                     addDoc(collection(db, "topics"), { name: "Tajwid Dasar" });
                 }
                 updateTopicDropdowns();
             });
 
-            // 2. Load Questions PG
             onSnapshot(collection(db, "questions_pg"), (snapshot) => {
                 window.questionsPg = [];
                 snapshot.forEach(doc => window.questionsPg.push({ id: doc.id, ...doc.data() }));
@@ -513,7 +514,6 @@
                 window.renderTeacherManageQuestions();
             });
 
-            // 3. Load Questions Essay
             onSnapshot(collection(db, "questions_essay"), (snapshot) => {
                 window.questionsEssay = [];
                 snapshot.forEach(doc => window.questionsEssay.push({ id: doc.id, ...doc.data() }));
@@ -521,7 +521,6 @@
                 window.renderTeacherManageQuestions();
             });
 
-            // 4. Load Submissions
             const subQuery = query(collection(db, "submissions"), orderBy("submittedAt", "desc"));
             onSnapshot(subQuery, (snapshot) => {
                 window.submissions = [];
@@ -531,7 +530,6 @@
             });
         }
 
-        // UPDATE UPDATE TOPIC SELECT DROPDOWNS & BADGES
         function updateTopicDropdowns() {
             const studentSelect = document.getElementById("studentTopicSelect");
             const qTopicSelect = document.getElementById("qTopic");
@@ -552,7 +550,6 @@
             `).join('');
         }
 
-        // TAMBAH & HAPUS TEMA SOAL
         document.getElementById("topicForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const input = document.getElementById("newTopicInput");
@@ -576,7 +573,7 @@
             }
         };
 
-        // FILTER KUIS MAHASISWI BERDASARKAN TEMA & TITLE LEMBAR KERJA
+        // FILTER KUIS MAHASISWI BERDASARKAN TEMA
         window.filterQuizByTopic = function() {
             const selectedTopic = document.getElementById("studentTopicSelect").value;
             const displayTitle = document.getElementById("displaySheetTitle");
@@ -615,10 +612,15 @@
                 `).join('');
             }
 
+            // KONTROL PENAMPILAN PANEL ESAI MAHASISWI
+            const essaySection = document.getElementById("studentEssaySection");
             const essayContainer = document.getElementById("essayContainer");
+
             if (activeEssay.length === 0) {
-                essayContainer.innerHTML = `<p class="text-xs text-gray-400 italic bg-white p-4 rounded-xl border border-pink-100">Belum ada soal uraian pada tema ini.</p>`;
+                essaySection.classList.add("hidden");
+                essayContainer.innerHTML = "";
             } else {
+                essaySection.classList.remove("hidden");
                 essayContainer.innerHTML = activeEssay.map((q, idx) => `
                     <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
                         <div class="flex justify-between items-center text-xs font-semibold text-gray-400">
@@ -633,7 +635,6 @@
             }
         };
 
-        // HITUNG SCORE MAKSIMAL
         window.getMaxScores = function() {
             const activePg = window.questionsPg.filter(q => q.active !== false);
             const activeEssay = window.questionsEssay.filter(q => q.active !== false);
@@ -676,27 +677,34 @@
             `).join('');
 
             const filteredEssay = window.questionsEssay.filter(q => selectedFilter === "Semua Tema" || q.topic === selectedFilter);
+            const manageEssaySection = document.getElementById("manageEssaySection");
             const manageEssayList = document.getElementById("manageEssayList");
-            manageEssayList.innerHTML = filteredEssay.map((q, idx) => `
-                <div class="p-4 rounded-xl border ${q.active !== false ? 'border-pink-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
-                    <div class="space-y-1 flex-1">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="font-bold text-pink-600">Uraian ${idx + 1}</span>
-                            <span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded-md">Tema: ${q.topic || 'Umum'}</span>
-                            <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">Bobot Maks: ${q.weight || 10}</span>
+
+            if (filteredEssay.length === 0) {
+                manageEssaySection.classList.add("hidden");
+            } else {
+                manageEssaySection.classList.remove("hidden");
+                manageEssayList.innerHTML = filteredEssay.map((q, idx) => `
+                    <div class="p-4 rounded-xl border ${q.active !== false ? 'border-pink-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
+                        <div class="space-y-1 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="font-bold text-pink-600">Uraian ${idx + 1}</span>
+                                <span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded-md">Tema: ${q.topic || 'Umum'}</span>
+                                <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">Bobot Maks: ${q.weight || 10}</span>
+                            </div>
+                            <p class="font-medium text-gray-800">${q.text}</p>
+                            <p class="text-[11px] text-pink-600 font-semibold italic">🔑 Kunci Acuan: ${q.key || '-'}</p>
                         </div>
-                        <p class="font-medium text-gray-800">${q.text}</p>
-                        <p class="text-[11px] text-pink-600 font-semibold italic">🔑 Kunci Acuan: ${q.key || '-'}</p>
+                        <div class="flex items-center gap-3 self-end sm:self-center">
+                            <label class="flex items-center gap-1.5 cursor-pointer font-bold text-xs text-emerald-600">
+                                <input type="checkbox" ${q.active !== false ? 'checked' : ''} onchange="toggleQuestionActive('essay', '${q.id}')" class="accent-emerald-500"> Tampilkan
+                            </label>
+                            <button onclick="editQuestion('essay', '${q.id}')" class="text-blue-500 hover:underline font-semibold">Edit</button>
+                            <button onclick="deleteQuestion('essay', '${q.id}')" class="text-red-500 hover:underline font-semibold">Hapus</button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-3 self-end sm:self-center">
-                        <label class="flex items-center gap-1.5 cursor-pointer font-bold text-xs text-emerald-600">
-                            <input type="checkbox" ${q.active !== false ? 'checked' : ''} onchange="toggleQuestionActive('essay', '${q.id}')" class="accent-emerald-500"> Tampilkan
-                        </label>
-                        <button onclick="editQuestion('essay', '${q.id}')" class="text-blue-500 hover:underline font-semibold">Edit</button>
-                        <button onclick="deleteQuestion('essay', '${q.id}')" class="text-red-500 hover:underline font-semibold">Hapus</button>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
         };
 
         window.toggleQuestionActive = async function(type, id) {
@@ -715,7 +723,6 @@
             await deleteDoc(doc(db, collectionName, id));
         };
 
-        // KELOLA FORM DYNAMIC OPTIONS
         window.currentPgOptions = [{ k: "A", t: "" }, { k: "B", t: "" }, { k: "C", t: "" }];
 
         window.renderPgOptionsForm = function() {
@@ -750,7 +757,6 @@
             renderPgOptionsForm();
         };
 
-        // EDIT SOAL
         window.uploadedImageData = null;
 
         window.editQuestion = function(type, id) {
@@ -779,7 +785,6 @@
             document.getElementById("questionModal").classList.remove("hidden");
         };
 
-        // SUBMIT FORM SOAL KE FIREBASE
         document.getElementById("questionForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const editId = document.getElementById("qEditId").value;
@@ -848,7 +853,7 @@
             }
         });
 
-        // SIMPAN JAWABAN MAHASISWI KE FIREBASE
+        // SIMPAN JAWABAN MAHASISWI & STATUS
         let startTime = Date.now();
 
         document.getElementById("quizForm").addEventListener("submit", async (e) => {
@@ -879,13 +884,16 @@
 
             const answersEssay = {};
             activeEssay.forEach(q => {
-                const textVal = document.getElementById(`essay-${q.id}`).value.trim();
+                const textVal = document.getElementById(`essay-${q.id}`)?.value.trim() || "";
                 answersEssay[q.id] = textVal;
             });
 
             const durationSec = Math.floor((Date.now() - startTime) / 1000);
             const durationMin = Math.floor(durationSec / 60);
             const durationText = durationMin > 0 ? `${durationMin} menit ${durationSec % 60} detik` : `${durationSec} detik`;
+
+            // JIKA TIDAK ADA SOAL ESAI, STATUS LANGSUNG "SELESAI"
+            const initialStatus = activeEssay.length === 0 ? "Selesai" : "Belum Diperiksa";
 
             const submissionData = {
                 studentName,
@@ -899,7 +907,7 @@
                 durationText,
                 durationSeconds: durationSec,
                 submittedAt: new Date(),
-                status: "Belum Diperiksa",
+                status: initialStatus,
                 essayGrades: {}
             };
 
@@ -909,6 +917,8 @@
                 document.getElementById("modalStudentName").innerText = studentName;
                 document.getElementById("modalStudentTopic").innerText = selectedTopic;
                 document.getElementById("modalStudentDuration").innerText = durationText;
+                document.getElementById("modalStudentScore").innerText = `${pgScoreCalculated} Poin`;
+
                 document.getElementById("studentSuccessModal").classList.remove("hidden");
                 document.getElementById("quizForm").reset();
             } catch (err) {
@@ -918,7 +928,6 @@
             }
         });
 
-        // LEADERBOARD & SUBMISSIONS RENDER
         let activeGradingId = null;
 
         window.deleteSubmission = async function(e, subId, studentName) {
@@ -943,6 +952,16 @@
                 return;
             }
 
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false);
+            const hasEssay = activeEssay.length > 0;
+
+            // Sembunyikan/Tampilkan kolom esai di tabel leaderboard
+            const thEssayCols = document.querySelectorAll(".th-essay-col");
+            thEssayCols.forEach(col => {
+                if (hasEssay) col.classList.remove("hidden");
+                else col.classList.add("hidden");
+            });
+
             const sorted = [...window.submissions].sort((a, b) => {
                 if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
                 return (a.durationSeconds || 999999) - (b.durationSeconds || 999999);
@@ -966,7 +985,7 @@
                             </span>
                         </td>
                         <td class="py-3 px-4 text-center font-medium">${s.pgScore}</td>
-                        <td class="py-3 px-4 text-center font-medium">${s.essayScore}</td>
+                        ${hasEssay ? `<td class="py-3 px-4 text-center font-medium">${s.essayScore}</td>` : ''}
                         <td class="py-3 px-4 text-right font-extrabold text-pink-600 text-sm">${s.totalScore} Poin</td>
                     </tr>
                 `;
@@ -1009,7 +1028,7 @@
 
         document.getElementById("searchStudentInput").addEventListener("input", renderSubmissionList);
 
-        // KOREKSI & DISPLAY KUNCI ACUAN URAIAN
+        // KOREKSI & PENAMILAN PANEL PEMERIKSAAN
         window.selectSubmissionForGrading = function(id) {
             activeGradingId = id;
             const sub = window.submissions.find(s => s.id === id);
@@ -1028,6 +1047,21 @@
             document.getElementById("gradingEssayScore").innerText = sub.essayScore;
             document.getElementById("pgCorrectCount").innerText = sub.pgCorrectCount;
 
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
+            const hasEssay = activeEssay.length > 0;
+
+            const scoreBreakdownText = document.getElementById("scoreBreakdownText");
+            const tabEssayBtn = document.getElementById("tabEssayBtn");
+
+            // KONTROL OTOMATIS TAMBAPAN ESAI PADA LEMBAR KOREKSI
+            if (!hasEssay) {
+                scoreBreakdownText.classList.add("hidden");
+                tabEssayBtn.classList.add("hidden");
+            } else {
+                scoreBreakdownText.classList.remove("hidden");
+                tabEssayBtn.classList.remove("hidden");
+            }
+
             const activePg = window.questionsPg.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
             const pgGradingContainer = document.getElementById("pgGradingContainer");
             pgGradingContainer.innerHTML = activePg.map(q => {
@@ -1045,43 +1079,42 @@
                 `;
             }).join('');
 
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
             const essayGradingContainer = document.getElementById("essayGradingContainer");
-            
-            // FITUR 2: TAMPILKAN JAWABAN MAHASISWI & KUNCI JAWABAN / ACUAN PENILAIAN
-            essayGradingContainer.innerHTML = activeEssay.map(q => {
-                const userAns = sub.answersEssay[q.id] || "(Kosong / Belum Diisi)";
-                const currentGrade = sub.essayGrades ? (sub.essayGrades[q.id] || 0) : 0;
-                const maxW = q.weight || 10;
-                return `
-                    <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3 text-xs">
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-2">
-                            <span class="font-bold text-gray-700">Soal Tema: ${q.topic || 'Umum'}</span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-400 font-medium">Beri Nilai (0-${maxW}):</span>
-                                <input type="number" id="grade-essay-${q.id}" value="${currentGrade}" min="0" max="${maxW}" oninput="calculateRealtimeEssayScore()" class="w-16 px-2.5 py-1.5 border border-pink-200 rounded-lg text-center font-bold text-pink-600 focus:outline-none focus:border-pink-500 bg-pink-50/10">
+            if (hasEssay) {
+                essayGradingContainer.innerHTML = activeEssay.map(q => {
+                    const userAns = sub.answersEssay[q.id] || "(Kosong / Belum Diisi)";
+                    const currentGrade = sub.essayGrades ? (sub.essayGrades[q.id] || 0) : 0;
+                    const maxW = q.weight || 10;
+                    return `
+                        <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3 text-xs">
+                            <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                                <span class="font-bold text-gray-700">Soal Tema: ${q.topic || 'Umum'}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400 font-medium">Beri Nilai (0-${maxW}):</span>
+                                    <input type="number" id="grade-essay-${q.id}" value="${currentGrade}" min="0" max="${maxW}" oninput="calculateRealtimeEssayScore()" class="w-16 px-2.5 py-1.5 border border-pink-200 rounded-lg text-center font-bold text-pink-600 focus:outline-none focus:border-pink-500 bg-pink-50/10">
+                                </div>
                             </div>
-                        </div>
-                        <p class="font-semibold text-gray-800">${q.text}</p>
-                        
-                        <!-- JAWABAN MAHASISWI -->
-                        <div class="space-y-1">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase">Jawaban Mahasiswi:</span>
-                            <div class="p-3 bg-pink-50/20 rounded-xl text-gray-700 whitespace-pre-line border border-pink-100">
-                                ${userAns}
+                            <p class="font-semibold text-gray-800">${q.text}</p>
+                            
+                            <div class="space-y-1">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase">Jawaban Mahasiswi:</span>
+                                <div class="p-3 bg-pink-50/20 rounded-xl text-gray-700 whitespace-pre-line border border-pink-100">
+                                    ${userAns}
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- DISPLAY KUNCI JAWABAN / ACUAN PENILAIAN USTADZAH -->
-                        <div class="p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl space-y-1">
-                            <span class="text-[10px] font-bold text-emerald-800 uppercase flex items-center gap-1">
-                                🔑 Kunci Jawaban / Acuan Penilaian Ustadzah:
-                            </span>
-                            <p class="text-emerald-900 font-medium whitespace-pre-line">${q.key || 'Belum ada acuan kunci yang diisi.'}</p>
+                            <div class="p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl space-y-1">
+                                <span class="text-[10px] font-bold text-emerald-800 uppercase flex items-center gap-1">
+                                    🔑 Kunci Jawaban / Acuan Penilaian Ustadzah:
+                                </span>
+                                <p class="text-emerald-900 font-medium whitespace-pre-line">${q.key || 'Belum ada acuan kunci yang diisi.'}</p>
+                            </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            } else {
+                essayGradingContainer.innerHTML = "";
+            }
 
             calculateRealtimeEssayScore();
             switchGradingTab('pg');
@@ -1094,13 +1127,17 @@
             if (!sub) return;
 
             const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
-            activeEssay.forEach(q => {
-                const input = document.getElementById(`grade-essay-${q.id}`);
-                if (input) {
-                    const maxW = q.weight || 10;
-                    totalEssay += Math.min(maxW, Math.max(0, parseFloat(input.value) || 0));
-                }
-            });
+            
+            if (activeEssay.length > 0) {
+                activeEssay.forEach(q => {
+                    const input = document.getElementById(`grade-essay-${q.id}`);
+                    if (input) {
+                        const maxW = q.weight || 10;
+                        totalEssay += Math.min(maxW, Math.max(0, parseFloat(input.value) || 0));
+                    }
+                });
+            }
+
             document.getElementById("essayCurrentScoreDisplay").innerText = totalEssay;
 
             const currentPg = sub.pgScore || 0;
@@ -1115,7 +1152,7 @@
                 saran = "Pemahaman Tajwid mahasiswi sangat luar biasa! Sangat direkomendasikan untuk lanjut ke bab berikutnya.";
             } else if (percentage >= 70) {
                 predikat = "B (Jayyid / Baik)";
-                saran = "Pemahaman mahasiswi cukup baik. Lulus evaluasi dengan sedikit catatan perbaikan pada bagian uraian.";
+                saran = "Pemahaman mahasiswi cukup baik. Lulus evaluasi dengan catatan perbaikan.";
             } else if (percentage >= 60) {
                 predikat = "C (Cukup)";
                 saran = "Mencapai batas kelulusan minimal. Disarankan membaca ulang acuan materi tajwid.";
@@ -1170,7 +1207,6 @@
             }
         });
 
-        // LOGIN USTADZAH
         window.handleLogin = function(e) {
             e.preventDefault();
             const user = document.getElementById("loginUsername").value.trim();
@@ -1194,11 +1230,10 @@
 
         document.getElementById("loginForm").addEventListener("submit", handleLogin);
 
-        // INISIALISASI APPLIKASI FIREBASE
         initFirebaseListeners();
     </script>
 
-    <!-- FUNGSI GLOBAL INTERFACE & MANAJEMEN GAMBAR -->
+    <!-- FUNGSI GLOBAL INTERFACE -->
     <script>
         function toggleLoginModal(show) {
             const modal = document.getElementById("loginModal");
@@ -1308,7 +1343,7 @@
                 secUpload.classList.remove("hidden");
                 secUrl.classList.add("hidden");
             } else {
-                btnUrl.className = "pb-1.5 font-bold border-b-2 border-pink-500 text-pink-600";
+                btnUrl.className = "pb-1.5 font-bold border-b-2 border-transparent text-pink-600";
                 btnUpload.className = "pb-1.5 font-bold border-b-2 border-transparent text-gray-400";
                 secUrl.classList.remove("hidden");
                 secUpload.classList.add("hidden");
