@@ -6,30 +6,33 @@
     <title>Sistem Evaluasi Pre-Test Tajwid & Laman Pemeriksa</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Google Fonts -->
+    <!-- Google Fonts Loaders -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link id="dynamicFontLink" href="https://fonts.googleapis.com/css2?family=Amiri&family=Inter:wght@400;500;600;700;800&family=Lexend:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- QR Code Generator & Scanner Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        :root {
+            --primary-font: 'Plus Jakarta Sans', sans-serif;
+        }
+        body { font-family: var(--primary-font); }
         .arabic { font-family: 'Amiri', serif; font-size: 1.35rem; }
     </style>
 </head>
-<body class="bg-[#FFF5F5] text-gray-700 min-h-screen">
+<body id="appBody" class="bg-rose-50/40 text-gray-700 min-h-screen transition-colors duration-300">
 
     <!-- NAVBAR TOP -->
-    <nav class="bg-white border-b border-pink-100 shadow-xs px-4 py-3 sticky top-0 z-40">
+    <nav id="appNavbar" class="bg-white border-b border-rose-100 shadow-xs px-4 py-3 sticky top-0 z-40">
         <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <span class="text-xl">✨</span>
                 <span id="navBarTitle" class="font-bold text-gray-800 text-sm md:text-base">Pre-Test Tajwid</span>
             </div>
             <div id="navRight">
-                <button onclick="toggleLoginModal(true)" id="btnLoginView" class="bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer">
+                <button onclick="toggleLoginModal(true)" id="btnLoginView" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer">
                     🔑 Masuk Ustadzah
                 </button>
             </div>
@@ -38,14 +41,15 @@
 
     <!-- CONTAINER HALAMAN MAHASISWI (KUIS) -->
     <div id="studentView" class="block">
-        <header class="bg-white border-b border-pink-100 shadow-xs relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-40 h-40 bg-pink-100 rounded-full opacity-50 blur-xl"></div>
+        <header id="appHeader" class="bg-white border-b border-rose-100 shadow-xs relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-rose-100 rounded-full opacity-50 blur-xl"></div>
             <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-100 rounded-full opacity-40 blur-lg"></div>
             
             <div class="max-w-3xl mx-auto px-4 py-8 text-center relative z-10">
-                <span id="headerSubtitleDisplay" class="text-xs font-bold text-pink-500 uppercase tracking-widest bg-pink-50 px-3 py-1 rounded-full">Evaluasi Mahasiswi ✨</span>
-                <h1 id="displaySheetTitle" class="text-2xl md:text-3xl font-bold text-gray-850 mt-3 tracking-wide">Evaluasi Pre-Test Tajwid</h1>
-                <p id="headerQuoteDisplay" class="text-xs md:text-sm text-pink-600/80 italic mt-2 font-medium">
+                <span id="headerSubtitleDisplay" class="text-xs font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded-full">Evaluasi Mahasiswi ✨</span>
+                <h1 id="displayMainTitle" class="text-2xl md:text-3xl font-bold text-gray-850 mt-3 tracking-wide">Evaluasi Pre-Test Tajwid</h1>
+                <p id="displaySheetTitle" class="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider hidden"></p>
+                <p id="headerQuoteDisplay" class="text-xs md:text-sm text-rose-600/80 italic mt-2 font-medium">
                     "Bersungguh-sungguhlah pada hal yang bermanfaat bagimu dan mintalah pertolongan Allah" (Al-Hadits)
                 </p>
             </div>
@@ -53,18 +57,18 @@
 
         <main class="max-w-3xl mx-auto px-4 py-8">
             <form id="quizForm" class="space-y-6">
-                <!-- AKSES TOKEN & INFORMASI MAHASISWI (PANEL TEMA DIHILANGKAN) -->
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-pink-50 pb-2">Akses & Informasi Mahasiswi</h3>
+                <!-- AKSES TOKEN & INFORMASI MAHASISWI -->
+                <div id="panelStudentInfo" class="theme-panel bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
+                    <h3 id="lblExamPageTitle" class="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-rose-50 pb-2">Laman Ujian Tajwid</h3>
                     
                     <div>
-                        <label class="block text-xs font-semibold text-pink-600 uppercase mb-1">Scan QR Code / Masukkan Kode Token Soal</label>
+                        <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Scan QR Code / Masukkan Kode Token Soal</label>
                         <div class="flex gap-2">
-                            <input type="text" id="inputTopicToken" placeholder="Ketik Kode Token Ujian..." class="w-full px-4 py-2.5 border border-pink-200 rounded-xl text-xs sm:text-sm uppercase font-mono font-bold text-pink-600 bg-pink-50/10 focus:outline-none focus:border-pink-400">
-                            <button type="button" onclick="openQrScannerModal()" class="bg-pink-100 hover:bg-pink-200 text-pink-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5">
+                            <input type="text" id="inputTopicToken" placeholder="Ketik Kode Token Ujian..." class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-xs sm:text-sm uppercase font-mono font-bold text-rose-600 bg-rose-50/10 focus:outline-none focus:border-rose-400">
+                            <button type="button" onclick="openQrScannerModal()" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5">
                                 📷 Scan QR
                             </button>
-                            <button type="button" onclick="window.verifyAndLoadQuiz()" class="bg-pink-500 hover:bg-pink-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap">
+                            <button type="button" id="btnOpenQuiz" onclick="window.verifyAndLoadQuiz()" class="theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap">
                                 Buka Soal
                             </button>
                         </div>
@@ -72,26 +76,26 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nama Lengkap & NIM</label>
-                        <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." class="w-full px-4 py-2.5 border border-pink-200/60 rounded-xl text-sm focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all bg-pink-50/10">
+                        <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." class="w-full px-4 py-2.5 border border-rose-200/60 rounded-xl text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-rose-50/10">
                     </div>
                 </div>
 
-                <!-- CONTAINER WADAH SOAL (DISEMBUNYIKAN SAMPAI KODE/QR BERHASIL DI-VERIFIKASI) -->
+                <!-- CONTAINER WADAH SOAL -->
                 <div id="studentQuestionsWrapper" class="hidden space-y-6">
                     <!-- PANEL PILIHAN GANDA -->
                     <div id="studentPgSection" class="space-y-4">
-                        <h2 class="text-xs font-bold text-pink-600 uppercase tracking-widest pl-2">Bagian I: Pilihan Ganda</h2>
+                        <h2 class="text-xs font-bold text-rose-600 uppercase tracking-widest pl-2">Bagian I: Pilihan Ganda</h2>
                         <div id="pgContainer" class="space-y-4"></div>
                     </div>
 
                     <!-- PANEL ESAI MAHASISWI -->
                     <div id="studentEssaySection" class="space-y-4">
-                        <h2 class="text-xs font-bold text-pink-600 uppercase tracking-widest pl-2 mt-8">Bagian II: Uraian / Esai</h2>
+                        <h2 class="text-xs font-bold text-rose-600 uppercase tracking-widest pl-2 mt-8">Bagian II: Uraian / Esai</h2>
                         <div id="essayContainer" class="space-y-4"></div>
                     </div>
 
                     <div class="pt-4 text-center">
-                        <button type="submit" id="btnSubmitQuiz" class="bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-md transform hover:-translate-y-0.5 cursor-pointer">
+                        <button type="submit" id="btnSubmitQuiz" class="theme-btn-pri bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-md transform hover:-translate-y-0.5 cursor-pointer">
                             Kirim Jawaban Evaluasi 🌼
                         </button>
                     </div>
@@ -100,78 +104,78 @@
         </main>
     </div>
 
-    <!-- MODAL POPUP: SEARCH TEMA SOAL (KHUSUS USTADZAH) -->
+    <!-- MODAL POPUP: SEARCH TEMA SOAL -->
     <div id="topicSearchModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
-        <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl border border-pink-100 space-y-4">
-            <div class="flex justify-between items-center border-b border-pink-100 pb-3">
+        <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl border border-rose-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-rose-100 pb-3">
                 <h3 class="text-sm font-bold text-gray-800 uppercase">Cari & Pilih Tema Soal</h3>
                 <button onclick="closeTopicSearchModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
             </div>
-            <input type="text" id="topicSearchInput" oninput="renderFilteredTopicsInModal()" placeholder="🔍 Ketik nama tema soal..." class="w-full px-4 py-2 border border-pink-200 rounded-xl text-xs bg-pink-50/10 focus:outline-none focus:border-pink-400">
+            <input type="text" id="topicSearchInput" oninput="renderFilteredTopicsInModal()" placeholder="🔍 Ketik nama tema soal..." class="w-full px-4 py-2 border border-rose-200 rounded-xl text-xs bg-rose-50/10 focus:outline-none focus:border-rose-400">
             <div id="modalTopicList" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
         </div>
     </div>
 
     <!-- MODAL SCANNER QR CODE -->
     <div id="qrScannerModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
-        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-pink-100 space-y-4 text-center">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100 space-y-4 text-center">
             <h3 class="text-sm font-bold text-gray-800">Scan QR Code Token Ujian</h3>
-            <div id="qrReader" class="w-full overflow-hidden rounded-2xl border border-pink-200"></div>
+            <div id="qrReader" class="w-full overflow-hidden rounded-2xl border border-rose-200"></div>
             <button onclick="closeQrScannerModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold py-2 rounded-xl transition-all">
                 Tutup Kamera
             </button>
         </div>
     </div>
 
-    <!-- MODAL QR CODE TOKEN (USTADZAH VIEW) -->
+    <!-- MODAL QR CODE TOKEN -->
     <div id="qrDisplayModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
-        <div class="bg-white p-6 rounded-3xl max-w-xs w-full text-center shadow-2xl border border-pink-100 space-y-4">
+        <div class="bg-white p-6 rounded-3xl max-w-xs w-full text-center shadow-2xl border border-rose-100 space-y-4">
             <h3 id="qrModalTopicTitle" class="text-sm font-bold text-gray-800">QR Code Token</h3>
-            <div id="qrcodeCanvas" class="flex justify-center p-3 bg-pink-50/50 rounded-2xl border border-pink-100"></div>
-            <p id="qrModalTokenDisplay" class="text-xs font-mono font-bold text-pink-600 uppercase tracking-widest"></p>
-            <button onclick="closeQrDisplayModal()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold py-2 rounded-xl transition-all">
+            <div id="qrcodeCanvas" class="flex justify-center p-3 bg-rose-50/50 rounded-2xl border border-rose-100"></div>
+            <p id="qrModalTokenDisplay" class="text-xs font-mono font-bold text-rose-600 uppercase tracking-widest"></p>
+            <button onclick="closeQrDisplayModal()" class="theme-btn-pri w-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold py-2 rounded-xl transition-all">
                 Tutup
             </button>
         </div>
     </div>
 
-    <!-- MODAL POPUP: SUKSES SUBMIT (MAHASISWI) -->
-    <div id="studentSuccessModal" class="fixed inset-0 bg-pink-900/30 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
-        <div class="bg-white p-8 rounded-3xl max-w-md w-full text-center shadow-2xl border border-pink-100">
+    <!-- MODAL POPUP: SUKSES SUBMIT -->
+    <div id="studentSuccessModal" class="fixed inset-0 bg-rose-900/30 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
+        <div class="bg-white p-8 rounded-3xl max-w-md w-full text-center shadow-2xl border border-rose-100">
             <span class="text-5xl">🎉</span>
             <h3 class="text-xl font-bold text-gray-800 mt-4">Jawaban Berhasil Terkirim!</h3>
             <p class="text-xs text-gray-500 mt-2">Terima kasih telah menyelesaikan evaluasi Tajwid. Jawaban Anda telah tersimpan secara online di Firebase.</p>
             
-            <div class="my-6 p-4 bg-pink-50/80 rounded-2xl border border-pink-100 text-left space-y-2">
+            <div class="my-6 p-4 bg-rose-50/80 rounded-2xl border border-rose-100 text-left space-y-2">
                 <div class="flex justify-between items-center text-xs">
                     <span class="text-gray-500">Nama / NIM:</span>
                     <span id="modalStudentName" class="font-bold text-gray-800"></span>
                 </div>
                 <div class="flex justify-between items-center text-xs">
                     <span class="text-gray-500">Tema Soal:</span>
-                    <span id="modalStudentTopic" class="font-bold text-pink-600"></span>
+                    <span id="modalStudentTopic" class="font-bold text-rose-600"></span>
                 </div>
                 <div class="flex justify-between items-center text-xs">
                     <span class="text-gray-500">Waktu Pengerjaan:</span>
                     <span id="modalStudentDuration" class="font-bold text-gray-800"></span>
                 </div>
-                <div class="flex justify-between items-center text-xs pt-1 border-t border-pink-200">
+                <div class="flex justify-between items-center text-xs pt-1 border-t border-rose-200">
                     <span class="text-gray-500">Skor Akhir:</span>
-                    <span id="modalStudentScore" class="font-extrabold text-pink-600 text-sm"></span>
+                    <span id="modalStudentScore" class="font-extrabold text-rose-600 text-sm"></span>
                 </div>
             </div>
 
-            <button onclick="closeStudentModal()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold py-3 rounded-xl transition-all shadow-md cursor-pointer">
+            <button onclick="closeStudentModal()" class="theme-btn-pri w-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold py-3 rounded-xl transition-all shadow-md cursor-pointer">
                 Selesai & Selesaikan Sesi
             </button>
         </div>
     </div>
 
-    <!-- MODAL POPUP: LOGIN PEMERIKSA (USTADZAH) -->
+    <!-- MODAL POPUP: LOGIN PEMERIKSA -->
     <div id="loginModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
-        <div class="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl border border-pink-100">
+        <div class="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100">
             <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">🔐</div>
+                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">🔐</div>
                 <h3 class="text-lg font-bold text-gray-850">Login Pemeriksa</h3>
                 <p class="text-xs text-gray-400 mt-1">Masukkan akun ustadzah untuk kelola soal & menilai</p>
             </div>
@@ -179,16 +183,16 @@
             <form id="loginForm" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Username</label>
-                    <input type="text" id="loginUsername" required class="w-full px-4 py-2.5 border border-pink-200 rounded-xl text-sm focus:outline-none focus:border-pink-400 bg-pink-50/10" placeholder="ustadzah">
+                    <input type="text" id="loginUsername" required class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-sm focus:outline-none focus:border-rose-400 bg-rose-50/10" placeholder="ustadzah">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Password</label>
-                    <input type="password" id="loginPassword" required class="w-full px-4 py-2.5 border border-pink-200 rounded-xl text-sm focus:outline-none focus:border-pink-400 bg-pink-50/10" placeholder="••••••••">
+                    <input type="password" id="loginPassword" required class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-sm focus:outline-none focus:border-rose-400 bg-rose-50/10" placeholder="••••••••">
                 </div>
                 <div id="loginError" class="text-xs text-red-500 font-medium hidden text-center">
                     Username atau password salah!
                 </div>
-                <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-all shadow-md cursor-pointer">
+                <button type="submit" class="theme-btn-pri w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-all shadow-md cursor-pointer">
                     Masuk Mode Pemeriksa
                 </button>
                 <button type="button" onclick="toggleLoginModal(false)" class="w-full text-xs text-gray-400 hover:text-gray-600 pt-2 cursor-pointer">
@@ -198,28 +202,98 @@
         </div>
     </div>
 
-    <!-- MODAL CUSTOM HEADER CONFIG (USTADZAH) -->
-    <div id="headerConfigModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
-        <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl border border-pink-100 space-y-4">
-            <h3 class="text-sm font-bold text-gray-800 uppercase border-b border-pink-100 pb-2">Custom Tampilan Head Bar Mahasiswi</h3>
+    <!-- MODAL CUSTOM HEADER BAR & UI/UX CONFIG (DI-UPDATE LENGKAP) -->
+    <div id="headerConfigModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-6">
+        <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 my-auto">
+            <h3 class="text-sm font-bold text-gray-800 uppercase border-b border-rose-100 pb-2 flex items-center gap-2">
+                <span>🎨</span> Custom Tampilan Interface UI/UX & Header
+            </h3>
             <form id="headerConfigForm" class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Judul Navbar / Top Header</label>
-                    <input type="text" id="cfgNavTitle" required class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-pink-50/10">
+                <!-- SEKSI TEKS HEADER & TOMBOL -->
+                <div class="bg-rose-50/30 p-3 rounded-2xl border border-rose-100 space-y-2">
+                    <p class="text-[11px] font-bold text-rose-600 uppercase">1. Teks & Judul Interface</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Judul Navbar Top</label>
+                            <input type="text" id="cfgNavTitle" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Judul Utama Halaman</label>
+                            <input type="text" id="cfgMainTitle" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Sub-Judul Evaluasi</label>
+                            <input type="text" id="cfgHeaderSubtitle" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Nama Tombol Login</label>
+                            <input type="text" id="cfgBtnLoginText" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Nama Laman Ujian</label>
+                            <input type="text" id="cfgExamPageText" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Nama Lembar Pemeriksaan</label>
+                            <input type="text" id="cfgGradingPageText" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
+                        </div>
+                    </div>
+
+                    <!-- TEKS BARU UNTUK SESI USTADZAH & MODE PEMERIKSA -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Teks Badge Navbar (Sesi Aktif)</label>
+                            <input type="text" id="cfgActiveSessionText" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white" placeholder="🟢 Sesi Ustadzah Aktif">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Teks Badge Mode Pemeriksa</label>
+                            <input type="text" id="cfgTeacherModeBadge" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white" placeholder="Mode Ustadzah & Manager Soal 🔥">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Quotes / Al-Hadits Header</label>
+                        <textarea id="cfgHeaderQuote" rows="2" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white"></textarea>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Sub-Judul Evaluasi Mahasiswi</label>
-                    <input type="text" id="cfgHeaderSubtitle" required class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-pink-50/10">
+
+                <!-- SEKSI TEMA WARNA & FONT -->
+                <div class="bg-rose-50/30 p-3 rounded-2xl border border-rose-100 space-y-2">
+                    <p class="text-[11px] font-bold text-rose-600 uppercase">2. Tema Warna & Font Khusus UI/UX Modern</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Palet Warna UI Modern</label>
+                            <select id="cfgThemeColor" class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs font-semibold bg-white">
+                                <option value="rose">Modern Rose / Pink (Default)</option>
+                                <option value="emerald">Emerald Fresh / Hijau</option>
+                                <option value="indigo">Royal Indigo / Ungu</option>
+                                <option value="slate">Corporate Slate / Kelabu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Pilihan Typography / Font</label>
+                            <select id="cfgThemeFont" class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs font-semibold bg-white">
+                                <option value="Plus Jakarta Sans">Plus Jakarta Sans (UI/UX Clean)</option>
+                                <option value="Inter">Inter (Sangat Sederhana & Scalable)</option>
+                                <option value="Outfit">Outfit (Modern Geometric)</option>
+                                <option value="Poppins">Poppins (Friendly Rounded)</option>
+                                <option value="Lexend">Lexend (Super Clear & Accessible)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Quotes / Al-Hadits</label>
-                    <textarea id="cfgHeaderQuote" rows="3" required class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-pink-50/10"></textarea>
-                </div>
+
                 <div class="flex gap-2 pt-2">
-                    <button type="submit" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 rounded-xl text-xs transition-all">
-                        Simpan Perubahan
+                    <button type="submit" class="theme-btn-pri flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md">
+                        Simpan Perubahan Interface
                     </button>
-                    <button type="button" onclick="closeHeaderConfigModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 rounded-xl text-xs transition-all">
+                    <button type="button" onclick="closeHeaderConfigModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-all">
                         Batal
                     </button>
                 </div>
@@ -229,15 +303,15 @@
 
     <!-- MODAL POPUP: FORM TAMBAH / EDIT SOAL -->
     <div id="questionModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-8">
-        <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-pink-100 space-y-4 my-auto">
-            <h3 id="questionModalTitle" class="text-lg font-bold text-gray-800 border-b border-pink-50 pb-2">Tambah Soal Baru</h3>
+        <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 my-auto">
+            <h3 id="questionModalTitle" class="text-lg font-bold text-gray-800 border-b border-rose-50 pb-2">Tambah Soal Baru</h3>
             
             <form id="questionForm" class="space-y-4">
                 <input type="hidden" id="qEditId">
                 
                 <div>
-                    <label class="block text-xs font-semibold text-pink-600 uppercase mb-1">Tema Soal</label>
-                    <select id="qTopic" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10 font-medium">
+                    <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Tema Soal</label>
+                    <select id="qTopic" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10 font-medium">
                         <!-- Populated dynamically -->
                     </select>
                 </div>
@@ -245,27 +319,27 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tipe Soal</label>
-                        <select id="qType" onchange="toggleQTypeForm()" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10">
+                        <select id="qType" onchange="toggleQTypeForm()" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10">
                             <option value="pg">Pilihan Ganda (PG)</option>
                             <option value="essay">Uraian / Esai</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-pink-600 uppercase mb-1">Bobot Soal (Poin)</label>
-                        <input type="number" id="qWeight" value="10" min="1" required class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs font-bold text-pink-600 focus:outline-none focus:border-pink-400 bg-pink-50/10">
+                        <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Bobot Soal (Poin)</label>
+                        <input type="number" id="qWeight" value="10" min="1" required class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 focus:outline-none focus:border-rose-400 bg-rose-50/10">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Teks Pertanyaan Soal</label>
-                    <textarea id="qText" required rows="3" placeholder="Ketikkan pertanyaan..." class="w-full px-4 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10"></textarea>
+                    <textarea id="qText" required rows="3" placeholder="Ketikkan pertanyaan..." class="w-full px-4 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10"></textarea>
                 </div>
 
                 <!-- SEKSI LAMPIRAN GAMBAR -->
-                <div class="border border-pink-100 p-3 rounded-2xl bg-pink-50/20 space-y-3">
+                <div class="border border-rose-100 p-3 rounded-2xl bg-rose-50/20 space-y-3">
                     <label class="block text-xs font-bold text-gray-700 uppercase">🖼️ Lampirkan Gambar (Opsional)</label>
-                    <div class="flex border-b border-pink-200 gap-3 text-xs">
-                        <button type="button" onclick="switchImageTab('upload')" id="tabImgUploadBtn" class="pb-1.5 font-bold border-b-2 border-pink-500 text-pink-600">
+                    <div class="flex border-b border-rose-200 gap-3 text-xs">
+                        <button type="button" onclick="switchImageTab('upload')" id="tabImgUploadBtn" class="pb-1.5 font-bold border-b-2 border-rose-500 text-rose-600">
                             📁 Upload & Adjust Gambar
                         </button>
                         <button type="button" onclick="switchImageTab('url')" id="tabImgUrlBtn" class="pb-1.5 font-bold border-b-2 border-transparent text-gray-400">
@@ -274,8 +348,8 @@
                     </div>
 
                     <div id="secImgUpload" class="space-y-3 text-xs">
-                        <input type="file" id="imgFileInput" accept="image/*" onchange="handleImageFileSelect(event)" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-100 file:text-pink-700 hover:file:bg-pink-200">
-                        <div id="imgPreviewWrapper" class="hidden space-y-3 p-3 bg-white border border-pink-100 rounded-xl">
+                        <input type="file" id="imgFileInput" accept="image/*" onchange="handleImageFileSelect(event)" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-100 file:text-rose-700 hover:file:bg-rose-200">
+                        <div id="imgPreviewWrapper" class="hidden space-y-3 p-3 bg-white border border-rose-100 rounded-xl">
                             <p class="font-bold text-[11px] text-gray-600">Laman Penyesuaian Visual Gambar:</p>
                             <div class="overflow-hidden flex justify-center items-center bg-gray-100 rounded-lg p-2 min-h-[120px]">
                                 <img id="imgAdjustPreview" class="max-h-48 object-contain transition-all duration-150">
@@ -283,22 +357,22 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-[10px] text-gray-500 font-bold block">Skala (Zoom): <span id="lblScale">1.0</span>x</label>
-                                    <input type="range" id="rngScale" min="0.5" max="2" step="0.1" value="1" oninput="applyImageAdjustments()" class="w-full accent-pink-500">
+                                    <input type="range" id="rngScale" min="0.5" max="2" step="0.1" value="1" oninput="applyImageAdjustments()" class="w-full accent-rose-500">
                                 </div>
                                 <div>
                                     <label class="text-[10px] text-gray-500 font-bold block">Rotasi: <span id="lblRotate">0</span>°</label>
-                                    <input type="range" id="rngRotate" min="-180" max="180" step="15" value="0" oninput="applyImageAdjustments()" class="w-full accent-pink-500">
+                                    <input type="range" id="rngRotate" min="-180" max="180" step="15" value="0" oninput="applyImageAdjustments()" class="w-full accent-rose-500">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div id="secImgUrl" class="hidden space-y-3 text-xs">
-                        <input type="url" id="imgUrlInput" placeholder="Tempel URL link gambar..." class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-white">
+                        <input type="url" id="imgUrlInput" placeholder="Tempel URL link gambar..." class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs bg-white">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="text-[10px] font-bold text-gray-500 block mb-1">Lebar Tampilan</label>
-                                <select id="imgCustomWidth" class="w-full px-3 py-1.5 border border-pink-200 rounded-lg bg-white text-xs">
+                                <select id="imgCustomWidth" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg bg-white text-xs">
                                     <option value="max-w-xs">Kecil (300px)</option>
                                     <option value="max-w-md" selected>Sedang (450px)</option>
                                     <option value="max-w-full">Penuh (100%)</option>
@@ -306,7 +380,7 @@
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold text-gray-500 block mb-1">Posisi Alignment</label>
-                                <select id="imgCustomAlign" class="w-full px-3 py-1.5 border border-pink-200 rounded-lg bg-white text-xs">
+                                <select id="imgCustomAlign" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg bg-white text-xs">
                                     <option value="mx-auto block" selected>Tengah (Center)</option>
                                     <option value="float-left mr-3 block">Kiri (Left Wrap)</option>
                                     <option value="float-right ml-3 block">Kanan (Right Wrap)</option>
@@ -317,10 +391,10 @@
                 </div>
 
                 <!-- FORM MULTI-OPTION PG -->
-                <div id="pgFormOptions" class="space-y-3 border-t border-pink-50 pt-3">
+                <div id="pgFormOptions" class="space-y-3 border-t border-rose-50 pt-3">
                     <div class="flex justify-between items-center">
-                        <label class="block text-xs font-semibold text-pink-600 uppercase">Pilihan Jawaban (PG)</label>
-                        <button type="button" onclick="addPgOption()" class="text-[11px] font-bold bg-pink-100 hover:bg-pink-200 text-pink-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer">
+                        <label class="block text-xs font-semibold text-rose-600 uppercase">Pilihan Jawaban (PG)</label>
+                        <button type="button" onclick="addPgOption()" class="text-[11px] font-bold bg-rose-100 hover:bg-rose-200 text-rose-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer">
                             ➕ Tambah Opsi
                         </button>
                     </div>
@@ -329,18 +403,18 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase mt-2 mb-1">Kunci Jawaban PG</label>
-                        <select id="qKey" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-pink-50/10 font-bold text-pink-600"></select>
+                        <select id="qKey" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs bg-rose-50/10 font-bold text-rose-600"></select>
                     </div>
                 </div>
 
                 <!-- FORM KHUSUS KUNCI ESAI -->
-                <div id="essayFormOptions" class="hidden border-t border-pink-50 pt-3">
-                    <label class="block text-xs font-semibold text-pink-600 uppercase mb-1">Kunci Jawaban / Acuan Penilaian Uraian</label>
-                    <textarea id="qKeyEssay" rows="3" placeholder="Masukkan poin penting acuan kunci jawaban..." class="w-full px-4 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10"></textarea>
+                <div id="essayFormOptions" class="hidden border-t border-rose-50 pt-3">
+                    <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Kunci Jawaban / Acuan Penilaian Uraian</label>
+                    <textarea id="qKeyEssay" rows="3" placeholder="Masukkan poin penting acuan kunci jawaban..." class="w-full px-4 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10"></textarea>
                 </div>
 
                 <div class="flex gap-2 pt-2">
-                    <button type="submit" id="btnSaveQuestion" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-md">
+                    <button type="submit" id="btnSaveQuestion" class="theme-btn-pri flex-1 bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-md">
                         Simpan Soal ke Firebase
                     </button>
                     <button type="button" onclick="closeQuestionModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer">
@@ -353,16 +427,17 @@
 
     <!-- CONTAINER HALAMAN PEMERIKSA (TEACHER DASHBOARD) -->
     <div id="teacherView" class="hidden">
-        <header class="bg-white border-b border-pink-100 shadow-xs py-6 px-4">
+        <header class="bg-white border-b border-rose-100 shadow-xs py-6 px-4">
             <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full">Mode Ustadzah & Manager Soal 🔥</span>
-                    <h1 class="text-2xl font-bold text-gray-800 mt-2">Laman Pengelolaan & Penilaian Tajwid</h1>
+                    <!-- ELEMEN TELAH DIBERI ID AGAR EDITABLE -->
+                    <span id="lblTeacherModeBadge" class="text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full">Mode Ustadzah & Manager Soal 🔥</span>
+                    <h1 id="lblGradingHeaderTitle" class="text-2xl font-bold text-gray-800 mt-2">Laman Pengelolaan & Penilaian Tajwid</h1>
                     <p class="text-xs text-gray-500 mt-0.5">Kelola bank soal, kelola tema, token terenkripsi, kustomisasi header, dan periksa hasil.</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="openHeaderConfigModal()" class="bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
-                        🎨 Custom Header Bar
+                    <button onclick="openHeaderConfigModal()" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+                        🎨 Custom UI & Header
                     </button>
                     <button onclick="handleLogout()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2">
                         🚪 Logout
@@ -373,8 +448,8 @@
 
         <main class="max-w-5xl mx-auto px-4 py-8 space-y-8">
             
-            <div class="flex border-b border-pink-200 gap-4">
-                <button onclick="switchTeacherTab('manage')" id="tabManageBtn" class="pb-3 font-bold text-sm border-b-2 border-pink-500 text-pink-600 cursor-pointer flex items-center gap-2">
+            <div class="flex border-b border-rose-200 gap-4">
+                <button onclick="switchTeacherTab('manage')" id="tabManageBtn" class="pb-3 font-bold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2">
                     <span>📚</span> Kelola Bank Soal & Tema
                 </button>
                 <button onclick="switchTeacherTab('grading')" id="tabGradingBtn" class="pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2">
@@ -386,19 +461,19 @@
             <div id="sectionManageQuestions" class="space-y-6">
                 
                 <!-- PANEL MANAJEMEN TEMA SOAL & TOKEN -->
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                    <div class="flex justify-between items-center border-b border-pink-50 pb-2">
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
+                    <div class="flex justify-between items-center border-b border-rose-50 pb-2">
                         <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
                             🏷️ Panel Daftar Tema Soal & Token Terenkripsi
                         </h3>
-                        <button type="button" onclick="openTopicSearchModal('teacher')" class="text-xs font-bold text-pink-600 hover:text-pink-700 bg-pink-50 px-3 py-1 rounded-xl cursor-pointer">
+                        <button type="button" onclick="openTopicSearchModal('teacher')" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-3 py-1 rounded-xl cursor-pointer">
                             🔍 Lihat Semua Tema Soal
                         </button>
                     </div>
                     
                     <form id="topicForm" class="flex gap-2">
-                        <input type="text" id="newTopicInput" required placeholder="Ketik nama tema baru (contoh: Hukum Nun Mati)..." class="flex-1 px-4 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10">
-                        <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
+                        <input type="text" id="newTopicInput" required placeholder="Ketik nama tema baru (contoh: Hukum Nun Mati)..." class="flex-1 px-4 py-2 border border-rose-200 rounded-xl text-xs focus:outline-none focus:border-rose-400 bg-rose-50/10">
+                        <button type="submit" class="theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
                             ➕ Tambah Tema
                         </button>
                     </form>
@@ -407,16 +482,16 @@
                 </div>
 
                 <!-- BANK SOAL: SEARCH BOX & FILTER TIPE SOAL -->
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-pink-50 pb-3">
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-rose-50 pb-3">
                         <div>
                             <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Bank Soal Evaluasi</h3>
                             <p class="text-xs text-gray-400 mt-0.5">
-                                Total Skor Maksimal Aktif: <span id="totalActiveMaxScore" class="font-extrabold text-pink-600 text-sm">0 Poin</span> 
+                                Total Skor Maksimal Aktif: <span id="totalActiveMaxScore" class="font-extrabold text-rose-600 text-sm">0 Poin</span> 
                                 (PG: <span id="maxPgScore">0</span> | Esai: <span id="maxEssayScore">0</span>)
                             </p>
                         </div>
-                        <button onclick="openQuestionModal()" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
+                        <button onclick="openQuestionModal()" class="theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
                             ➕ Tambah Soal Baru
                         </button>
                     </div>
@@ -425,41 +500,41 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div class="md:col-span-1">
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cari Teks Pertanyaan Soal</label>
-                            <input type="text" id="bankSearchInput" oninput="renderTeacherManageQuestions()" placeholder="🔍 Ketik kata kunci..." class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-pink-50/10 focus:outline-none focus:border-pink-400">
+                            <input type="text" id="bankSearchInput" oninput="renderTeacherManageQuestions()" placeholder="🔍 Ketik kata kunci..." class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs bg-rose-50/10 focus:outline-none focus:border-rose-400">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Filter Tipe Soal</label>
-                            <select id="bankTypeFilter" onchange="renderTeacherManageQuestions()" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs font-semibold text-gray-700 bg-pink-50/20">
+                            <select id="bankTypeFilter" onchange="renderTeacherManageQuestions()" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-semibold text-gray-700 bg-rose-50/20">
                                 <option value="all">Semua Tipe Soal (PG & Uraian)</option>
                                 <option value="pg">Hanya Pilihan Ganda (PG)</option>
                                 <option value="essay">Hanya Uraian / Esai</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-pink-600 uppercase mb-1">Pilih Tema Soal (Wajib Digunakan)</label>
-                            <select id="teacherFilterTopic" onchange="renderTeacherManageQuestions()" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs font-bold text-gray-800 bg-pink-50/30">
+                            <label class="block text-[10px] font-bold text-rose-600 uppercase mb-1">Pilih Tema Soal (Wajib Digunakan)</label>
+                            <select id="teacherFilterTopic" onchange="renderTeacherManageQuestions()" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold text-gray-800 bg-rose-50/30">
                                 <option value="">-- Pilih Tema Soal Dahulu --</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                <!-- NOTIFIKASI PEMBERITAHUAN JIKA USTADZAH BELUM MEMILIH TEMA -->
-                <div id="teacherSelectPrompt" class="bg-white p-8 rounded-2xl shadow-xs border border-pink-100/60 text-center space-y-2">
+                <!-- NOTIFIKASI PEMBERITAHUAN -->
+                <div id="teacherSelectPrompt" class="bg-white p-8 rounded-2xl shadow-xs border border-rose-100/60 text-center space-y-2">
                     <span class="text-3xl">🔍</span>
                     <h4 class="text-sm font-bold text-gray-700">Pilih Tema Soal Terlebih Dahulu</h4>
                     <p class="text-xs text-gray-400">Silakan pilih salah satu tema soal pada filter di atas atau cari melalui tombol "Lihat Semua Tema Soal" untuk mengelola bank soal.</p>
                 </div>
 
-                <!-- SOAL PG LIST (DISEMBUNYIKAN SEBELUM USTADZAH MEMILIH TEMA) -->
-                <div id="managePgSection" class="hidden bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                    <h4 class="text-xs font-bold text-pink-600 uppercase tracking-widest border-b border-pink-50 pb-2">Daftar Soal Pilihan Ganda (PG)</h4>
+                <!-- SOAL PG LIST -->
+                <div id="managePgSection" class="hidden bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
+                    <h4 class="text-xs font-bold text-rose-600 uppercase tracking-widest border-b border-rose-50 pb-2">Daftar Soal Pilihan Ganda (PG)</h4>
                     <div id="managePgList" class="space-y-3"></div>
                 </div>
 
-                <!-- SOAL ESAI LIST (DISEMBUNYIKAN SEBELUM USTADZAH MEMILIH TEMA) -->
-                <div id="manageEssaySection" class="hidden bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                    <h4 class="text-xs font-bold text-pink-600 uppercase tracking-widest border-b border-pink-50 pb-2">Daftar Soal Uraian / Esai</h4>
+                <!-- SOAL ESAI LIST -->
+                <div id="manageEssaySection" class="hidden bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
+                    <h4 class="text-xs font-bold text-rose-600 uppercase tracking-widest border-b border-rose-50 pb-2">Daftar Soal Uraian / Esai</h4>
                     <div id="manageEssayList" class="space-y-3"></div>
                 </div>
             </div>
@@ -467,7 +542,7 @@
             <!-- SECTION 2: PENILAIAN MAHASISWI & LEADERBOARD -->
             <div id="sectionGrading" class="hidden space-y-8">
                 <!-- PANEL PERINGKAT -->
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center pb-2 border-b border-gray-100">
                         <div>
                             <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
@@ -480,7 +555,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-pink-50/50 text-[11px] uppercase tracking-wider text-gray-500 border-b border-pink-100">
+                                <tr class="bg-rose-50/50 text-[11px] uppercase tracking-wider text-gray-500 border-b border-rose-100">
                                     <th class="py-3 px-4 font-bold text-center w-16">Rank</th>
                                     <th class="py-3 px-4 font-bold">Mahasiswi</th>
                                     <th class="py-3 px-4 font-bold">Tema Soal</th>
@@ -497,7 +572,7 @@
                 </div>
 
                 <!-- DAFTAR JAWABAN MAHASISWI -->
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center pb-2 border-b border-gray-100">
                         <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
                             <span>📋</span> Lembar Jawaban Mahasiswi (<span id="submissionCount">0</span>)
@@ -506,15 +581,15 @@
 
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">🔍</div>
-                        <input type="text" id="searchStudentInput" placeholder="Cari berdasarkan nama atau NIM mahasiswi..." class="w-full pl-10 pr-4 py-2.5 border border-pink-200/80 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-pink-400 bg-pink-50/10 placeholder-gray-400">
+                        <input type="text" id="searchStudentInput" placeholder="Cari berdasarkan nama atau NIM mahasiswi..." class="w-full pl-10 pr-4 py-2.5 border border-rose-200/80 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-rose-400 bg-rose-50/10 placeholder-gray-400">
                     </div>
 
                     <div id="submissionList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2"></div>
                 </div>
 
                 <!-- DETAIL AREA PEMERIKSAAN -->
-                <div id="gradingArea" class="hidden bg-white p-6 rounded-2xl border border-pink-200/80 shadow-sm space-y-6">
-                    <div class="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative">
+                <div id="gradingArea" class="hidden bg-white p-6 rounded-2xl border border-rose-200/80 shadow-sm space-y-6">
+                    <div id="gradingBanner" class="bg-gradient-to-r from-rose-500 to-pink-600 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative">
                         <div>
                             <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Sedang Diperiksa</span>
                             <h2 id="gradingStudentName" class="text-xl font-bold mt-2">--</h2>
@@ -524,7 +599,7 @@
                         <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
                             <div class="bg-white text-gray-800 p-4 rounded-xl shadow-xs text-center min-w-[140px]">
                                 <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider block">Total Skor Akhir</span>
-                                <span id="gradingTotalScore" class="text-3xl font-extrabold text-pink-600">0</span>
+                                <span id="gradingTotalScore" class="text-3xl font-extrabold text-rose-600">0</span>
                                 <span class="text-xs text-gray-400 font-medium block mt-0.5" id="scoreBreakdownText">(PG: <span id="gradingPgScore">0</span> | Uraian: <span id="gradingEssayScore">0</span>)</span>
                             </div>
                             
@@ -545,8 +620,8 @@
 
                     <!-- KONTEN LEMBAR KOREKSI -->
                     <div id="gradingBodyContent" class="space-y-6">
-                        <div class="flex border-b border-pink-200 gap-2" id="gradingTabHeader">
-                            <button onclick="switchGradingTab('pg')" id="tabPgBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-pink-500 text-pink-600 cursor-pointer flex items-center gap-2">
+                        <div class="flex border-b border-rose-200 gap-2" id="gradingTabHeader">
+                            <button onclick="switchGradingTab('pg')" id="tabPgBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2">
                                 <span>✅</span> Pemeriksaan Pilihan Ganda
                             </button>
                             <button onclick="switchGradingTab('essay')" id="tabEssayBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer flex items-center gap-2">
@@ -556,9 +631,9 @@
 
                         <!-- TAB 1: PG -->
                         <div id="tabPgContent" class="space-y-4">
-                            <div class="bg-pink-50/60 border border-pink-100 p-4 rounded-xl text-xs text-gray-600 flex justify-between items-center">
+                            <div class="bg-rose-50/60 border border-rose-100 p-4 rounded-xl text-xs text-gray-600 flex justify-between items-center">
                                 <p>💡 <strong>Info Koreksi PG:</strong> Nilai otomatis terhitung dari bobot soal aktif.</p>
-                                <span class="font-bold text-pink-600 text-sm">Status PG: <span id="pgCorrectCount">0</span> Benar</span>
+                                <span class="font-bold text-rose-600 text-sm">Status PG: <span id="pgCorrectCount">0</span> Benar</span>
                             </div>
                             <div id="pgGradingContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                         </div>
@@ -570,7 +645,7 @@
                                 <span class="font-bold text-amber-700 text-sm">Total Nilai Esai: <span id="essayCurrentScoreDisplay">0</span></span>
                             </div>
                             <div id="essayGradingContainer" class="space-y-4"></div>
-                            <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100 text-right">
+                            <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100 text-right">
                                 <button id="btnSaveGrading" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold px-8 py-3 rounded-xl text-sm hover:shadow-lg transition-all cursor-pointer">
                                     💾 Simpan Hasil Penilaian ke Firebase
                                 </button>
@@ -607,6 +682,7 @@
         window.submissions = [];
         window.activeStudentTopicObj = null;
         window.html5QrCodeScanner = null;
+        window.activeSessionText = "🟢 Sesi Ustadzah Aktif";
 
         // HELPER UTILS: GENERATE RANDOM TOKEN ENKRIPSI
         window.generateRandomToken = function() {
@@ -615,13 +691,42 @@
 
         // LISTEN REALTIME SNAPSHOTS FIREBASE
         function initFirebaseListeners() {
-            // 1. Config Header Realtime
+            // 1. Config Header & Interface UI Realtime
             onSnapshot(doc(db, "settings", "headerConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById("navBarTitle").innerText = data.navTitle || "Pre-Test Tajwid";
+                    
+                    if (document.getElementById("displayMainTitle")) {
+                        document.getElementById("displayMainTitle").innerText = data.mainTitle || "Evaluasi Pre-Test Tajwid";
+                    }
+                    
                     document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "Evaluasi Mahasiswi ✨";
                     document.getElementById("headerQuoteDisplay").innerText = data.headerQuote || '"Bersungguh-sungguhlah pada hal yang bermanfaat bagimu..."';
+                    
+                    if (document.getElementById("btnLoginView")) {
+                        document.getElementById("btnLoginView").innerText = data.btnLoginText || "🔑 Masuk Ustadzah";
+                    }
+                    if (document.getElementById("lblExamPageTitle")) {
+                        document.getElementById("lblExamPageTitle").innerText = data.examPageText || "Laman Ujian Tajwid";
+                    }
+                    if (document.getElementById("lblGradingHeaderTitle")) {
+                        document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText || "Laman Pengelolaan & Penilaian Tajwid";
+                    }
+
+                    // TEKS DINAMIS SESI USTADZAH & MODE PEMERIKSA
+                    window.activeSessionText = data.activeSessionText || "🟢 Sesi Ustadzah Aktif";
+                    if (document.getElementById("lblTeacherModeBadge")) {
+                        document.getElementById("lblTeacherModeBadge").innerText = data.teacherModeBadge || "Mode Ustadzah & Manager Soal 🔥";
+                    }
+
+                    const loggedBadge = document.getElementById("navActiveSessionBadge");
+                    if (loggedBadge) {
+                        loggedBadge.innerText = window.activeSessionText;
+                    }
+
+                    // Terapkan Tema Warna & Font UI Modern
+                    applyThemeStyle(data.themeColor || 'rose', data.themeFont || 'Plus Jakarta Sans');
                 }
             });
 
@@ -634,7 +739,7 @@
                 }
                 updateTopicDropdowns();
                 
-                // Check token reset: Hentikan & sembunyikan lembar kerja jika token berubah/direset ustadzah
+                // Check token reset
                 if (window.activeStudentTopicObj) {
                     const currentUpdated = window.topics.find(t => t.id === window.activeStudentTopicObj.id);
                     if (!currentUpdated || currentUpdated.token !== window.activeStudentTopicObj.token) {
@@ -670,6 +775,42 @@
             });
         }
 
+        // TEMA WARNA & FONT SWITCHER (ENGINE CUSTOMIZATION)
+        function applyThemeStyle(colorScheme, fontName) {
+            document.documentElement.style.setProperty('--primary-font', `'${fontName}', sans-serif`);
+
+            const body = document.getElementById("appBody");
+            const btnLogin = document.getElementById("btnLoginView");
+            const btnOpen = document.getElementById("btnOpenQuiz");
+            const btnSubmit = document.getElementById("btnSubmitQuiz");
+
+            // Reset background class
+            body.className = "min-h-screen transition-colors duration-300 ";
+            
+            if (colorScheme === 'emerald') {
+                body.classList.add("bg-emerald-50/40", "text-gray-700");
+                if (btnLogin) btnLogin.className = "theme-btn-sec bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer";
+                if (btnOpen) btnOpen.className = "theme-btn-pri bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap";
+                if (btnSubmit) btnSubmit.className = "theme-btn-pri bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-md transform hover:-translate-y-0.5 cursor-pointer";
+            } else if (colorScheme === 'indigo') {
+                body.classList.add("bg-indigo-50/40", "text-gray-700");
+                if (btnLogin) btnLogin.className = "theme-btn-sec bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer";
+                if (btnOpen) btnOpen.className = "theme-btn-pri bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap";
+                if (btnSubmit) btnSubmit.className = "theme-btn-pri bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-md transform hover:-translate-y-0.5 cursor-pointer";
+            } else if (colorScheme === 'slate') {
+                body.classList.add("bg-slate-100/60", "text-gray-700");
+                if (btnLogin) btnLogin.className = "theme-btn-sec bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer";
+                if (btnOpen) btnOpen.className = "theme-btn-pri bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap";
+                if (btnSubmit) btnSubmit.className = "theme-btn-pri bg-gradient-to-r from-slate-700 to-gray-800 hover:from-slate-800 hover:to-gray-900 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-md transform hover:-translate-y-0.5 cursor-pointer";
+            } else {
+                // Default Rose
+                body.classList.add("bg-rose-50/40", "text-gray-700");
+                if (btnLogin) btnLogin.className = "theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer";
+                if (btnOpen) btnOpen.className = "theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap";
+                if (btnSubmit) btnSubmit.className = "theme-btn-pri bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-semibold px-8 py-3.5 rounded-xl text-sm transition-all shadow-md transform hover:-translate-y-0.5 cursor-pointer";
+            }
+        }
+
         // UPDATE DROPDOWNS & BADGES USTADZAH
         function updateTopicDropdowns() {
             const qTopicSelect = document.getElementById("qTopic");
@@ -682,15 +823,15 @@
             teacherFilter.innerHTML = `<option value="">-- Pilih Tema Soal Dahulu --</option>` + topicOptions;
 
             badgeContainer.innerHTML = window.topics.map(t => `
-                <div class="bg-pink-50 p-3 rounded-2xl border border-pink-100 flex flex-col justify-between gap-2 text-xs">
+                <div class="bg-rose-50 p-3 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2 text-xs">
                     <div class="flex justify-between items-start">
                         <span class="font-bold text-gray-800">🏷️ ${t.name}</span>
-                        <button onclick="deleteTopic('${t.id}')" class="text-pink-400 hover:text-red-600 font-extrabold cursor-pointer">✕</button>
+                        <button onclick="deleteTopic('${t.id}')" class="text-rose-400 hover:text-red-600 font-extrabold cursor-pointer">✕</button>
                     </div>
-                    <div class="flex items-center justify-between pt-1 border-t border-pink-100">
-                        <span class="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-pink-200 text-pink-600 font-bold">Token: ${t.token || 'TJ000'}</span>
+                    <div class="flex items-center justify-between pt-1 border-t border-rose-100">
+                        <span class="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-rose-200 text-rose-600 font-bold">Token: ${t.token || 'TJ000'}</span>
                         <div class="flex items-center gap-1">
-                            <button onclick="openQrDisplayModal('${t.name}', '${t.token || 'TJ000'}')" class="text-[10px] bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold px-2 py-1 rounded-lg transition-all">📷 QR Code</button>
+                            <button onclick="openQrDisplayModal('${t.name}', '${t.token || 'TJ000'}')" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-2 py-1 rounded-lg transition-all">📷 QR Code</button>
                             <button onclick="resetTopicToken('${t.id}')" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded-lg transition-all" title="Generates Token Baru & Hentikan Ujian">⚡ Reset Token</button>
                         </div>
                     </div>
@@ -698,19 +839,39 @@
             `).join('');
         }
 
-        // CUSTOM HEADER BAR CONFIG
+        // SIMPAN CONFIG HEADER & UI/UX MODERN KE FIREBASE
         document.getElementById("headerConfigForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const navTitle = document.getElementById("cfgNavTitle").value.trim();
+            const mainTitle = document.getElementById("cfgMainTitle").value.trim();
             const headerSubtitle = document.getElementById("cfgHeaderSubtitle").value.trim();
             const headerQuote = document.getElementById("cfgHeaderQuote").value.trim();
+            const btnLoginText = document.getElementById("cfgBtnLoginText").value.trim();
+            const examPageText = document.getElementById("cfgExamPageText").value.trim();
+            const gradingPageText = document.getElementById("cfgGradingPageText").value.trim();
+            const activeSessionText = document.getElementById("cfgActiveSessionText").value.trim();
+            const teacherModeBadge = document.getElementById("cfgTeacherModeBadge").value.trim();
+            const themeColor = document.getElementById("cfgThemeColor").value;
+            const themeFont = document.getElementById("cfgThemeFont").value;
 
             try {
-                await setDoc(doc(db, "settings", "headerConfig"), { navTitle, headerSubtitle, headerQuote });
+                await setDoc(doc(db, "settings", "headerConfig"), { 
+                    navTitle, 
+                    mainTitle,
+                    headerSubtitle, 
+                    headerQuote,
+                    btnLoginText,
+                    examPageText,
+                    gradingPageText,
+                    activeSessionText,
+                    teacherModeBadge,
+                    themeColor,
+                    themeFont
+                });
                 closeHeaderConfigModal();
-                alert("Berhasil mengubah tampilan header mahasiswi!");
+                alert("Berhasil mengkustomisasi tampilan interface UI/UX!");
             } catch (err) {
-                alert("Gagal menyimpan konfigurasi: " + err.message);
+                alert("Gagal menyimpan konfigurasi UI: " + err.message);
             }
         });
 
@@ -771,7 +932,8 @@
 
         window.loadQuizQuestions = function(selectedTopic) {
             const displayTitle = document.getElementById("displaySheetTitle");
-            displayTitle.innerText = `Evaluasi Tajwid: ${selectedTopic}`;
+            displayTitle.innerText = `Tema: ${selectedTopic}`;
+            displayTitle.classList.remove("hidden");
 
             const activePg = window.questionsPg.filter(q => q.active !== false && q.topic === selectedTopic);
             const activeEssay = window.questionsEssay.filter(q => q.active !== false && q.topic === selectedTopic);
@@ -779,21 +941,21 @@
             // RENDER PG
             const pgContainer = document.getElementById("pgContainer");
             if (activePg.length === 0) {
-                pgContainer.innerHTML = `<p class="text-xs text-gray-400 italic bg-white p-4 rounded-xl border border-pink-100">Belum ada soal PG aktif pada tema ini.</p>`;
+                pgContainer.innerHTML = `<p class="text-xs text-gray-400 italic bg-white p-4 rounded-xl border border-rose-100">Belum ada soal PG aktif pada tema ini.</p>`;
             } else {
                 pgContainer.innerHTML = activePg.map((q, idx) => `
-                    <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <div class="bg-white p-5 rounded-2xl shadow-xs border border-rose-100/60 space-y-3">
                         <div class="flex justify-between items-center text-xs font-semibold text-gray-400">
-                            <span>Soal ${idx + 1} dari ${activePg.length} &bull; <strong class="text-pink-600">${q.topic}</strong></span>
-                            <span class="text-pink-500 font-bold bg-pink-50 px-2 py-0.5 rounded-md">Bobot: ${q.weight || 10} Poin</span>
+                            <span>Soal ${idx + 1} dari ${activePg.length} &bull; <strong class="text-rose-600">${q.topic}</strong></span>
+                            <span class="text-rose-500 font-bold bg-rose-50 px-2 py-0.5 rounded-md">Bobot: ${q.weight || 10} Poin</span>
                         </div>
-                        ${q.img ? `<img src="${q.img.src}" class="${q.img.width || 'max-w-md'} ${q.img.align || 'mx-auto block'} rounded-xl border border-pink-100 mb-2">` : ''}
+                        ${q.img ? `<img src="${q.img.src}" class="${q.img.width || 'max-w-md'} ${q.img.align || 'mx-auto block'} rounded-xl border border-rose-100 mb-2">` : ''}
                         <p class="text-sm font-semibold text-gray-800">${q.text}</p>
                         <div class="space-y-2 pt-1">
                             ${q.options.map(opt => `
-                                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-pink-50/30 cursor-pointer transition-all">
-                                    <input type="radio" name="pg-${q.id}" value="${opt.k}" required class="accent-pink-500">
-                                    <span class="text-xs font-bold text-pink-600 bg-pink-50 px-2.5 py-1 rounded-md">${opt.k}</span>
+                                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-rose-50/30 cursor-pointer transition-all">
+                                    <input type="radio" name="pg-${q.id}" value="${opt.k}" required class="accent-rose-500">
+                                    <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md">${opt.k}</span>
                                     <span class="text-xs font-medium text-gray-700 ${opt.arabic ? 'arabic ml-auto' : ''}">${opt.t}</span>
                                 </label>
                             `).join('')}
@@ -812,20 +974,20 @@
             } else {
                 essaySection.classList.remove("hidden");
                 essayContainer.innerHTML = activeEssay.map((q, idx) => `
-                    <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
+                    <div class="bg-white p-5 rounded-2xl shadow-xs border border-rose-100/60 space-y-3">
                         <div class="flex justify-between items-center text-xs font-semibold text-gray-400">
-                            <span>Uraian Soal ${idx + 1} dari ${activeEssay.length} &bull; <strong class="text-pink-600">${q.topic}</strong></span>
+                            <span>Uraian Soal ${idx + 1} dari ${activeEssay.length} &bull; <strong class="text-rose-600">${q.topic}</strong></span>
                             <span class="text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-md">Maks. Bobot: ${q.weight || 10} Poin</span>
                         </div>
-                        ${q.img ? `<img src="${q.img.src}" class="${q.img.width || 'max-w-md'} ${q.img.align || 'mx-auto block'} rounded-xl border border-pink-100 mb-2">` : ''}
+                        ${q.img ? `<img src="${q.img.src}" class="${q.img.width || 'max-w-md'} ${q.img.align || 'mx-auto block'} rounded-xl border border-rose-100 mb-2">` : ''}
                         <p class="text-sm font-semibold text-gray-800">${q.text}</p>
-                        <textarea id="essay-${q.id}" required rows="4" placeholder="Ketikkan jawaban Anda secara rinci di sini..." class="w-full px-4 py-3 border border-pink-200/60 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all bg-pink-50/10 placeholder-gray-400"></textarea>
+                        <textarea id="essay-${q.id}" required rows="4" placeholder="Ketikkan jawaban Anda secara rinci di sini..." class="w-full px-4 py-3 border border-rose-200/60 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-rose-50/10 placeholder-gray-400"></textarea>
                     </div>
                 `).join('');
             }
         };
 
-        // RENDER BANK SOAL USTADZAH (PANEL PG & ESAI DISEMBUNYIKAN SEBELUM PILIH TEMA)
+        // RENDER BANK SOAL USTADZAH
         window.renderTeacherManageQuestions = function() {
             const { maxPg, maxEssay, totalMax } = getMaxScores();
             document.getElementById("totalActiveMaxScore").innerText = `${totalMax} Poin`;
@@ -840,7 +1002,6 @@
             const managePgSection = document.getElementById("managePgSection");
             const manageEssaySection = document.getElementById("manageEssaySection");
 
-            // KONTROL SEMBUNYIKAN/TAMPILKAN PANEL JIKA TEMA BELUM DIPILIH
             if (!selectedFilterTopic) {
                 promptBox.classList.remove("hidden");
                 managePgSection.classList.add("hidden");
@@ -874,11 +1035,11 @@
                 managePgList.innerHTML = `<p class="text-xs text-gray-400 italic">Tidak ada soal pilihan ganda pada tema ini.</p>`;
             } else {
                 managePgList.innerHTML = filteredPg.map((q, idx) => `
-                    <div class="p-4 rounded-xl border ${q.active !== false ? 'border-pink-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
+                    <div class="p-4 rounded-xl border ${q.active !== false ? 'border-rose-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
                         <div class="space-y-1 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="font-bold text-pink-600">No. ${idx + 1}</span>
-                                <span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded-md">Tema: ${q.topic || 'Umum'}</span>
+                                <span class="font-bold text-rose-600">No. ${idx + 1}</span>
+                                <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema: ${q.topic || 'Umum'}</span>
                                 <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md">Kunci: ${q.key}</span>
                                 <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">Bobot: ${q.weight || 10}</span>
                             </div>
@@ -901,15 +1062,15 @@
                 manageEssayList.innerHTML = `<p class="text-xs text-gray-400 italic">Tidak ada soal uraian pada tema ini.</p>`;
             } else {
                 manageEssayList.innerHTML = filteredEssay.map((q, idx) => `
-                    <div class="p-4 rounded-xl border ${q.active !== false ? 'border-pink-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
+                    <div class="p-4 rounded-xl border ${q.active !== false ? 'border-rose-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
                         <div class="space-y-1 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="font-bold text-pink-600">Uraian ${idx + 1}</span>
-                                <span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded-md">Tema: ${q.topic || 'Umum'}</span>
+                                <span class="font-bold text-rose-600">Uraian ${idx + 1}</span>
+                                <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema: ${q.topic || 'Umum'}</span>
                                 <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">Bobot Maks: ${q.weight || 10}</span>
                             </div>
                             <p class="font-medium text-gray-800">${q.text}</p>
-                            <p class="text-[11px] text-pink-600 font-semibold italic">🔑 Kunci Acuan: ${q.key || '-'}</p>
+                            <p class="text-[11px] text-rose-600 font-semibold italic">🔑 Kunci Acuan: ${q.key || '-'}</p>
                         </div>
                         <div class="flex items-center gap-3 self-end sm:self-center">
                             <label class="flex items-center gap-1.5 cursor-pointer font-bold text-xs text-emerald-600">
@@ -954,8 +1115,8 @@
             const container = document.getElementById("pgOptionListContainer");
             container.innerHTML = window.currentPgOptions.map((opt, i) => `
                 <div class="flex items-center gap-2">
-                    <span class="font-bold text-xs text-pink-600 w-4">${opt.k}</span>
-                    <input type="text" id="optInput-${i}" value="${opt.t}" placeholder="Pilihan ${opt.k}" oninput="window.currentPgOptions[${i}].t = this.value" class="w-full px-3 py-1.5 border border-pink-200 rounded-lg text-xs bg-white">
+                    <span class="font-bold text-xs text-rose-600 w-4">${opt.k}</span>
+                    <input type="text" id="optInput-${i}" value="${opt.t}" placeholder="Pilihan ${opt.k}" oninput="window.currentPgOptions[${i}].t = this.value" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs bg-white">
                     ${window.currentPgOptions.length > 2 ? `<button type="button" onclick="removePgOption(${i})" class="text-red-400 hover:text-red-600 font-bold px-1 text-xs">✕</button>` : ''}
                 </div>
             `).join('');
@@ -1207,7 +1368,7 @@
                     <tr class="${index < 3 ? 'bg-amber-50/30 font-medium' : 'hover:bg-gray-50'} transition-all">
                         <td class="py-3 px-4 text-center">${rankBadge}</td>
                         <td class="py-3 px-4 font-bold text-gray-800">${s.studentName}</td>
-                        <td class="py-3 px-4 font-semibold text-pink-600">${s.topic || 'Semua Tema'}</td>
+                        <td class="py-3 px-4 font-semibold text-rose-600">${s.topic || 'Semua Tema'}</td>
                         <td class="py-3 px-4 text-center text-gray-500">${s.durationText || '-'}</td>
                         <td class="py-3 px-4 text-center">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${s.status === 'Selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
@@ -1216,7 +1377,7 @@
                         </td>
                         <td class="py-3 px-4 text-center font-medium">${s.pgScore}</td>
                         ${hasEssay ? `<td class="py-3 px-4 text-center font-medium">${s.essayScore}</td>` : ''}
-                        <td class="py-3 px-4 text-right font-extrabold text-pink-600 text-sm">${s.totalScore} Poin</td>
+                        <td class="py-3 px-4 text-right font-extrabold text-rose-600 text-sm">${s.totalScore} Poin</td>
                     </tr>
                 `;
             }).join('');
@@ -1234,7 +1395,7 @@
             }
 
             listContainer.innerHTML = filtered.map(s => `
-                <div onclick="selectSubmissionForGrading('${s.id}')" class="bg-white p-4 rounded-xl border ${activeGradingId === s.id ? 'border-pink-500 ring-2 ring-pink-100' : 'border-gray-100'} hover:border-pink-300 transition-all cursor-pointer relative group">
+                <div onclick="selectSubmissionForGrading('${s.id}')" class="bg-white p-4 rounded-xl border ${activeGradingId === s.id ? 'border-rose-500 ring-2 ring-rose-100' : 'border-gray-100'} hover:border-rose-300 transition-all cursor-pointer relative group">
                     <div class="flex justify-between items-start gap-2">
                         <h4 class="text-xs sm:text-sm font-bold text-gray-800 truncate flex-1">${s.studentName}</h4>
                         <div class="flex items-center gap-1">
@@ -1246,11 +1407,11 @@
                             </button>
                         </div>
                     </div>
-                    <p class="text-[10px] text-pink-600 font-bold mt-0.5">Tema: ${s.topic || 'Semua Tema'}</p>
+                    <p class="text-[10px] text-rose-600 font-bold mt-0.5">Tema: ${s.topic || 'Semua Tema'}</p>
                     <p class="text-[10px] text-gray-400 mt-0.5">Dikirim: ${s.submittedAt?.toDate ? s.submittedAt.toDate().toLocaleTimeString() : ''}</p>
                     <div class="mt-3 flex justify-between items-center border-t border-gray-50 pt-2 text-[10px] font-semibold text-gray-500">
                         <span>Skor PG: ${s.pgScore}</span>
-                        <span class="text-pink-600 font-bold">Total: ${s.totalScore} Poin</span>
+                        <span class="text-rose-600 font-bold">Total: ${s.totalScore} Poin</span>
                     </div>
                 </div>
             `).join('');
@@ -1314,19 +1475,19 @@
                     const currentGrade = sub.essayGrades ? (sub.essayGrades[q.id] || 0) : 0;
                     const maxW = q.weight || 10;
                     return `
-                        <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3 text-xs">
+                        <div class="bg-white p-5 rounded-2xl shadow-xs border border-rose-100/60 space-y-3 text-xs">
                             <div class="flex justify-between items-center border-b border-gray-100 pb-2">
                                 <span class="font-bold text-gray-700">Soal Tema: ${q.topic || 'Umum'}</span>
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-400 font-medium">Beri Nilai (0-${maxW}):</span>
-                                    <input type="number" id="grade-essay-${q.id}" value="${currentGrade}" min="0" max="${maxW}" oninput="calculateRealtimeEssayScore()" class="w-16 px-2.5 py-1.5 border border-pink-200 rounded-lg text-center font-bold text-pink-600 focus:outline-none focus:border-pink-500 bg-pink-50/10">
+                                    <input type="number" id="grade-essay-${q.id}" value="${currentGrade}" min="0" max="${maxW}" oninput="calculateRealtimeEssayScore()" class="w-16 px-2.5 py-1.5 border border-rose-200 rounded-lg text-center font-bold text-rose-600 focus:outline-none focus:border-rose-500 bg-rose-50/10">
                                 </div>
                             </div>
                             <p class="font-semibold text-gray-800">${q.text}</p>
                             
                             <div class="space-y-1">
                                 <span class="text-[10px] font-bold text-gray-400 uppercase">Jawaban Mahasiswi:</span>
-                                <div class="p-3 bg-pink-50/20 rounded-xl text-gray-700 whitespace-pre-line border border-pink-100">
+                                <div class="p-3 bg-rose-50/20 rounded-xl text-gray-700 whitespace-pre-line border border-rose-100">
                                     ${userAns}
                                 </div>
                             </div>
@@ -1388,7 +1549,7 @@
 
             document.getElementById("recommendationText").innerHTML = `
                 Capaian Akhir: <strong>${grandTotal} / ${totalMax} Poin (${percentage}%)</strong> &bull; 
-                Rekomendasi Predikat: <strong class="text-pink-600">${predikat}</strong>.<br>
+                Rekomendasi Predikat: <strong class="text-rose-600">${predikat}</strong>.<br>
                 <span class="italic text-gray-500 font-normal">"${saran}"</span>
             `;
         };
@@ -1435,6 +1596,7 @@
             }
         });
 
+        // UPDATE LOGIN BAGIAN DYNAMIC BADGE
         window.handleLogin = function(e) {
             e.preventDefault();
             const user = document.getElementById("loginUsername").value.trim();
@@ -1444,9 +1606,11 @@
                 document.getElementById("loginModal").classList.add("hidden");
                 document.getElementById("studentView").classList.add("hidden");
                 document.getElementById("teacherView").classList.remove("hidden");
+                
+                const sessionLabel = window.activeSessionText || "🟢 Sesi Ustadzah Aktif";
                 document.getElementById("navRight").innerHTML = `
-                    <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
-                        🟢 Sesi Ustadzah Aktif
+                    <span id="navActiveSessionBadge" class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
+                        ${sessionLabel}
                     </span>
                 `;
             } else {
@@ -1469,10 +1633,24 @@
             else modal.classList.add("hidden");
         }
 
+        // FUNGSI MODAL BUKA DEAN AMBIL DATA DINAMIS LENGKAP
         function openHeaderConfigModal() {
             document.getElementById("cfgNavTitle").value = document.getElementById("navBarTitle").innerText;
+            document.getElementById("cfgMainTitle").value = document.getElementById("displayMainTitle") ? document.getElementById("displayMainTitle").innerText : "Evaluasi Pre-Test Tajwid";
             document.getElementById("cfgHeaderSubtitle").value = document.getElementById("headerSubtitleDisplay").innerText;
             document.getElementById("cfgHeaderQuote").value = document.getElementById("headerQuoteDisplay").innerText;
+            
+            if(document.getElementById("btnLoginView")) document.getElementById("cfgBtnLoginText").value = document.getElementById("btnLoginView").innerText;
+            if(document.getElementById("lblExamPageTitle")) document.getElementById("cfgExamPageText").value = document.getElementById("lblExamPageTitle").innerText;
+            if(document.getElementById("lblGradingHeaderTitle")) document.getElementById("cfgGradingPageText").value = document.getElementById("lblGradingHeaderTitle").innerText;
+            
+            if(document.getElementById("cfgActiveSessionText")) {
+                document.getElementById("cfgActiveSessionText").value = window.activeSessionText || "🟢 Sesi Ustadzah Aktif";
+            }
+            if(document.getElementById("cfgTeacherModeBadge") && document.getElementById("lblTeacherModeBadge")) {
+                document.getElementById("cfgTeacherModeBadge").value = document.getElementById("lblTeacherModeBadge").innerText;
+            }
+            
             document.getElementById("headerConfigModal").classList.remove("hidden");
         }
 
@@ -1501,9 +1679,9 @@
             }
 
             listContainer.innerHTML = filtered.map(t => `
-                <div onclick="selectTopicFromModal('${t.name}')" class="p-3 bg-pink-50/40 hover:bg-pink-100/60 rounded-xl border border-pink-100 flex justify-between items-center cursor-pointer transition-all">
+                <div onclick="selectTopicFromModal('${t.name}')" class="p-3 bg-rose-50/40 hover:bg-rose-100/60 rounded-xl border border-rose-100 flex justify-between items-center cursor-pointer transition-all">
                     <span class="text-xs font-bold text-gray-800">🏷️ ${t.name}</span>
-                    <span class="text-[10px] bg-white px-2 py-0.5 rounded font-mono font-bold text-pink-600">Token: ${t.token || 'TJ000'}</span>
+                    <span class="text-[10px] bg-white px-2 py-0.5 rounded font-mono font-bold text-rose-600">Token: ${t.token || 'TJ000'}</span>
                 </div>
             `).join('');
         }
@@ -1570,12 +1748,12 @@
             const sectionGrading = document.getElementById("sectionGrading");
 
             if (tab === 'manage') {
-                tabManageBtn.className = "pb-3 font-bold text-sm border-b-2 border-pink-500 text-pink-600 cursor-pointer flex items-center gap-2";
+                tabManageBtn.className = "pb-3 font-bold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
                 tabGradingBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
                 sectionManageQuestions.classList.remove("hidden");
                 sectionGrading.classList.add("hidden");
             } else {
-                tabGradingBtn.className = "pb-3 font-bold text-sm border-b-2 border-pink-500 text-pink-600 cursor-pointer flex items-center gap-2";
+                tabGradingBtn.className = "pb-3 font-bold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
                 tabManageBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
                 sectionGrading.classList.remove("hidden");
                 sectionManageQuestions.classList.add("hidden");
@@ -1589,12 +1767,12 @@
             const tabEssayContent = document.getElementById("tabEssayContent");
 
             if (tab === 'pg') {
-                tabPgBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-pink-500 text-pink-600 cursor-pointer flex items-center gap-2";
+                tabPgBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
                 tabEssayBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer flex items-center gap-2";
                 tabPgContent.classList.remove("hidden");
                 tabEssayContent.classList.add("hidden");
             } else {
-                tabEssayBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-pink-500 text-pink-600 cursor-pointer flex items-center gap-2";
+                tabEssayBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
                 tabPgBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer flex items-center gap-2";
                 tabEssayContent.classList.remove("hidden");
                 tabPgContent.classList.add("hidden");
@@ -1651,12 +1829,12 @@
             const secUrl = document.getElementById("secImgUrl");
 
             if (tab === 'upload') {
-                btnUpload.className = "pb-1.5 font-bold border-b-2 border-pink-500 text-pink-600";
+                btnUpload.className = "pb-1.5 font-bold border-b-2 border-rose-500 text-rose-600";
                 btnUrl.className = "pb-1.5 font-bold border-b-2 border-transparent text-gray-400";
                 secUpload.classList.remove("hidden");
                 secUrl.classList.add("hidden");
             } else {
-                btnUrl.className = "pb-1.5 font-bold border-b-2 border-transparent text-pink-600";
+                btnUrl.className = "pb-1.5 font-bold border-b-2 border-transparent text-rose-600";
                 btnUpload.className = "pb-1.5 font-bold border-b-2 border-transparent text-gray-400";
                 secUrl.classList.remove("hidden");
                 secUpload.classList.add("hidden");
