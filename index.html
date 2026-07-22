@@ -40,7 +40,7 @@
             
             <div class="max-w-3xl mx-auto px-4 py-8 text-center relative z-10">
                 <span class="text-xs font-bold text-pink-500 uppercase tracking-widest bg-pink-50 px-3 py-1 rounded-full">Evaluasi Mahasiswi ✨</span>
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-850 mt-3 tracking-wide">Pre-Test Tajwid</h1>
+                <h1 id="displaySheetTitle" class="text-2xl md:text-3xl font-bold text-gray-850 mt-3 tracking-wide">Evaluasi Pre-Test Tajwid</h1>
                 <p class="text-xs md:text-sm text-pink-600/80 italic mt-2 font-medium">
                     "Bersungguh-sungguhlah pada hal yang bermanfaat bagimu dan mintalah pertolongan Allah" (Al-Hadits)
                 </p>
@@ -49,8 +49,17 @@
 
         <main class="max-w-3xl mx-auto px-4 py-8">
             <form id="quizForm" class="space-y-6">
+                <!-- PILIHAN TEMA SOAL & INFORMASI MAHASISWI -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
-                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-pink-50 pb-2">Informasi Mahasiswi</h3>
+                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-pink-50 pb-2">Informasi & Lembar Kerja Mahasiswi</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-pink-600 uppercase mb-1">Pilih Tema Soal Evaluasi</label>
+                        <select id="studentTopicSelect" onchange="window.filterQuizByTopic()" class="w-full px-4 py-2.5 border border-pink-200 rounded-xl text-xs sm:text-sm font-bold text-gray-800 focus:outline-none focus:border-pink-400 bg-pink-50/20">
+                            <option value="Semua Tema">-- Tampilkan Semua Tema Soal --</option>
+                        </select>
+                    </div>
+
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nama Lengkap & NIM</label>
                         <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." class="w-full px-4 py-2.5 border border-pink-200/60 rounded-xl text-sm focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all bg-pink-50/10">
@@ -81,12 +90,16 @@
         <div class="bg-white p-8 rounded-3xl max-w-md w-full text-center shadow-2xl border border-pink-100">
             <span class="text-5xl">🎉</span>
             <h3 class="text-xl font-bold text-gray-800 mt-4">Jawaban Berhasil Terkirim!</h3>
-            <p class="text-xs text-gray-500 mt-2">Terima kasih telah menyelesaikan evaluasi Tajwid. Jawaban Anda telah tersimpan secara online.</p>
+            <p class="text-xs text-gray-500 mt-2">Terima kasih telah menyelesaikan evaluasi Tajwid. Jawaban Anda telah tersimpan secara online di Firebase.</p>
             
             <div class="my-6 p-4 bg-pink-50/80 rounded-2xl border border-pink-100 text-left space-y-2">
                 <div class="flex justify-between items-center text-xs">
                     <span class="text-gray-500">Nama / NIM:</span>
                     <span id="modalStudentName" class="font-bold text-gray-800"></span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-500">Tema Soal:</span>
+                    <span id="modalStudentTopic" class="font-bold text-pink-600"></span>
                 </div>
                 <div class="flex justify-between items-center text-xs">
                     <span class="text-gray-500">Waktu Pengerjaan:</span>
@@ -131,13 +144,21 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP: FORM TAMBAH / EDIT SOAL (DENGAN FITUR MULTI-OPSI & MEDIA CROP/URL) -->
+    <!-- MODAL POPUP: FORM TAMBAH / EDIT SOAL (DENGAN TEMA, MULTI-OPSI & MEDIA) -->
     <div id="questionModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-8">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-pink-100 space-y-4 my-auto">
             <h3 id="questionModalTitle" class="text-lg font-bold text-gray-800 border-b border-pink-50 pb-2">Tambah Soal Baru</h3>
             
             <form id="questionForm" class="space-y-4">
                 <input type="hidden" id="qEditId">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-pink-600 uppercase mb-1">Tema Soal</label>
+                    <select id="qTopic" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10 font-medium">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tipe Soal</label>
@@ -157,7 +178,7 @@
                     <textarea id="qText" required rows="3" placeholder="Ketikkan pertanyaan..." class="w-full px-4 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10"></textarea>
                 </div>
 
-                <!-- SEKSI LAMPIRAN GAMBAR (TAB UPLOAD & URL LINK) -->
+                <!-- SEKSI LAMPIRAN GAMBAR -->
                 <div class="border border-pink-100 p-3 rounded-2xl bg-pink-50/20 space-y-3">
                     <label class="block text-xs font-bold text-gray-700 uppercase">🖼️ Lampirkan Gambar (Opsional)</label>
                     <div class="flex border-b border-pink-200 gap-3 text-xs">
@@ -169,7 +190,6 @@
                         </button>
                     </div>
 
-                    <!-- TAB 1: UPLOAD GAMBAR & PENYESUAIAN CROP/SCALE -->
                     <div id="secImgUpload" class="space-y-3 text-xs">
                         <input type="file" id="imgFileInput" accept="image/*" onchange="handleImageFileSelect(event)" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-100 file:text-pink-700 hover:file:bg-pink-200">
                         <div id="imgPreviewWrapper" class="hidden space-y-3 p-3 bg-white border border-pink-100 rounded-xl">
@@ -190,12 +210,11 @@
                         </div>
                     </div>
 
-                    <!-- TAB 2: PASTE URL LINK GAMBAR + CUSTOM UKURAN -->
                     <div id="secImgUrl" class="hidden space-y-3 text-xs">
-                        <input type="url" id="imgUrlInput" placeholder="Tempel URL link gambar (cth: https://domain.com/gambar.jpg)" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-white">
+                        <input type="url" id="imgUrlInput" placeholder="Tempel URL link gambar..." class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-white">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-[10px] font-bold text-gray-500 block mb-1">Lebar Tampilan (Width)</label>
+                                <label class="text-[10px] font-bold text-gray-500 block mb-1">Lebar Tampilan</label>
                                 <select id="imgCustomWidth" class="w-full px-3 py-1.5 border border-pink-200 rounded-lg bg-white text-xs">
                                     <option value="max-w-xs">Kecil (300px)</option>
                                     <option value="max-w-md" selected>Sedang (450px)</option>
@@ -214,7 +233,7 @@
                     </div>
                 </div>
 
-                <!-- FORM MULTI-OPTION PG (DINAMIS A, B, C, D, E, F...) -->
+                <!-- FORM MULTI-OPTION PG -->
                 <div id="pgFormOptions" class="space-y-3 border-t border-pink-50 pt-3">
                     <div class="flex justify-between items-center">
                         <label class="block text-xs font-semibold text-pink-600 uppercase">Pilihan Jawaban (PG)</label>
@@ -233,13 +252,13 @@
 
                 <!-- FORM KHUSUS KUNCI ESAI -->
                 <div id="essayFormOptions" class="hidden border-t border-pink-50 pt-3">
-                    <label class="block text-xs font-semibold text-pink-600 uppercase mb-1">Kunci Jawaban / Acuan Penilaian</label>
-                    <textarea id="qKeyEssay" rows="2" placeholder="Masukkan poin penting jawaban benarnya..." class="w-full px-4 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10"></textarea>
+                    <label class="block text-xs font-semibold text-pink-600 uppercase mb-1">Kunci Jawaban / Acuan Penilaian Uraian</label>
+                    <textarea id="qKeyEssay" rows="3" placeholder="Masukkan poin penting acuan kunci jawaban..." class="w-full px-4 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10"></textarea>
                 </div>
 
                 <div class="flex gap-2 pt-2">
-                    <button type="submit" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-md">
-                        Simpan Soal
+                    <button type="submit" id="btnSaveQuestion" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-md">
+                        Simpan Soal ke Firebase
                     </button>
                     <button type="button" onclick="closeQuestionModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-2.5 rounded-xl text-xs transition-all cursor-pointer">
                         Batal
@@ -256,7 +275,7 @@
                 <div>
                     <span class="text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full">Mode Ustadzah & Manager Soal 🔥</span>
                     <h1 class="text-2xl font-bold text-gray-800 mt-2">Laman Pengelolaan & Penilaian Tajwid</h1>
-                    <p class="text-xs text-gray-500 mt-0.5">Kelola bank soal, atur bobot soal, dan periksa lembar jawaban mahasiswi.</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Kelola bank soal, kelola tema, atur bobot soal, dan periksa lembar jawaban mahasiswi.</p>
                 </div>
                 <button onclick="handleLogout()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2">
                     🚪 Logout Pemeriksa
@@ -268,15 +287,35 @@
             
             <div class="flex border-b border-pink-200 gap-4">
                 <button onclick="switchTeacherTab('manage')" id="tabManageBtn" class="pb-3 font-bold text-sm border-b-2 border-pink-500 text-pink-600 cursor-pointer flex items-center gap-2">
-                    <span>📚</span> Kelola Bank Soal & Bobot Nilai
+                    <span>📚</span> Kelola Bank Soal & Tema
                 </button>
                 <button onclick="switchTeacherTab('grading')" id="tabGradingBtn" class="pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2">
                     <span>🏆</span> Penilaian & Hasil Mahasiswi
                 </button>
             </div>
 
-            <!-- SECTION 1: KELOLA SOAL (USTADZAH CONTROL PANEL) -->
+            <!-- SECTION 1: KELOLA SOAL & TEMA -->
             <div id="sectionManageQuestions" class="space-y-6">
+                
+                <!-- PANEL MANAJEMEN TEMA SOAL -->
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
+                    <div class="flex justify-between items-center border-b border-pink-50 pb-2">
+                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                            🏷️ Panel Daftar Tema Soal Evaluasi
+                        </h3>
+                    </div>
+                    
+                    <form id="topicForm" class="flex gap-2">
+                        <input type="text" id="newTopicInput" required placeholder="Ketik nama tema baru (contoh: Hukum Nun Mati, Makharijul Huruf)..." class="flex-1 px-4 py-2 border border-pink-200 rounded-xl text-xs focus:outline-none focus:border-pink-400 bg-pink-50/10">
+                        <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
+                            ➕ Tambah Tema
+                        </button>
+                    </form>
+
+                    <div id="topicBadgeContainer" class="flex flex-wrap gap-2 pt-1"></div>
+                </div>
+
+                <!-- INFO BOBOT & FILTER SOAL -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Bank Soal & Pengaturan Bobot Maksimal</h3>
@@ -285,9 +324,15 @@
                             (PG: <span id="maxPgScore">0</span> | Esai: <span id="maxEssayScore">0</span>)
                         </p>
                     </div>
-                    <button onclick="openQuestionModal()" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-1.5">
-                        ➕ Tambah Soal Baru
-                    </button>
+
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <select id="teacherFilterTopic" onchange="renderTeacherManageQuestions()" class="px-3 py-2 border border-pink-200 rounded-xl text-xs font-semibold text-gray-700 bg-pink-50/20">
+                            <option value="Semua Tema">Semua Tema</option>
+                        </select>
+                        <button onclick="openQuestionModal()" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
+                            ➕ Tambah Soal
+                        </button>
+                    </div>
                 </div>
 
                 <!-- SOAL PG LIST -->
@@ -305,7 +350,7 @@
 
             <!-- SECTION 2: PENILAIAN MAHASISWI & LEADERBOARD -->
             <div id="sectionGrading" class="hidden space-y-8">
-                <!-- PANEL PERINGKAT (LEADERBOARD) -->
+                <!-- PANEL PERINGKAT -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100/60 space-y-4">
                     <div class="flex justify-between items-center pb-2 border-b border-gray-100">
                         <div>
@@ -322,8 +367,9 @@
                                 <tr class="bg-pink-50/50 text-[11px] uppercase tracking-wider text-gray-500 border-b border-pink-100">
                                     <th class="py-3 px-4 font-bold text-center w-16">Rank</th>
                                     <th class="py-3 px-4 font-bold">Mahasiswi</th>
+                                    <th class="py-3 px-4 font-bold">Tema Soal</th>
                                     <th class="py-3 px-4 font-bold text-center">Durasi</th>
-                                    <th class="py-3 px-4 font-bold text-center">Status Koreksi</th>
+                                    <th class="py-3 px-4 font-bold text-center">Status</th>
                                     <th class="py-3 px-4 font-bold text-center">Skor PG</th>
                                     <th class="py-3 px-4 font-bold text-center">Skor Uraian</th>
                                     <th class="py-3 px-4 font-bold text-right">Skor Total</th>
@@ -372,7 +418,7 @@
                         </div>
                     </div>
 
-                    <!-- SARAN PENILAIAN & REKOMENDASI PREDIKAT -->
+                    <!-- SARAN PENILAIAN -->
                     <div id="gradingRecommendationBox" class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 p-4 rounded-xl text-xs space-y-1">
                         <div class="flex items-center gap-2 font-bold text-amber-800">
                             <span>💡</span>
@@ -401,16 +447,16 @@
                             <div id="pgGradingContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                         </div>
 
-                        <!-- TAB 2: ESAI -->
+                        <!-- TAB 2: ESAI & DISPLAY KUNCI JAWABAN -->
                         <div id="tabEssayContent" class="hidden space-y-4">
                             <div class="bg-amber-50/60 border border-amber-100 p-4 rounded-xl text-xs text-amber-800 flex justify-between items-center">
-                                <p>💡 <strong>Info Koreksi Uraian:</strong> Input skor mahasiswi sesuai batasan bobot per soal.</p>
+                                <p>💡 <strong>Info Koreksi Uraian:</strong> Cocokkan dengan kunci acuan di bawah jawaban lalu masukan skor.</p>
                                 <span class="font-bold text-amber-700 text-sm">Total Nilai Esai: <span id="essayCurrentScoreDisplay">0</span></span>
                             </div>
                             <div id="essayGradingContainer" class="space-y-4"></div>
                             <div class="bg-white p-6 rounded-2xl shadow-xs border border-pink-100 text-right">
                                 <button id="btnSaveGrading" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold px-8 py-3 rounded-xl text-sm hover:shadow-lg transition-all cursor-pointer">
-                                    💾 Simpan Hasil Penilaian
+                                    💾 Simpan Hasil Penilaian ke Firebase
                                 </button>
                             </div>
                         </div>
@@ -420,10 +466,10 @@
         </main>
     </div>
 
-    <!-- FIREBASE SDK V10 (MODULE) -->
+    <!-- FIREBASE SDK V10 (FIREBASE DATABASE REALTIME) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         // =============================================================
         // CONFIG FIREBASE PROYEK PRETEST-TAJWID ANDA
@@ -440,54 +486,118 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // DEFAULT DATA SOAL PG & ESAI DENGAN BOBOT TERDEDIKASI
-        const DEFAULT_PG = [
-            { id: 1, text: "Bacaan Al-Qamariyyah terdapat pada kata ....", weight: 10, options: [{ k: "A", t: "الشمس" }, { k: "B", t: "الفيل" }, { k: "C", t: "الذين" }], key: "B", active: true },
-            { id: 2, text: "Huruf yang memiliki sifat hams dan syiddah", weight: 10, options: [{ k: "A", t: "د ت", arabic: true }, { k: "B", t: "ق ك", arabic: true }, { k: "C", t: "ك ت", arabic: true }], key: "C", active: true },
-            { id: 3, text: 'Kata <span class="arabic">بُنْيَانٌ</span> dibaca dengan izhar bukan idgham, karena <span class="arabic">نْ</span> dengan <span class="arabic">ي</span> terdapat dalam satu kata yang artinya ....', weight: 10, options: [{ k: "A", t: "Bangunan" }, { k: "B", t: "Tangkai" }, { k: "C", t: "Bercabang" }], key: "A", active: true },
-            { id: 4, text: "Hukum mempelajari ilmu tajwid", weight: 10, options: [{ k: "A", t: "Fardhu 'ain" }, { k: "B", t: "Fardhu Kifayah" }, { k: "C", t: "Sunnah" }], key: "B", active: true },
-            { id: 5, text: "Huruf yang memiliki 7 shifat yaitu ....", weight: 10, options: [{ k: "A", t: "ص", arabic: true }, { k: "B", t: "ز", arabic: true }, { k: "C", t: "ر", arabic: true }], key: "C", active: true }
-        ];
+        // DATA STATE APPLIKASI
+        window.questionsPg = [];
+        window.questionsEssay = [];
+        window.topics = [];
+        window.submissions = [];
 
-        const DEFAULT_ESSAY = [
-            { id: 1, text: "Jelaskan definisi Tajwid secara bahasa dan istilah!", weight: 15, key: "Tajwid secara bahasa: memperindah/bagus. Istilah: mengeluarkan huruf dari makhrajnya beserta sifatnya.", active: true },
-            { id: 2, text: "Sebutkan huruf-huruf Idgham Bighunnah beserta cara membacanya!", weight: 15, key: "Huruf: Ya, Nun, Mim, Wau (ي ن م و). Dibaca lebur dengan dengung.", active: true },
-            { id: 3, text: "Apa perbedaan antara Qalqalah Sughra dan Qalqalah Kubra? Berikan contohnya!", weight: 20, key: "Sughra: Pantulan kecil di tengah kata. Kubra: Pantulan besar di akhir kata/waqaf.", active: true }
-        ];
+        // LISTEN REALTIME SNAPSHOTS FIREBASE
+        function initFirebaseListeners() {
+            // 1. Load Topics
+            onSnapshot(collection(db, "topics"), (snapshot) => {
+                window.topics = [];
+                snapshot.forEach(doc => window.topics.push({ id: doc.id, ...doc.data() }));
+                if (window.topics.length === 0) {
+                    // Seed initial topic
+                    addDoc(collection(db, "topics"), { name: "Tajwid Dasar" });
+                }
+                updateTopicDropdowns();
+            });
 
-        window.questionsPg = JSON.parse(localStorage.getItem('tajwid_pg')) || DEFAULT_PG;
-        window.questionsEssay = JSON.parse(localStorage.getItem('tajwid_essay')) || DEFAULT_ESSAY;
+            // 2. Load Questions PG
+            onSnapshot(collection(db, "questions_pg"), (snapshot) => {
+                window.questionsPg = [];
+                snapshot.forEach(doc => window.questionsPg.push({ id: doc.id, ...doc.data() }));
+                window.filterQuizByTopic();
+                window.renderTeacherManageQuestions();
+            });
 
-        window.saveQuestionsToStorage = function() {
-            localStorage.setItem('tajwid_pg', JSON.stringify(window.questionsPg));
-            localStorage.setItem('tajwid_essay', JSON.stringify(window.questionsEssay));
-            renderStudentQuiz();
-            renderTeacherManageQuestions();
+            // 3. Load Questions Essay
+            onSnapshot(collection(db, "questions_essay"), (snapshot) => {
+                window.questionsEssay = [];
+                snapshot.forEach(doc => window.questionsEssay.push({ id: doc.id, ...doc.data() }));
+                window.filterQuizByTopic();
+                window.renderTeacherManageQuestions();
+            });
+
+            // 4. Load Submissions
+            const subQuery = query(collection(db, "submissions"), orderBy("submittedAt", "desc"));
+            onSnapshot(subQuery, (snapshot) => {
+                window.submissions = [];
+                snapshot.forEach(doc => window.submissions.push({ id: doc.id, ...doc.data() }));
+                renderSubmissionList();
+                renderLeaderboard();
+            });
         }
 
-        // AMBIL TOTAL BOBOT MAKSIMAL SOAL AKTIF
-        window.getMaxScores = function() {
-            const activePg = window.questionsPg.filter(q => q.active !== false);
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false);
+        // UPDATE UPDATE TOPIC SELECT DROPDOWNS & BADGES
+        function updateTopicDropdowns() {
+            const studentSelect = document.getElementById("studentTopicSelect");
+            const qTopicSelect = document.getElementById("qTopic");
+            const teacherFilter = document.getElementById("teacherFilterTopic");
+            const badgeContainer = document.getElementById("topicBadgeContainer");
 
-            const maxPg = activePg.reduce((sum, q) => sum + (parseInt(q.weight) || 10), 0);
-            const maxEssay = activeEssay.reduce((sum, q) => sum + (parseInt(q.weight) || 10), 0);
-            return { maxPg, maxEssay, totalMax: maxPg + maxEssay };
+            const topicOptions = window.topics.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+
+            studentSelect.innerHTML = `<option value="Semua Tema">-- Tampilkan Semua Tema Soal --</option>` + topicOptions;
+            qTopicSelect.innerHTML = topicOptions;
+            teacherFilter.innerHTML = `<option value="Semua Tema">Semua Tema</option>` + topicOptions;
+
+            badgeContainer.innerHTML = window.topics.map(t => `
+                <div class="bg-pink-100 text-pink-700 text-xs font-bold px-3 py-1 rounded-xl flex items-center gap-2">
+                    <span>🏷️ ${t.name}</span>
+                    <button onclick="deleteTopic('${t.id}')" class="text-pink-400 hover:text-red-600 font-extrabold cursor-pointer">✕</button>
+                </div>
+            `).join('');
         }
 
-        // RENDER SOAL KUIS MAHASISWI
-        window.renderStudentQuiz = function() {
-            const activePg = window.questionsPg.filter(q => q.active !== false);
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false);
+        // TAMBAH & HAPUS TEMA SOAL
+        document.getElementById("topicForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const input = document.getElementById("newTopicInput");
+            const name = input.value.trim();
+            if (!name) return;
+
+            try {
+                await addDoc(collection(db, "topics"), { name });
+                input.value = "";
+            } catch (err) {
+                alert("Gagal menambah tema: " + err.message);
+            }
+        });
+
+        window.deleteTopic = async function(id) {
+            if (!confirm("Hapus tema ini dari Firebase?")) return;
+            try {
+                await deleteDoc(doc(db, "topics", id));
+            } catch (err) {
+                alert("Gagal menghapus tema: " + err.message);
+            }
+        };
+
+        // FILTER KUIS MAHASISWI BERDASARKAN TEMA & TITLE LEMBAR KERJA
+        window.filterQuizByTopic = function() {
+            const selectedTopic = document.getElementById("studentTopicSelect").value;
+            const displayTitle = document.getElementById("displaySheetTitle");
+
+            if (selectedTopic === "Semua Tema") {
+                displayTitle.innerText = "Evaluasi Pre-Test Tajwid";
+            } else {
+                displayTitle.innerText = `Evaluasi Tajwid: ${selectedTopic}`;
+            }
+
+            const activePg = window.questionsPg.filter(q => q.active !== false && (selectedTopic === "Semua Tema" || q.topic === selectedTopic));
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (selectedTopic === "Semua Tema" || q.topic === selectedTopic));
 
             const pgContainer = document.getElementById("pgContainer");
             if (activePg.length === 0) {
-                pgContainer.innerHTML = `<p class="text-xs text-gray-400 italic">Belum ada soal PG yang diaktifkan ustadzah.</p>`;
+                pgContainer.innerHTML = `<p class="text-xs text-gray-400 italic bg-white p-4 rounded-xl border border-pink-100">Belum ada soal PG pada tema ini.</p>`;
             } else {
                 pgContainer.innerHTML = activePg.map((q, idx) => `
                     <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
-                        <div class="flex justify-between text-xs font-semibold text-gray-400">
-                            <span>Soal ${idx + 1} dari ${activePg.length}</span>
+                        <div class="flex justify-between items-center text-xs font-semibold text-gray-400">
+                            <span>Soal ${idx + 1} dari ${activePg.length} ${q.topic ? `&bull; <strong class="text-pink-600">${q.topic}</strong>` : ''}</span>
                             <span class="text-pink-500 font-bold bg-pink-50 px-2 py-0.5 rounded-md">Bobot: ${q.weight || 10} Poin</span>
                         </div>
                         ${q.img ? `<img src="${q.img.src}" class="${q.img.width || 'max-w-md'} ${q.img.align || 'mx-auto block'} rounded-xl border border-pink-100 mb-2">` : ''}
@@ -507,12 +617,12 @@
 
             const essayContainer = document.getElementById("essayContainer");
             if (activeEssay.length === 0) {
-                essayContainer.innerHTML = `<p class="text-xs text-gray-400 italic">Belum ada soal uraian yang diaktifkan ustadzah.</p>`;
+                essayContainer.innerHTML = `<p class="text-xs text-gray-400 italic bg-white p-4 rounded-xl border border-pink-100">Belum ada soal uraian pada tema ini.</p>`;
             } else {
                 essayContainer.innerHTML = activeEssay.map((q, idx) => `
                     <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3">
-                        <div class="flex justify-between text-xs font-semibold text-gray-400">
-                            <span>Uraian Soal ${idx + 1} dari ${activeEssay.length}</span>
+                        <div class="flex justify-between items-center text-xs font-semibold text-gray-400">
+                            <span>Uraian Soal ${idx + 1} dari ${activeEssay.length} ${q.topic ? `&bull; <strong class="text-pink-600">${q.topic}</strong>` : ''}</span>
                             <span class="text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-md">Maks. Bobot: ${q.weight || 10} Poin</span>
                         </div>
                         ${q.img ? `<img src="${q.img.src}" class="${q.img.width || 'max-w-md'} ${q.img.align || 'mx-auto block'} rounded-xl border border-pink-100 mb-2">` : ''}
@@ -523,6 +633,16 @@
             }
         };
 
+        // HITUNG SCORE MAKSIMAL
+        window.getMaxScores = function() {
+            const activePg = window.questionsPg.filter(q => q.active !== false);
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false);
+
+            const maxPg = activePg.reduce((sum, q) => sum + (parseInt(q.weight) || 10), 0);
+            const maxEssay = activeEssay.reduce((sum, q) => sum + (parseInt(q.weight) || 10), 0);
+            return { maxPg, maxEssay, totalMax: maxPg + maxEssay };
+        };
+
         // RENDER KELOLA SOAL (PEMERIKSA)
         window.renderTeacherManageQuestions = function() {
             const { maxPg, maxEssay, totalMax } = getMaxScores();
@@ -530,71 +650,72 @@
             document.getElementById("maxPgScore").innerText = maxPg;
             document.getElementById("maxEssayScore").innerText = maxEssay;
 
+            const selectedFilter = document.getElementById("teacherFilterTopic").value;
+
+            const filteredPg = window.questionsPg.filter(q => selectedFilter === "Semua Tema" || q.topic === selectedFilter);
             const managePgList = document.getElementById("managePgList");
-            managePgList.innerHTML = window.questionsPg.map((q, idx) => `
+            managePgList.innerHTML = filteredPg.map((q, idx) => `
                 <div class="p-4 rounded-xl border ${q.active !== false ? 'border-pink-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
                     <div class="space-y-1 flex-1">
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <span class="font-bold text-pink-600">No. ${idx + 1}</span>
-                            <span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded-md">Kunci: ${q.key}</span>
+                            <span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded-md">Tema: ${q.topic || 'Umum'}</span>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md">Kunci: ${q.key}</span>
                             <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">Bobot: ${q.weight || 10}</span>
-                            ${q.img ? `<span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-md">🖼️ Ada Gambar</span>` : ''}
                         </div>
                         <p class="font-medium text-gray-800">${q.text}</p>
                     </div>
                     <div class="flex items-center gap-3 self-end sm:self-center">
                         <label class="flex items-center gap-1.5 cursor-pointer font-bold text-xs text-emerald-600">
-                            <input type="checkbox" ${q.active !== false ? 'checked' : ''} onchange="toggleQuestionActive('pg', ${q.id})" class="accent-emerald-500"> Tampilkan
+                            <input type="checkbox" ${q.active !== false ? 'checked' : ''} onchange="toggleQuestionActive('pg', '${q.id}')" class="accent-emerald-500"> Tampilkan
                         </label>
-                        <button onclick="editQuestion('pg', ${q.id})" class="text-blue-500 hover:underline font-semibold">Edit</button>
-                        <button onclick="deleteQuestion('pg', ${q.id})" class="text-red-500 hover:underline font-semibold">Hapus</button>
+                        <button onclick="editQuestion('pg', '${q.id}')" class="text-blue-500 hover:underline font-semibold">Edit</button>
+                        <button onclick="deleteQuestion('pg', '${q.id}')" class="text-red-500 hover:underline font-semibold">Hapus</button>
                     </div>
                 </div>
             `).join('');
 
+            const filteredEssay = window.questionsEssay.filter(q => selectedFilter === "Semua Tema" || q.topic === selectedFilter);
             const manageEssayList = document.getElementById("manageEssayList");
-            manageEssayList.innerHTML = window.questionsEssay.map((q, idx) => `
+            manageEssayList.innerHTML = filteredEssay.map((q, idx) => `
                 <div class="p-4 rounded-xl border ${q.active !== false ? 'border-pink-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
                     <div class="space-y-1 flex-1">
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <span class="font-bold text-pink-600">Uraian ${idx + 1}</span>
+                            <span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded-md">Tema: ${q.topic || 'Umum'}</span>
                             <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">Bobot Maks: ${q.weight || 10}</span>
-                            ${q.img ? `<span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-md">🖼️ Ada Gambar</span>` : ''}
                         </div>
                         <p class="font-medium text-gray-800">${q.text}</p>
-                        <p class="text-[11px] text-gray-400 italic">Acuan Kunci: ${q.key || '-'}</p>
+                        <p class="text-[11px] text-pink-600 font-semibold italic">🔑 Kunci Acuan: ${q.key || '-'}</p>
                     </div>
                     <div class="flex items-center gap-3 self-end sm:self-center">
                         <label class="flex items-center gap-1.5 cursor-pointer font-bold text-xs text-emerald-600">
-                            <input type="checkbox" ${q.active !== false ? 'checked' : ''} onchange="toggleQuestionActive('essay', ${q.id})" class="accent-emerald-500"> Tampilkan
+                            <input type="checkbox" ${q.active !== false ? 'checked' : ''} onchange="toggleQuestionActive('essay', '${q.id}')" class="accent-emerald-500"> Tampilkan
                         </label>
-                        <button onclick="editQuestion('essay', ${q.id})" class="text-blue-500 hover:underline font-semibold">Edit</button>
-                        <button onclick="deleteQuestion('essay', ${q.id})" class="text-red-500 hover:underline font-semibold">Hapus</button>
+                        <button onclick="editQuestion('essay', '${q.id}')" class="text-blue-500 hover:underline font-semibold">Edit</button>
+                        <button onclick="deleteQuestion('essay', '${q.id}')" class="text-red-500 hover:underline font-semibold">Hapus</button>
                     </div>
                 </div>
             `).join('');
         };
 
-        window.toggleQuestionActive = function(type, id) {
+        window.toggleQuestionActive = async function(type, id) {
+            const collectionName = type === 'pg' ? "questions_pg" : "questions_essay";
             const list = type === 'pg' ? window.questionsPg : window.questionsEssay;
             const target = list.find(q => q.id === id);
             if (target) {
-                target.active = target.active === false ? true : false;
-                window.saveQuestionsToStorage();
+                const newStatus = target.active === false ? true : false;
+                await updateDoc(doc(db, collectionName, id), { active: newStatus });
             }
         };
 
-        window.deleteQuestion = function(type, id) {
-            if (!confirm("Yakin ingin menghapus soal ini?")) return;
-            if (type === 'pg') {
-                window.questionsPg = window.questionsPg.filter(q => q.id !== id);
-            } else {
-                window.questionsEssay = window.questionsEssay.filter(q => q.id !== id);
-            }
-            window.saveQuestionsToStorage();
+        window.deleteQuestion = async function(type, id) {
+            if (!confirm("Yakin ingin menghapus soal ini secara permanen dari Firebase?")) return;
+            const collectionName = type === 'pg' ? "questions_pg" : "questions_essay";
+            await deleteDoc(doc(db, collectionName, id));
         };
 
-        // KELOLA FORM DYNAMIC OPTIONS (A, B, C, D, E, F...)
+        // KELOLA FORM DYNAMIC OPTIONS
         window.currentPgOptions = [{ k: "A", t: "" }, { k: "B", t: "" }, { k: "C", t: "" }];
 
         window.renderPgOptionsForm = function() {
@@ -625,12 +746,11 @@
 
         window.removePgOption = function(idx) {
             window.currentPgOptions.splice(idx, 1);
-            // Re-label A, B, C...
             window.currentPgOptions.forEach((opt, i) => opt.k = String.fromCharCode(65 + i));
             renderPgOptionsForm();
         };
 
-        // KELOLA EDIT SOAL
+        // EDIT SOAL
         window.uploadedImageData = null;
 
         window.editQuestion = function(type, id) {
@@ -639,6 +759,7 @@
             if (!target) return;
 
             document.getElementById("qEditId").value = target.id;
+            document.getElementById("qTopic").value = target.topic || (window.topics[0]?.name || '');
             document.getElementById("qType").value = type;
             document.getElementById("qText").value = target.text;
             document.getElementById("qWeight").value = target.weight || 10;
@@ -658,15 +779,15 @@
             document.getElementById("questionModal").classList.remove("hidden");
         };
 
-        // SUBMIT FORM TAMBAH / EDIT SOAL
-        document.getElementById("questionForm").addEventListener("submit", (e) => {
+        // SUBMIT FORM SOAL KE FIREBASE
+        document.getElementById("questionForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const editId = document.getElementById("qEditId").value;
+            const topic = document.getElementById("qTopic").value;
             const type = document.getElementById("qType").value;
             const text = document.getElementById("qText").value.trim();
             const weight = parseInt(document.getElementById("qWeight").value) || 10;
 
-            // Kumpulkan data gambar jika diisi
             let imgData = null;
             const urlInput = document.getElementById("imgUrlInput").value.trim();
             if (urlInput) {
@@ -679,60 +800,68 @@
                 imgData = window.uploadedImageData;
             }
 
-            if (type === 'pg') {
-                const key = document.getElementById("qKey").value;
-                const newObj = {
-                    id: editId ? parseInt(editId) : Date.now(),
-                    text,
-                    weight,
-                    options: window.currentPgOptions,
-                    key,
-                    img: imgData,
-                    active: true
-                };
+            const btnSave = document.getElementById("btnSaveQuestion");
+            btnSave.disabled = true;
+            btnSave.innerText = "Menyimpan ke Firebase...";
 
-                if (editId) {
-                    const idx = window.questionsPg.findIndex(q => q.id == editId);
-                    if (idx !== -1) window.questionsPg[idx] = newObj;
-                } else {
-                    window.questionsPg.push(newObj);
-                }
-            } else {
-                const keyEssay = document.getElementById("qKeyEssay").value.trim();
-                const newObj = {
-                    id: editId ? parseInt(editId) : Date.now(),
-                    text,
-                    weight,
-                    key: keyEssay,
-                    img: imgData,
-                    active: true
-                };
+            try {
+                if (type === 'pg') {
+                    const key = document.getElementById("qKey").value;
+                    const dataObj = {
+                        topic,
+                        text,
+                        weight,
+                        options: window.currentPgOptions,
+                        key,
+                        img: imgData,
+                        active: true
+                    };
 
-                if (editId) {
-                    const idx = window.questionsEssay.findIndex(q => q.id == editId);
-                    if (idx !== -1) window.questionsEssay[idx] = newObj;
+                    if (editId) {
+                        await updateDoc(doc(db, "questions_pg", editId), dataObj);
+                    } else {
+                        await addDoc(collection(db, "questions_pg"), dataObj);
+                    }
                 } else {
-                    window.questionsEssay.push(newObj);
+                    const keyEssay = document.getElementById("qKeyEssay").value.trim();
+                    const dataObj = {
+                        topic,
+                        text,
+                        weight,
+                        key: keyEssay,
+                        img: imgData,
+                        active: true
+                    };
+
+                    if (editId) {
+                        await updateDoc(doc(db, "questions_essay", editId), dataObj);
+                    } else {
+                        await addDoc(collection(db, "questions_essay"), dataObj);
+                    }
                 }
+                closeQuestionModal();
+            } catch (err) {
+                alert("Gagal menyimpan soal: " + err.message);
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerText = "Simpan Soal ke Firebase";
             }
-
-            window.saveQuestionsToStorage();
-            closeQuestionModal();
         });
 
-        // SIMPAN JAWABAN KE FIRESTORE (KUIS MAHASISWI)
+        // SIMPAN JAWABAN MAHASISWI KE FIREBASE
         let startTime = Date.now();
 
         document.getElementById("quizForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const studentName = document.getElementById("studentName").value.trim();
+            const selectedTopic = document.getElementById("studentTopicSelect").value;
             const btnSubmit = document.getElementById("btnSubmitQuiz");
 
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = "Sedang mengirim jawaban... ⏳";
+            btnSubmit.innerHTML = "Sedang mengirim jawaban ke Firebase... ⏳";
 
-            const activePg = window.questionsPg.filter(q => q.active !== false);
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false);
+            const activePg = window.questionsPg.filter(q => q.active !== false && (selectedTopic === "Semua Tema" || q.topic === selectedTopic));
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (selectedTopic === "Semua Tema" || q.topic === selectedTopic));
 
             let pgScoreCalculated = 0;
             let correctCount = 0;
@@ -760,6 +889,7 @@
 
             const submissionData = {
                 studentName,
+                topic: selectedTopic,
                 answersPg,
                 answersEssay,
                 pgCorrectCount: correctCount,
@@ -777,6 +907,7 @@
                 await addDoc(collection(db, "submissions"), submissionData);
 
                 document.getElementById("modalStudentName").innerText = studentName;
+                document.getElementById("modalStudentTopic").innerText = selectedTopic;
                 document.getElementById("modalStudentDuration").innerText = durationText;
                 document.getElementById("studentSuccessModal").classList.remove("hidden");
                 document.getElementById("quizForm").reset();
@@ -787,30 +918,15 @@
             }
         });
 
-        // REALTIME LEADERBOARD & SUBMISSIONS
-        let submissions = [];
+        // LEADERBOARD & SUBMISSIONS RENDER
         let activeGradingId = null;
 
-        function loadSubmissions() {
-            const q = query(collection(db, "submissions"), orderBy("submittedAt", "desc"));
-            onSnapshot(q, (snapshot) => {
-                submissions = [];
-                snapshot.forEach(doc => {
-                    submissions.push({ id: doc.id, ...doc.data() });
-                });
-                renderSubmissionList();
-                renderLeaderboard();
-            });
-        }
-
-        // FITUR 1: FITUR HAPUS LEMBAR JAWABAN MAHASISWI
         window.deleteSubmission = async function(e, subId, studentName) {
-            e.stopPropagation(); // Stop trigger card click
-            if (!confirm(`Apakah Ustadzah yakin ingin menghapus lembar jawaban mahasiswi "${studentName}"? Data yang dihapus tidak dapat dikembalikan.`)) return;
+            e.stopPropagation();
+            if (!confirm(`Apakah Ustadzah yakin ingin menghapus lembar jawaban mahasiswi "${studentName}"?`)) return;
 
             try {
                 await deleteDoc(doc(db, "submissions", subId));
-                alert(`Lembar jawaban ${studentName} berhasil dihapus.`);
                 if (activeGradingId === subId) {
                     document.getElementById("gradingArea").classList.add("hidden");
                     activeGradingId = null;
@@ -822,12 +938,12 @@
 
         function renderLeaderboard() {
             const leaderboardBody = document.getElementById("leaderboardBody");
-            if (submissions.length === 0) {
-                leaderboardBody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400">Belum ada data pengerjaan mahasiswi.</td></tr>`;
+            if (window.submissions.length === 0) {
+                leaderboardBody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-400">Belum ada data pengerjaan mahasiswi di Firebase.</td></tr>`;
                 return;
             }
 
-            const sorted = [...submissions].sort((a, b) => {
+            const sorted = [...window.submissions].sort((a, b) => {
                 if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
                 return (a.durationSeconds || 999999) - (b.durationSeconds || 999999);
             });
@@ -842,6 +958,7 @@
                     <tr class="${index < 3 ? 'bg-amber-50/30 font-medium' : 'hover:bg-gray-50'} transition-all">
                         <td class="py-3 px-4 text-center">${rankBadge}</td>
                         <td class="py-3 px-4 font-bold text-gray-800">${s.studentName}</td>
+                        <td class="py-3 px-4 font-semibold text-pink-600">${s.topic || 'Semua Tema'}</td>
                         <td class="py-3 px-4 text-center text-gray-500">${s.durationText || '-'}</td>
                         <td class="py-3 px-4 text-center">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${s.status === 'Selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
@@ -859,7 +976,7 @@
         function renderSubmissionList() {
             const listContainer = document.getElementById("submissionList");
             const filterText = document.getElementById("searchStudentInput").value.toLowerCase();
-            const filtered = submissions.filter(s => s.studentName.toLowerCase().includes(filterText));
+            const filtered = window.submissions.filter(s => s.studentName.toLowerCase().includes(filterText));
             document.getElementById("submissionCount").innerText = filtered.length;
 
             if (filtered.length === 0) {
@@ -875,13 +992,13 @@
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${s.status === 'Selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
                                 ${s.status}
                             </span>
-                            <!-- TOMBOL HAPUS JAWABAN MAHASISWI -->
                             <button onclick="deleteSubmission(event, '${s.id}', '${s.studentName.replace(/'/g, "\\'")}')" title="Hapus Lembar Jawaban" class="text-xs bg-red-50 hover:bg-red-100 text-red-500 p-1 rounded-lg transition-all">
                                 🗑️
                             </button>
                         </div>
                     </div>
-                    <p class="text-[10px] text-gray-400 mt-1">Dikirim: ${s.submittedAt?.toDate ? s.submittedAt.toDate().toLocaleTimeString() : ''}</p>
+                    <p class="text-[10px] text-pink-600 font-bold mt-0.5">Tema: ${s.topic || 'Semua Tema'}</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Dikirim: ${s.submittedAt?.toDate ? s.submittedAt.toDate().toLocaleTimeString() : ''}</p>
                     <div class="mt-3 flex justify-between items-center border-t border-gray-50 pt-2 text-[10px] font-semibold text-gray-500">
                         <span>Skor PG: ${s.pgScore}</span>
                         <span class="text-pink-600 font-bold">Total: ${s.totalScore} Poin</span>
@@ -892,10 +1009,10 @@
 
         document.getElementById("searchStudentInput").addEventListener("input", renderSubmissionList);
 
-        // KOREKSI & SARAN PENILAIAN OTOMATIS
+        // KOREKSI & DISPLAY KUNCI ACUAN URAIAN
         window.selectSubmissionForGrading = function(id) {
             activeGradingId = id;
-            const sub = submissions.find(s => s.id === id);
+            const sub = window.submissions.find(s => s.id === id);
             if (!sub) return;
 
             renderSubmissionList();
@@ -905,13 +1022,13 @@
 
             document.getElementById("gradingArea").classList.remove("hidden");
             document.getElementById("gradingStudentName").innerText = sub.studentName;
-            document.getElementById("gradingMeta").innerText = `Waktu pengerjaan: ${sub.durationText} | Status: ${sub.status}`;
+            document.getElementById("gradingMeta").innerText = `Tema: ${sub.topic || 'Semua Tema'} | Durasi: ${sub.durationText} | Status: ${sub.status}`;
             document.getElementById("gradingTotalScore").innerText = sub.totalScore;
             document.getElementById("gradingPgScore").innerText = sub.pgScore;
             document.getElementById("gradingEssayScore").innerText = sub.essayScore;
             document.getElementById("pgCorrectCount").innerText = sub.pgCorrectCount;
 
-            const activePg = window.questionsPg.filter(q => q.active !== false);
+            const activePg = window.questionsPg.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
             const pgGradingContainer = document.getElementById("pgGradingContainer");
             pgGradingContainer.innerHTML = activePg.map(q => {
                 const userAns = sub.answersPg[q.id] || "Belum diisi";
@@ -919,35 +1036,49 @@
                 return `
                     <div class="bg-gray-50 p-4 rounded-xl border ${isCorrect ? 'border-emerald-100 bg-emerald-50/10' : 'border-rose-100 bg-rose-50/10'} text-xs">
                         <div class="flex justify-between font-bold mb-1">
-                            <span>Soal ID #${q.id} (Bobot: ${q.weight || 10})</span>
+                            <span>Soal Tema: ${q.topic || 'Umum'} (Bobot: ${q.weight || 10})</span>
                             <span class="${isCorrect ? 'text-emerald-600' : 'text-rose-500'}">${isCorrect ? `✓ Benar (+${q.weight || 10})` : '✗ Salah (0)'}</span>
                         </div>
                         <p class="text-gray-700 font-medium">${q.text}</p>
-                        <p class="mt-2 text-gray-500">Jawaban Mahasiswi: <strong class="text-gray-800">${userAns}</strong> (Kunci: ${q.key})</p>
+                        <p class="mt-2 text-gray-500">Jawaban Mahasiswi: <strong class="text-gray-800">${userAns}</strong> (Kunci PG: ${q.key})</p>
                     </div>
                 `;
             }).join('');
 
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false);
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
             const essayGradingContainer = document.getElementById("essayGradingContainer");
+            
+            // FITUR 2: TAMPILKAN JAWABAN MAHASISWI & KUNCI JAWABAN / ACUAN PENILAIAN
             essayGradingContainer.innerHTML = activeEssay.map(q => {
-                const userAns = sub.answersEssay[q.id] || "(Kosong)";
+                const userAns = sub.answersEssay[q.id] || "(Kosong / Belum Diisi)";
                 const currentGrade = sub.essayGrades ? (sub.essayGrades[q.id] || 0) : 0;
                 const maxW = q.weight || 10;
                 return `
                     <div class="bg-white p-5 rounded-2xl shadow-xs border border-pink-100/60 space-y-3 text-xs">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2">
-                            <span class="font-bold text-gray-700">Soal ID #${q.id}</span>
+                            <span class="font-bold text-gray-700">Soal Tema: ${q.topic || 'Umum'}</span>
                             <div class="flex items-center gap-2">
                                 <span class="text-gray-400 font-medium">Beri Nilai (0-${maxW}):</span>
                                 <input type="number" id="grade-essay-${q.id}" value="${currentGrade}" min="0" max="${maxW}" oninput="calculateRealtimeEssayScore()" class="w-16 px-2.5 py-1.5 border border-pink-200 rounded-lg text-center font-bold text-pink-600 focus:outline-none focus:border-pink-500 bg-pink-50/10">
                             </div>
                         </div>
                         <p class="font-semibold text-gray-800">${q.text}</p>
-                        <div class="p-4 bg-gray-50 rounded-xl text-gray-600 italic whitespace-pre-line border border-gray-100">
-                            ${userAns}
+                        
+                        <!-- JAWABAN MAHASISWI -->
+                        <div class="space-y-1">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase">Jawaban Mahasiswi:</span>
+                            <div class="p-3 bg-pink-50/20 rounded-xl text-gray-700 whitespace-pre-line border border-pink-100">
+                                ${userAns}
+                            </div>
                         </div>
-                        <p class="text-[11px] text-gray-400"><strong>Acuan Kunci:</strong> ${q.key || '-'}</p>
+
+                        <!-- DISPLAY KUNCI JAWABAN / ACUAN PENILAIAN USTADZAH -->
+                        <div class="p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl space-y-1">
+                            <span class="text-[10px] font-bold text-emerald-800 uppercase flex items-center gap-1">
+                                🔑 Kunci Jawaban / Acuan Penilaian Ustadzah:
+                            </span>
+                            <p class="text-emerald-900 font-medium whitespace-pre-line">${q.key || 'Belum ada acuan kunci yang diisi.'}</p>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -957,10 +1088,12 @@
             document.getElementById("gradingArea").scrollIntoView({ behavior: 'smooth' });
         };
 
-        // FITUR 2: SARAN PENILAIAN OTOMATIS & MENGKALKULASIKAN SKOR
         window.calculateRealtimeEssayScore = function() {
             let totalEssay = 0;
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false);
+            const sub = window.submissions.find(s => s.id === activeGradingId);
+            if (!sub) return;
+
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
             activeEssay.forEach(q => {
                 const input = document.getElementById(`grade-essay-${q.id}`);
                 if (input) {
@@ -970,33 +1103,29 @@
             });
             document.getElementById("essayCurrentScoreDisplay").innerText = totalEssay;
 
-            // Kalkulasi Predikat & Recommendation
-            const sub = submissions.find(s => s.id === activeGradingId);
-            if (sub) {
-                const currentPg = sub.pgScore || 0;
-                const grandTotal = currentPg + totalEssay;
-                const { totalMax } = getMaxScores();
-                const percentage = totalMax > 0 ? Math.round((grandTotal / totalMax) * 100) : 0;
+            const currentPg = sub.pgScore || 0;
+            const grandTotal = currentPg + totalEssay;
+            const { totalMax } = getMaxScores();
+            const percentage = totalMax > 0 ? Math.round((grandTotal / totalMax) * 100) : 0;
 
-                let predikat = "D (Kurang)";
-                let saran = "Mahasiswi disarankan melakukan remedial & pemantauan ulang pada bab Tajwid ini.";
-                if (percentage >= 85) {
-                    predikat = "A (Mumtaz / Sempurna)";
-                    saran = "Pemahaman Tajwid mahasiswi sangat luar biasa! Sangat direkomendasikan untuk lanjut ke bab berikutnya.";
-                } else if (percentage >= 70) {
-                    predikat = "B (Jayyid / Baik)";
-                    saran = "Pemahaman mahasiswi cukup baik. Lulus evaluasi dengan sedikit catatan perbaikan pada bagian uraian.";
-                } else if (percentage >= 60) {
-                    predikat = "C (Cukup)";
-                    saran = "Mencapai batas kelulusan minimal. Disarankan membaca ulang acuan materi tajwid.";
-                }
-
-                document.getElementById("recommendationText").innerHTML = `
-                    Capaian Akhir: <strong>${grandTotal} / ${totalMax} Poin (${percentage}%)</strong> &bull; 
-                    Rekomendasi Predikat: <strong class="text-pink-600">${predikat}</strong>.<br>
-                    <span class="italic text-gray-500 font-normal">"${saran}"</span>
-                `;
+            let predikat = "D (Kurang)";
+            let saran = "Mahasiswi disarankan melakukan remedial & pemantauan ulang pada bab Tajwid ini.";
+            if (percentage >= 85) {
+                predikat = "A (Mumtaz / Sempurna)";
+                saran = "Pemahaman Tajwid mahasiswi sangat luar biasa! Sangat direkomendasikan untuk lanjut ke bab berikutnya.";
+            } else if (percentage >= 70) {
+                predikat = "B (Jayyid / Baik)";
+                saran = "Pemahaman mahasiswi cukup baik. Lulus evaluasi dengan sedikit catatan perbaikan pada bagian uraian.";
+            } else if (percentage >= 60) {
+                predikat = "C (Cukup)";
+                saran = "Mencapai batas kelulusan minimal. Disarankan membaca ulang acuan materi tajwid.";
             }
+
+            document.getElementById("recommendationText").innerHTML = `
+                Capaian Akhir: <strong>${grandTotal} / ${totalMax} Poin (${percentage}%)</strong> &bull; 
+                Rekomendasi Predikat: <strong class="text-pink-600">${predikat}</strong>.<br>
+                <span class="italic text-gray-500 font-normal">"${saran}"</span>
+            `;
         };
 
         document.getElementById("btnSaveGrading").addEventListener("click", async () => {
@@ -1004,11 +1133,13 @@
 
             const btn = document.getElementById("btnSaveGrading");
             btn.disabled = true;
-            btn.innerText = "Menyimpan... ⏳";
+            btn.innerText = "Menyimpan ke Firebase... ⏳";
+
+            const currentSub = window.submissions.find(s => s.id === activeGradingId);
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (currentSub.topic === "Semua Tema" || !currentSub.topic || q.topic === currentSub.topic));
 
             const grades = {};
             let totalEssay = 0;
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false);
             activeEssay.forEach(q => {
                 const maxW = q.weight || 10;
                 const inputVal = Math.min(maxW, Math.max(0, parseFloat(document.getElementById(`grade-essay-${q.id}`)?.value) || 0));
@@ -1016,7 +1147,6 @@
                 totalEssay += inputVal;
             });
 
-            const currentSub = submissions.find(s => s.id === activeGradingId);
             const totalScoreFinal = (currentSub?.pgScore || 0) + totalEssay;
 
             try {
@@ -1031,12 +1161,12 @@
                 document.getElementById("gradingTotalScore").innerText = totalScoreFinal;
                 document.getElementById("gradingEssayScore").innerText = totalEssay;
 
-                alert("Penilaian berhasil disimpan!");
+                alert("Penilaian berhasil disimpan secara permanen di Firebase!");
             } catch (err) {
                 alert("Gagal menyimpan nilai: " + err.message);
             } finally {
                 btn.disabled = false;
-                btn.innerText = "💾 Simpan Hasil Penilaian";
+                btn.innerText = "💾 Simpan Hasil Penilaian ke Firebase";
             }
         });
 
@@ -1055,8 +1185,6 @@
                         🟢 Sesi Ustadzah Aktif
                     </span>
                 `;
-                renderTeacherManageQuestions();
-                loadSubmissions();
             } else {
                 const errDiv = document.getElementById("loginError");
                 errDiv.classList.remove("hidden");
@@ -1066,8 +1194,8 @@
 
         document.getElementById("loginForm").addEventListener("submit", handleLogin);
 
-        // Initial Render Mahasiswi
-        renderStudentQuiz();
+        // INISIALISASI APPLIKASI FIREBASE
+        initFirebaseListeners();
     </script>
 
     <!-- FUNGSI GLOBAL INTERFACE & MANAJEMEN GAMBAR -->
@@ -1168,7 +1296,6 @@
             }
         }
 
-        // FITUR 4 & 5: HANDLER CROP, SCALE, & TAB GAMBAR
         function switchImageTab(tab) {
             const btnUpload = document.getElementById("tabImgUploadBtn");
             const btnUrl = document.getElementById("tabImgUrlBtn");
@@ -1212,7 +1339,6 @@
 
             imgPreview.style.transform = `scale(${scale}) rotate(${rotate}deg)`;
 
-            // Simpan gambar yang telah disesuaikan sebagai Base64 Data URL
             window.uploadedImageData = {
                 src: imgPreview.src,
                 width: "max-w-md",
