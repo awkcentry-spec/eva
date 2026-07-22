@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Evaluasi Pre-Test Tajwid & Laman Pemeriksa</title>
+    <title>banksoal.me</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Google Fonts Loaders -->
@@ -43,10 +43,13 @@
         <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <span class="text-xl">✨</span>
-                <span id="navBarTitle" class="font-bold text-gray-800 text-sm md:text-base">Pre-Test Tajwid</span>
+                <span id="navBarTitle" class="font-bold text-gray-800 text-sm md:text-base">banksoal.me</span>
             </div>
             <div id="navRight">
-                <!-- Tombol Login Kustom Telah Dihilangkan Berdasarkan Poin 6 -->
+                <!-- Tombol Login Kanan Atas -->
+                <button onclick="toggleLoginModal(true)" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all shadow-xs cursor-pointer flex items-center gap-1.5">
+                    🔐 Login
+                </button>
             </div>
         </div>
     </nav>
@@ -86,7 +89,7 @@
                         </div>
                     </div>
 
-                    <!-- POIN 10: PANEL NAMA LENGKAP & NIM DISEMBUNYIKAN SEBELUM VERIFIKASI TOKEN -->
+                    <!-- PANEL NAMA LENGKAP & NIM DISEMBUNYIKAN SEBELUM VERIFIKASI TOKEN -->
                     <div id="studentIdentityPanel" class="hidden transition-all duration-300">
                         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nama Lengkap & NIM</label>
                         <input type="text" id="studentName" placeholder="Masukkan nama dan nomor induk mahasiswi..." class="w-full px-4 py-2.5 border border-rose-200/60 rounded-xl text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-rose-50/10">
@@ -215,7 +218,7 @@
         </div>
     </div>
 
-    <!-- POIN 2 & 4: MODAL SETTING AKUN PEMERIKSA & VERIFIKASI OTP WHATSAPP -->
+    <!-- MODAL SETTING AKUN PEMERIKSA & VERIFIKASI OTP WHATSAPP -->
     <div id="userSettingsModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-6">
         <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl border border-rose-100 space-y-4">
             <div class="flex justify-between items-center border-b border-rose-100 pb-2">
@@ -261,7 +264,7 @@
         </div>
     </div>
 
-    <!-- POIN 3: MODAL PROSES MASAL & VERIFIKASI OTP WA -->
+    <!-- MODAL PROSES MASAL & VERIFIKASI OTP WA -->
     <div id="bulkOtpModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100 space-y-4 text-center">
             <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">📲</div>
@@ -281,7 +284,7 @@
         </div>
     </div>
 
-    <!-- MODAL CUSTOM HEADER BAR & UI/UX CONFIG (POIN 5: WARNA TAB CUSTOM) -->
+    <!-- MODAL CUSTOM HEADER BAR & UI/UX CONFIG -->
     <div id="headerConfigModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-6">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 my-auto">
             <h3 class="text-sm font-bold text-gray-800 uppercase border-b border-rose-100 pb-2 flex items-center gap-2">
@@ -329,7 +332,6 @@
                     </div>
                 </div>
 
-                <!-- POIN 5: KUSTOMISASI WARNA TAB HALAMAN UTAMA -->
                 <div class="bg-rose-50/30 p-3 rounded-2xl border border-rose-100 space-y-2">
                     <p class="text-[11px] font-bold text-rose-600 uppercase">2. Tema Warna, Font, & Warna Tab Navigation</p>
                     <div class="grid grid-cols-3 gap-2">
@@ -353,7 +355,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-rose-600 uppercase mb-0.5">Warna Tab Navbar</label>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Warna Tab Navbar</label>
                             <select id="cfgTabColor" class="w-full px-2 py-1.5 border border-rose-200 rounded-xl text-xs font-bold bg-white text-rose-600">
                                 <option value="#f43f5e">Rose / Red</option>
                                 <option value="#059669">Emerald / Green</option>
@@ -511,7 +513,6 @@
                     <p class="text-xs text-gray-500 mt-0.5">Kelola bank soal, kelola tema, token terenkripsi, kustomisasi header, dan periksa hasil.</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <!-- POIN 2: TOMBOL MENU SETTING PENGGUNA -->
                     <button onclick="openUserSettingsModal()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
                         ⚙️ Pengaturan Akun
                     </button>
@@ -539,7 +540,6 @@
             <!-- SECTION 1: KELOLA SOAL & TEMA -->
             <div id="sectionManageQuestions" class="space-y-6">
                 
-                <!-- POIN 1, 3, 9: PANEL TOOLBAR EXPORT/IMPORT FDB & BACKUP MASAL DENGAN OTP -->
                 <div class="bg-white p-5 rounded-2xl shadow-xs border border-rose-100/60 space-y-3">
                     <h3 class="text-xs font-bold text-rose-600 uppercase tracking-wider flex items-center gap-2">
                         📦 Panel Backup Mutakhir & Operasi Data Masal (OTP Protected)
@@ -561,7 +561,6 @@
                     </div>
                 </div>
 
-                <!-- PANEL MANAJEMEN TEMA SOAL & TOKEN -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center border-b border-rose-50 pb-2">
                         <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
@@ -582,7 +581,6 @@
                     <div id="topicBadgeContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1"></div>
                 </div>
 
-                <!-- BANK SOAL: SEARCH BOX & FILTER TIPE SOAL -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-rose-50 pb-3">
                         <div>
@@ -593,7 +591,6 @@
                             </p>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <!-- POIN 8 & 9: FUNGSI PRINT & EXPORT/IMPORT PER TEMA -->
                             <button onclick="printQuestionsByTopic()" class="bg-gray-800 hover:bg-gray-900 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1 cursor-pointer">
                                 🖨️ Print Soal Tema
                             </button>
@@ -612,7 +609,6 @@
                         </div>
                     </div>
 
-                    <!-- SEARCH BOX & FILTER BAR -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div class="md:col-span-1">
                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Cari Teks Pertanyaan Soal</label>
@@ -635,20 +631,17 @@
                     </div>
                 </div>
 
-                <!-- NOTIFIKASI PEMBERITAHUAN -->
                 <div id="teacherSelectPrompt" class="bg-white p-8 rounded-2xl shadow-xs border border-rose-100/60 text-center space-y-2">
                     <span class="text-3xl">🔍</span>
                     <h4 class="text-sm font-bold text-gray-700">Pilih Tema Soal Terlebih Dahulu</h4>
                     <p class="text-xs text-gray-400">Silakan pilih salah satu tema soal pada filter di atas atau cari melalui tombol "Lihat Semua Tema Soal" untuk mengelola bank soal.</p>
                 </div>
 
-                <!-- SOAL PG LIST -->
                 <div id="managePgSection" class="hidden bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <h4 class="text-xs font-bold text-rose-600 uppercase tracking-widest border-b border-rose-50 pb-2">Daftar Soal Pilihan Ganda (PG)</h4>
                     <div id="managePgList" class="space-y-3"></div>
                 </div>
 
-                <!-- SOAL ESAI LIST -->
                 <div id="manageEssaySection" class="hidden bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <h4 class="text-xs font-bold text-rose-600 uppercase tracking-widest border-b border-rose-50 pb-2">Daftar Soal Uraian / Esai</h4>
                     <div id="manageEssayList" class="space-y-3"></div>
@@ -657,7 +650,6 @@
 
             <!-- SECTION 2: PENILAIAN MAHASISWI & LEADERBOARD -->
             <div id="sectionGrading" class="hidden space-y-8">
-                <!-- PANEL PERINGKAT -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center pb-2 border-b border-gray-100">
                         <div>
@@ -687,7 +679,6 @@
                     </div>
                 </div>
 
-                <!-- DAFTAR JAWABAN MAHASISWI -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center pb-2 border-b border-gray-100">
                         <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
@@ -703,7 +694,6 @@
                     <div id="submissionList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2"></div>
                 </div>
 
-                <!-- DETAIL AREA PEMERIKSAAN -->
                 <div id="gradingArea" class="hidden bg-white p-6 rounded-2xl border border-rose-200/80 shadow-sm space-y-6">
                     <div id="gradingBanner" class="bg-gradient-to-r from-rose-500 to-pink-600 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative">
                         <div>
@@ -725,7 +715,6 @@
                         </div>
                     </div>
 
-                    <!-- SARAN PENILAIAN -->
                     <div id="gradingRecommendationBox" class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 p-4 rounded-xl text-xs space-y-1">
                         <div class="flex items-center gap-2 font-bold text-amber-800">
                             <span>💡</span>
@@ -734,7 +723,6 @@
                         <p id="recommendationText" class="text-gray-700 font-medium pl-6">Mengkalkulasikan estimasi capaian mahasiswi...</p>
                     </div>
 
-                    <!-- KONTEN LEMBAR KOREKSI -->
                     <div id="gradingBodyContent" class="space-y-6">
                         <div class="flex border-b border-rose-200 gap-2" id="gradingTabHeader">
                             <button onclick="switchGradingTab('pg')" id="tabPgBtn" class="px-5 py-3 font-semibold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2">
@@ -745,7 +733,6 @@
                             </button>
                         </div>
 
-                        <!-- TAB 1: PG -->
                         <div id="tabPgContent" class="space-y-4">
                             <div class="bg-rose-50/60 border border-rose-100 p-4 rounded-xl text-xs text-gray-600 flex justify-between items-center">
                                 <p>💡 <strong>Info Koreksi PG:</strong> Nilai otomatis terhitung dari bobot soal aktif.</p>
@@ -754,7 +741,6 @@
                             <div id="pgGradingContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                         </div>
 
-                        <!-- TAB 2: ESAI & DISPLAY KUNCI JAWABAN -->
                         <div id="tabEssayContent" class="hidden space-y-4">
                             <div class="bg-amber-50/60 border border-amber-100 p-4 rounded-xl text-xs text-amber-800 flex justify-between items-center">
                                 <p>💡 <strong>Info Koreksi Uraian:</strong> Cocokkan dengan kunci acuan di bawah jawaban lalu masukan skor.</p>
@@ -817,19 +803,16 @@
             return Math.floor(100000 + Math.random() * 900000).toString();
         }
 
-        // SIMULASI / INTEGRASI SERVICE WA OTP
         window.sendWhatsAppOtp = function(targetPhone, otpCode) {
             console.log(`[WA OTP Gateway] Mengirim OTP ${otpCode} ke nomor ${targetPhone}`);
             alert(`💬 [WhatsApp OTP Service]\n\nKode OTP Anda adalah: ${otpCode}\n\nKode ini dikirimkan ke nomor WhatsApp: ${targetPhone}`);
         };
 
-        // LISTEN SNAPSHOTS REALTIME
         function initFirebaseListeners() {
-            // Setting UI & Header
             onSnapshot(doc(db, "settings", "headerConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.getElementById("navBarTitle").innerText = data.navTitle || "Pre-Test Tajwid";
+                    document.getElementById("navBarTitle").innerText = data.navTitle || "banksoal.me";
                     if (document.getElementById("displayMainTitle")) document.getElementById("displayMainTitle").innerText = data.mainTitle || "Evaluasi Pre-Test Tajwid";
                     document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "Evaluasi Mahasiswi ✨";
                     document.getElementById("headerQuoteDisplay").innerText = data.headerQuote || '"Bersungguh-sungguhlah..."';
@@ -843,14 +826,12 @@
                 }
             });
 
-            // Settings Akun User Pemeriksa
             onSnapshot(doc(db, "settings", "userAccount"), (docSnap) => {
                 if (docSnap.exists()) {
                     window.userSettings = docSnap.data();
                 }
             });
 
-            // Topics Realtime
             onSnapshot(collection(db, "topics"), (snapshot) => {
                 window.topics = [];
                 snapshot.forEach(doc => window.topics.push({ id: doc.id, ...doc.data() }));
@@ -860,21 +841,18 @@
                 updateTopicDropdowns();
             });
 
-            // Questions PG
             onSnapshot(collection(db, "questions_pg"), (snapshot) => {
                 window.questionsPg = [];
                 snapshot.forEach(doc => window.questionsPg.push({ id: doc.id, ...doc.data() }));
                 window.renderTeacherManageQuestions();
             });
 
-            // Questions Essay
             onSnapshot(collection(db, "questions_essay"), (snapshot) => {
                 window.questionsEssay = [];
                 snapshot.forEach(doc => window.questionsEssay.push({ id: doc.id, ...doc.data() }));
                 window.renderTeacherManageQuestions();
             });
 
-            // Submissions
             const subQuery = query(collection(db, "submissions"), orderBy("submittedAt", "desc"));
             onSnapshot(subQuery, (snapshot) => {
                 window.submissions = [];
@@ -884,7 +862,6 @@
             });
         }
 
-        // KUSTOMISASI WARNA TAB & TEMA (POIN 5)
         function applyThemeStyle(colorScheme, fontName, tabColor) {
             document.documentElement.style.setProperty('--primary-font', `'${fontName}', sans-serif`);
             document.documentElement.style.setProperty('--custom-tab-active', tabColor || '#f43f5e');
@@ -897,7 +874,6 @@
             else body.classList.add("bg-rose-50/40", "text-gray-700");
         }
 
-        // POIN 7: POPULASI DROPDOWN TEMA + ICON COPY TOKEN SOAL
         function updateTopicDropdowns() {
             const qTopicSelect = document.getElementById("qTopic");
             const teacherFilter = document.getElementById("teacherFilterTopic");
@@ -934,7 +910,15 @@
             alert(`📋 Kode Token "${token}" berhasil disalin ke clipboard!`);
         };
 
-        // POIN 2 & 4: SETTING AKUN PEMERIKSA & VERIFIKASI OTP
+        window.toggleLoginModal = function(show) {
+            const modal = document.getElementById("loginModal");
+            if (show) {
+                modal.classList.remove("hidden");
+            } else {
+                modal.classList.add("hidden");
+            }
+        };
+
         window.openUserSettingsModal = function() {
             document.getElementById("settingFullName").value = window.userSettings.fullName || "Ustadzah Tajwid";
             document.getElementById("settingPhone").value = window.userSettings.phone || "082341208990";
@@ -984,7 +968,6 @@
             }
         });
 
-        // POIN 3: PENGELOLAAN PROSES MASAL & VERIFIKASI OTP WA
         window.triggerBulkOtp = function(actionType, event) {
             window.pendingBulkAction = actionType;
             if (actionType === 'import_file' && event) {
@@ -1067,7 +1050,6 @@
             }
         };
 
-        // POIN 8: CETAK (PRINT) SOAL BERDASARKAN TEMA
         window.printQuestionsByTopic = function() {
             const topic = document.getElementById("teacherFilterTopic").value;
             if (!topic) return alert("Pilih tema soal terlebih dahulu!");
@@ -1118,7 +1100,6 @@
             printArea.classList.add("hidden");
         };
 
-        // POIN 9: EXPORT PER TEMA (PDF, DOC, JSON)
         window.exportTopicData = function(format) {
             const topic = document.getElementById("teacherFilterTopic").value;
             if (!topic) return alert("Pilih tema soal terlebih dahulu!");
@@ -1159,7 +1140,6 @@
             }
         };
 
-        // POIN 10: VERIFIKASI TOKEN & MEMBUKA WADAH IDENTITAS & SOAL
         window.verifyAndLoadQuiz = function() {
             const inputToken = document.getElementById("inputTopicToken").value.trim().toUpperCase();
             if (!inputToken) return alert("Silakan scan QR Code atau ketik kode token ujian terlebih dahulu!");
@@ -1176,13 +1156,11 @@
             window.activeStudentTopicObj = foundTopic;
             window.loadQuizQuestions(foundTopic.name);
             
-            // TAMPILKAN PANEL IDENTITAS MAHASISWI & SOAL SAMA-SAMA KETIKA TOKEN VALID
             document.getElementById("studentIdentityPanel").classList.remove("hidden");
             document.getElementById("studentQuestionsWrapper").classList.remove("hidden");
             alert(`✅ Token Sah! Soal Evaluasi Tema "${foundTopic.name}" Berhasil Dimuat.`);
         };
 
-        // LOGIN
         window.handleLogin = function(e) {
             e.preventDefault();
             const user = document.getElementById("loginUsername").value.trim();
