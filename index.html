@@ -204,7 +204,7 @@
         </div>
     </div>
 
-    <!-- MODAL BACKUP & IMPORT SOAL (DI-UPDATE DENGAN TOMBOL HAPUS SOAL FIREBASE) -->
+    <!-- MODAL BACKUP & IMPORT SOAL -->
     <div id="dataManageModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
@@ -236,7 +236,7 @@
                     </button>
                 </div>
 
-                <!-- FITUR BARU: HAPUS SOAL FIREBASE -->
+                <!-- HAPUS SOAL FIREBASE -->
                 <div class="bg-red-50/60 p-4 rounded-2xl border border-red-200 space-y-3">
                     <h4 class="font-bold text-red-600 uppercase flex items-center gap-1.5">🗑️ 3. Pembersihan Bank Soal (Firebase)</h4>
                     <p class="text-gray-500">Hapus soal secara masal dari database Firebase. Harap berhati-hati karena data tidak dapat dikembalikan setelah dihapus.</p>
@@ -970,13 +970,17 @@
                 }
             });
 
-            // 2. Load Topics & Token Realtime
+            // 2. Load Topics & Token Realtime (PERBAIKAN RULE TEMA PERMANEN ALL DATA)
             onSnapshot(collection(db, "topics"), (snapshot) => {
                 window.topics = [];
                 snapshot.forEach(doc => window.topics.push({ id: doc.id, ...doc.data() }));
-                if (window.topics.length === 0) {
-                    addDoc(collection(db, "topics"), { name: "Tajwid Dasar", token: window.generateRandomToken() });
+
+                // Pastikan tema "All data" selalu ada di database
+                const hasAllData = window.topics.some(t => t.name === "All data");
+                if (!hasAllData) {
+                    addDoc(collection(db, "topics"), { name: "All data", token: window.generateRandomToken() });
                 }
+
                 updateTopicDropdowns();
                 
                 if (window.activeStudentTopicObj) {
@@ -1022,12 +1026,31 @@
             await updateDoc(doc(db, "topics", topicId), { token: newToken });
         };
 
-        // HAPUS TEMA SOAL SECARA PERMANEN
+        // HAPUS TEMA SOAL SECARA PERMANEN & PINDAHKAN SOALNYA KE "All data"
         window.deleteTopic = async function(topicId, topicName) {
-            if (!confirm(`⚠️ Apakah Ustadzah yakin ingin MENGHAPUS TEMA "${topicName}" secara permanen dari Firebase?`)) return;
+            if (topicName === "All data") {
+                alert("⚠️ Tema 'All data' adalah tema utama bawaan sistem dan TIDAK BISA dihapus!");
+                return;
+            }
+
+            if (!confirm(`⚠️ Apakah Ustadzah yakin ingin MENGHAPUS TEMA "${topicName}"?\n\nSemua soal yang berada di tema ini akan SECARA OTOMATIS dialihkan ke tema "All data".`)) return;
+            
             try {
+                // 1. Ubah semua soal PG yang memiliki tema ini menjadi "All data"
+                const pgToUpdate = window.questionsPg.filter(q => q.topic === topicName);
+                for (const q of pgToUpdate) {
+                    await updateDoc(doc(db, "questions_pg", q.id), { topic: "All data" });
+                }
+
+                // 2. Ubah semua soal Esai yang memiliki tema ini menjadi "All data"
+                const essayToUpdate = window.questionsEssay.filter(q => q.topic === topicName);
+                for (const q of essayToUpdate) {
+                    await updateDoc(doc(db, "questions_essay", q.id), { topic: "All data" });
+                }
+
+                // 3. Hapus dokumen tema di Firebase
                 await deleteDoc(doc(db, "topics", topicId));
-                alert(`✅ Tema "${topicName}" Berhasil Dihapus.`);
+                alert(`✅ Tema "${topicName}" berhasil dihapus. Semua soal terkait telah dipindahkan ke tema "All data".`);
             } catch(err) {
                 alert("Gagal menghapus tema: " + err.message);
             }
@@ -1035,6 +1058,10 @@
 
         // BUKA MODAL EDIT TEMA SOAL
         window.openEditTopicModal = function(topicId, currentName) {
+            if (currentName === "All data") {
+                alert("⚠️ Tema 'All data' adalah tema bawaan sistem dan TIDAK BISA diubah namanya!");
+                return;
+            }
             document.getElementById("editTopicId").value = topicId;
             document.getElementById("editTopicNameInput").value = currentName;
             document.getElementById("editTopicModal").classList.remove("hidden");
@@ -1051,8 +1078,30 @@
             const newName = document.getElementById("editTopicNameInput").value.trim();
             if (!newName || !topicId) return;
 
+            if (newName.toLowerCase() === "all data") {
+                alert("⚠️ Nama 'All data' dilindungi dan tidak boleh digunakan sebagai nama tema lain.");
+                return;
+            }
+
             try {
+                // Cari nama lama tema
+                const oldTopic = window.topics.find(t => t.id === topicId);
+                const oldName = oldTopic ? oldTopic.name : null;
+
                 await updateDoc(doc(db, "topics", topicId), { name: newName });
+
+                // Jika nama berubah, update semua soal yang terkait ke nama tema baru
+                if (oldName && oldName !== newName) {
+                    const pgToUpdate = window.questionsPg.filter(q => q.topic === oldName);
+                    for (const q of pgToUpdate) {
+                        await updateDoc(doc(db, "questions_pg", q.id), { topic: newName });
+                    }
+                    const essayToUpdate = window.questionsEssay.filter(q => q.topic === oldName);
+                    for (const q of essayToUpdate) {
+                        await updateDoc(doc(db, "questions_essay", q.id), { topic: newName });
+                    }
+                }
+
                 closeEditTopicModal();
             } catch(err) {
                 alert("Gagal mengubah nama tema: " + err.message);
@@ -1065,6 +1114,11 @@
             const nameInput = document.getElementById("newTopicInput");
             const name = nameInput.value.trim();
             if (!name) return;
+
+            if (name.toLowerCase() === "all data") {
+                alert("⚠️ Tema 'All data' sudah ada secara bawaan sistem!");
+                return;
+            }
 
             await addDoc(collection(db, "topics"), { name, token: window.generateRandomToken() });
             nameInput.value = "";
@@ -1145,16 +1199,22 @@
             if(exportTopicSelect) exportTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
             if(deleteTopicSelect) deleteTopicSelect.innerHTML = `<option value="">-- Pilih Tema yang Dihapus --</option>` + topicOptions;
 
-            badgeContainer.innerHTML = window.topics.map(t => `
+            badgeContainer.innerHTML = window.topics.map(t => {
+                const isSystemAllData = t.name === "All data";
+                return `
                 <div class="bg-rose-50/80 p-3.5 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2.5 text-xs shadow-xs">
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-gray-800 flex items-center gap-1.5">
                             <span class="text-rose-500">🏷️</span> ${t.name}
                         </span>
                         <div class="flex items-center gap-1.5">
-                            <button onclick="openEditTopicModal('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Edit Nama Tema" class="text-blue-500 hover:text-blue-700 font-bold px-1.5 py-0.5 rounded-md hover:bg-blue-100 transition-all cursor-pointer text-xs">✏️ Edit</button>
-                            <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema Aktif</span>
-                            <button onclick="deleteTopic('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Hapus Tema Soal" class="text-red-400 hover:text-red-600 font-bold px-1.5 py-0.5 rounded-md hover:bg-red-100 transition-all cursor-pointer text-xs">✕</button>
+                            ${!isSystemAllData ? `
+                                <button onclick="openEditTopicModal('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Edit Nama Tema" class="text-blue-500 hover:text-blue-700 font-bold px-1.5 py-0.5 rounded-md hover:bg-blue-100 transition-all cursor-pointer text-xs">✏️ Edit</button>
+                                <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema Aktif</span>
+                                <button onclick="deleteTopic('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Hapus Tema Soal" class="text-red-400 hover:text-red-600 font-bold px-1.5 py-0.5 rounded-md hover:bg-red-100 transition-all cursor-pointer text-xs">✕</button>
+                            ` : `
+                                <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">🔒 Bawaan Sistem (Permanen)</span>
+                            `}
                         </div>
                     </div>
                     <div class="flex items-center justify-between pt-2 border-t border-rose-100">
@@ -1168,7 +1228,7 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         window.copyTokenToClipboard = function(token, btnEl) {
@@ -1260,7 +1320,7 @@
             reader.readAsText(file);
         };
 
-        // FUNGSI BARU 1: HAPUS SOAL BERDASARKAN TEMA DI FIREBASE
+        // HAPUS SOAL BERDASARKAN TEMA DI FIREBASE
         window.executeDeleteQuestionsByTopic = async function() {
             const selectedTopic = document.getElementById("deleteTopicSelect").value;
             if (!selectedTopic) return alert("Silakan pilih tema soal yang ingin dihapus!");
@@ -1298,7 +1358,7 @@
             }
         };
 
-        // FUNGSI BARU 2: HAPUS SEMUA SOAL DI FIREBASE
+        // HAPUS SEMUA SOAL DI FIREBASE
         window.executeDeleteAllQuestions = async function() {
             const totalPg = window.questionsPg.length;
             const totalEssay = window.questionsEssay.length;
@@ -1444,8 +1504,9 @@
             displayTitle.innerText = `Tema: ${selectedTopic}`;
             displayTitle.classList.remove("hidden");
 
-            const activePg = window.questionsPg.filter(q => q.active !== false && q.topic === selectedTopic);
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false && q.topic === selectedTopic);
+            // Jika tema yang dipilih adalah "All data", muat seluruh soal aktif
+            const activePg = window.questionsPg.filter(q => q.active !== false && (selectedTopic === "All data" || q.topic === selectedTopic));
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (selectedTopic === "All data" || q.topic === selectedTopic));
 
             const pgContainer = document.getElementById("pgContainer");
             if (activePg.length === 0) {
@@ -1518,11 +1579,11 @@
             }
 
             const filteredPg = window.questionsPg.filter(q => {
-                return (q.topic === selectedFilterTopic) && q.text.toLowerCase().includes(searchKeyword);
+                return (selectedFilterTopic === "All data" || q.topic === selectedFilterTopic) && q.text.toLowerCase().includes(searchKeyword);
             });
 
             const filteredEssay = window.questionsEssay.filter(q => {
-                return (q.topic === selectedFilterTopic) && q.text.toLowerCase().includes(searchKeyword);
+                return (selectedFilterTopic === "All data" || q.topic === selectedFilterTopic) && q.text.toLowerCase().includes(searchKeyword);
             });
 
             if (selectedFilterType === 'essay') managePgSection.classList.add("hidden");
@@ -1716,7 +1777,7 @@
             }
         });
 
-        // SUBMIT KUIS MAHASISWI (LENGKAP DENGAN HAPUS DRAFT CACHE DARI LOCAL STORAGE)
+        // SUBMIT KUIS MAHASISWI
         let startTime = Date.now();
 
         document.getElementById("quizForm").addEventListener("submit", async (e) => {
@@ -1733,8 +1794,8 @@
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = "Sedang mengirim jawaban ke Firebase... ⏳";
 
-            const activePg = window.questionsPg.filter(q => q.active !== false && q.topic === selectedTopic);
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false && q.topic === selectedTopic);
+            const activePg = window.questionsPg.filter(q => q.active !== false && (selectedTopic === "All data" || q.topic === selectedTopic));
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (selectedTopic === "All data" || q.topic === selectedTopic));
 
             let pgScoreCalculated = 0;
             let correctCount = 0;
@@ -1918,7 +1979,7 @@
             document.getElementById("gradingEssayScore").innerText = sub.essayScore;
             document.getElementById("pgCorrectCount").innerText = sub.pgCorrectCount;
 
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "All data" || sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
             const hasEssay = activeEssay.length > 0;
 
             const scoreBreakdownText = document.getElementById("scoreBreakdownText");
@@ -1932,7 +1993,7 @@
                 tabEssayBtn.classList.remove("hidden");
             }
 
-            const activePg = window.questionsPg.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
+            const activePg = window.questionsPg.filter(q => q.active !== false && (sub.topic === "All data" || sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
             const pgGradingContainer = document.getElementById("pgGradingContainer");
             pgGradingContainer.innerHTML = activePg.map(q => {
                 const userAns = sub.answersPg[q.id] || "Belum diisi";
@@ -1996,7 +2057,7 @@
             const sub = window.submissions.find(s => s.id === activeGradingId);
             if (!sub) return;
 
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "All data" || sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
             
             if (activeEssay.length > 0) {
                 activeEssay.forEach(q => {
@@ -2043,7 +2104,7 @@
             btn.innerText = "Menyimpan ke Firebase... ⏳";
 
             const currentSub = window.submissions.find(s => s.id === activeGradingId);
-            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (currentSub.topic === "Semua Tema" || !currentSub.topic || q.topic === currentSub.topic));
+            const activeEssay = window.questionsEssay.filter(q => q.active !== false && (currentSub.topic === "All data" || currentSub.topic === "Semua Tema" || !currentSub.topic || q.topic === currentSub.topic));
 
             const grades = {};
             let totalEssay = 0;
@@ -2077,7 +2138,7 @@
             }
         });
 
-        // HANDLE LOGIN PEMERIKSA (DENGAN SESI PERMANEN)
+        // HANDLE LOGIN PEMERIKSA
         window.handleLogin = function(e) {
             e.preventDefault();
             const user = document.getElementById("loginUsername").value.trim();
@@ -2087,7 +2148,6 @@
             const validPass = window.accountSettings.password || "tajwidok";
 
             if (user === validUser && pass === validPass) {
-                // SIMPAN STATUS LOGIN PERMANEN KE LOCAL STORAGE
                 localStorage.setItem("isTeacherLoggedIn", "true");
 
                 document.getElementById("loginModal").classList.add("hidden");
