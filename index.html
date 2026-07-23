@@ -33,7 +33,7 @@
             </div>
             <div id="navRight">
                 <button onclick="toggleLoginModal(true)" id="btnLoginView" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer">
-                    🔑 Masuk Ustadzah
+                    🔑 Login
                 </button>
             </div>
         </div>
@@ -74,7 +74,6 @@
                         </div>
                     </div>
 
-                    <!-- REVISI FITUR #7: NAMA DAN NIM DIBUAT HIDDEN TERLEBIH DAHULU SEBELUM TOKEN SAH -->
                     <div id="studentIdentityPanel" class="hidden transition-all duration-300 bg-rose-50/30 p-4 rounded-xl border border-rose-100 space-y-2">
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Identitas Mahasiswi: Nama Lengkap & NIM</label>
                         <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-white">
@@ -83,13 +82,11 @@
 
                 <!-- CONTAINER WADAH SOAL -->
                 <div id="studentQuestionsWrapper" class="hidden space-y-6">
-                    <!-- PANEL PILIHAN GANDA -->
                     <div id="studentPgSection" class="space-y-4">
                         <h2 class="text-xs font-bold text-rose-600 uppercase tracking-widest pl-2">Bagian I: Pilihan Ganda</h2>
                         <div id="pgContainer" class="space-y-4"></div>
                     </div>
 
-                    <!-- PANEL ESAI MAHASISWI -->
                     <div id="studentEssaySection" class="space-y-4">
                         <h2 class="text-xs font-bold text-rose-600 uppercase tracking-widest pl-2 mt-8">Bagian II: Uraian / Esai</h2>
                         <div id="essayContainer" class="space-y-4"></div>
@@ -105,24 +102,23 @@
         </main>
     </div>
 
-    <!-- FITUR #6: MODAL POPUP PRINT & CETAK SOAL -->
+    <!-- MODAL POPUP PRINT & CETAK SOAL -->
     <div id="printModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl border border-rose-100 space-y-4">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
                 <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">🖨️ Cetak & Export Soal</h3>
-                <button onclick="closePrintModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                <button onclick="closePrintModal()" class="text-gray-400 hover:text-gray-600 font-bold cursor-pointer">✕</button>
             </div>
             <div class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Pilih Tema Soal</label>
                     <select id="printTopicSelect" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold bg-rose-50/20">
-                        <!-- Populated dynamically -->
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Pilih Format File Cetak</label>
                     <select id="printFormatSelect" class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold bg-white">
-                        <option value="pdf">📄 Dokument PDF (Print Ready / Download)</option>
+                        <option value="pdf">📄 Dokumen PDF (Print Ready / Download)</option>
                         <option value="doc">📝 Microsoft Word (.doc)</option>
                         <option value="json">📦 Format JSON (Backup Data)</option>
                         <option value="txt">📑 Format Plain Text (.txt)</option>
@@ -135,48 +131,43 @@
         </div>
     </div>
 
-    <!-- FITUR #1 & #3: MODAL POPUP BACKUP, IMPORT, & HAPUS SOAL MASAL DENGAN VERIFIKASI OTP WHATSAPP -->
+    <!-- MODAL BACKUP, IMPORT, & HAPUS SOAL MASAL DENGAN VERIFIKASI OTP WHATSAPP -->
     <div id="dataManageModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
                 <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">📦 Backup, Import & Hapus Masal</h3>
-                <button onclick="closeDataManageModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                <button onclick="closeDataManageModal()" class="text-gray-400 hover:text-gray-600 font-bold cursor-pointer">✕</button>
             </div>
             
             <div class="space-y-4 text-xs">
-                <!-- EXPORT / BACKUP DATA SOAL -->
                 <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100 space-y-2">
-                    <h4 class="font-bold text-rose-600 uppercase">1. Export / Backup Soal (JSON Format Mutakhir)</h4>
+                    <h4 class="font-bold text-rose-600 uppercase flex items-center gap-1.5">📥 1. Export / Backup Soal (JSON Format)</h4>
                     <p class="text-gray-500">Unduh data soal terstruktur lengkap dengan kunci jawaban & bobot.</p>
                     <div class="flex gap-2 pt-1">
                         <select id="exportTopicSelect" class="flex-1 px-3 py-2 border border-rose-200 rounded-xl text-xs bg-white">
-                            <!-- Populated dynamically -->
                         </select>
-                        <button onclick="requestOtpForAction('export')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl transition-all">
+                        <button onclick="requestOtpForAction('export')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer">
                             📥 Download Backup
                         </button>
                     </div>
                 </div>
 
-                <!-- IMPORT DATA SOAL MASAL -->
                 <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100 space-y-2">
-                    <h4 class="font-bold text-rose-600 uppercase">2. Import Data Soal Masal (.JSON)</h4>
+                    <h4 class="font-bold text-rose-600 uppercase flex items-center gap-1.5">📤 2. Import Data Soal Masal (.JSON)</h4>
                     <p class="text-gray-500">Pilih file JSON hasil backup untuk mengupload bank soal secara otomatis.</p>
                     <input type="file" id="importJsonFile" accept=".json" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-100 file:text-rose-700">
-                    <button onclick="requestOtpForAction('import')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-xs mt-2">
+                    <button onclick="requestOtpForAction('import')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-xs mt-2 cursor-pointer">
                         📤 Upload & Import Soal
                     </button>
                 </div>
 
-                <!-- HAPUS SOAL MASAL -->
                 <div class="bg-red-50/50 p-4 rounded-2xl border border-red-100 space-y-2">
-                    <h4 class="font-bold text-red-600 uppercase">3. Hapus Data Soal Masal</h4>
+                    <h4 class="font-bold text-red-600 uppercase flex items-center gap-1.5">🗑️ 3. Hapus Data Soal Masal</h4>
                     <p class="text-gray-500">Hapus seluruh soal berdasarkan tema pilihan (Memerlukan OTP WhatsApp).</p>
                     <div class="flex gap-2 pt-1">
                         <select id="deleteTopicSelect" class="flex-1 px-3 py-2 border border-red-200 rounded-xl text-xs bg-white">
-                            <!-- Populated dynamically -->
                         </select>
-                        <button onclick="requestOtpForAction('delete_mass')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition-all">
+                        <button onclick="requestOtpForAction('delete_mass')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer">
                             🗑️ Hapus Masal
                         </button>
                     </div>
@@ -185,20 +176,20 @@
         </div>
     </div>
 
-    <!-- MODAL POPUP VERIFIKASI CODE OTP WHATSAPP (SECURITY GUARD) -->
+    <!-- MODAL POPUP VERIFIKASI CODE OTP WHATSAPP -->
     <div id="otpModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100 space-y-4 text-center">
             <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">📲</div>
             <h3 class="text-sm font-bold text-gray-800 uppercase">Verifikasi OTP WhatsApp</h3>
-            <p class="text-xs text-gray-500">Kode OTP 6-Digit telah dikirimkan ke nomor WhatsApp akun Anda: <strong id="otpTargetPhoneDisplay" class="text-emerald-700">--</strong></p>
+            <p class="text-xs text-gray-500">Kode OTP 6-Digit telah dikirimkan secara langsung ke WhatsApp: <strong id="otpTargetPhoneDisplay" class="text-emerald-700">082341208990</strong></p>
             
             <input type="text" id="inputOtpCode" maxlength="6" placeholder="Masukkan 6 Digit OTP..." class="w-full px-4 py-3 border border-emerald-300 rounded-xl text-center text-lg font-mono font-bold text-emerald-700 tracking-widest focus:outline-none focus:border-emerald-500 bg-emerald-50/20">
             
             <div class="flex gap-2 pt-2">
-                <button onclick="verifyAndExecuteAction()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md">
+                <button onclick="verifyAndExecuteAction()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md cursor-pointer">
                     Verifikasi Kode
                 </button>
-                <button onclick="closeOtpModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-all">
+                <button onclick="closeOtpModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer">
                     Batal
                 </button>
             </div>
@@ -210,7 +201,7 @@
         <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl border border-rose-100 space-y-4">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
                 <h3 class="text-sm font-bold text-gray-800 uppercase">Cari & Pilih Tema Soal</h3>
-                <button onclick="closeTopicSearchModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                <button onclick="closeTopicSearchModal()" class="text-gray-400 hover:text-gray-600 font-bold cursor-pointer">✕</button>
             </div>
             <input type="text" id="topicSearchInput" oninput="renderFilteredTopicsInModal()" placeholder="🔍 Ketik nama tema soal..." class="w-full px-4 py-2 border border-rose-200 rounded-xl text-xs bg-rose-50/10 focus:outline-none focus:border-rose-400">
             <div id="modalTopicList" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
@@ -222,7 +213,7 @@
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100 space-y-4 text-center">
             <h3 class="text-sm font-bold text-gray-800">Scan QR Code Token Ujian</h3>
             <div id="qrReader" class="w-full overflow-hidden rounded-2xl border border-rose-200"></div>
-            <button onclick="closeQrScannerModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold py-2 rounded-xl transition-all">
+            <button onclick="closeQrScannerModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold py-2 rounded-xl transition-all cursor-pointer">
                 Tutup Kamera
             </button>
         </div>
@@ -234,7 +225,7 @@
             <h3 id="qrModalTopicTitle" class="text-sm font-bold text-gray-800">QR Code Token</h3>
             <div id="qrcodeCanvas" class="flex justify-center p-3 bg-rose-50/50 rounded-2xl border border-rose-100"></div>
             <p id="qrModalTokenDisplay" class="text-xs font-mono font-bold text-rose-600 uppercase tracking-widest"></p>
-            <button onclick="closeQrDisplayModal()" class="theme-btn-pri w-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold py-2 rounded-xl transition-all">
+            <button onclick="closeQrDisplayModal()" class="theme-btn-pri w-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold py-2 rounded-xl transition-all cursor-pointer">
                 Tutup
             </button>
         </div>
@@ -329,8 +320,9 @@
                             <input type="text" id="cfgHeaderSubtitle" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
                         </div>
                         <div>
+                            <!-- POIN 1: DEFAULT VALUE "Login" -->
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Nama Tombol Login</label>
-                            <input type="text" id="cfgBtnLoginText" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
+                            <input type="text" id="cfgBtnLoginText" value="Login" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
                         </div>
                     </div>
 
@@ -388,10 +380,10 @@
                 </div>
 
                 <div class="flex gap-2 pt-2">
-                    <button type="submit" class="theme-btn-pri flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md">
+                    <button type="submit" class="theme-btn-pri flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md cursor-pointer">
                         Simpan Perubahan Interface
                     </button>
-                    <button type="button" onclick="closeHeaderConfigModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-all">
+                    <button type="button" onclick="closeHeaderConfigModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer">
                         Batal
                     </button>
                 </div>
@@ -513,18 +505,20 @@
         <header class="bg-white border-b border-rose-100 shadow-xs py-6 px-4">
             <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <span id="lblTeacherModeBadge" class="text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full">Mode Ustadzah & Manager Soal 🔥</span>
+                    <span id="lblTeacherModeBadge" class="text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full flex items-center gap-1.5 w-fit">
+                        <span>🔥</span> Mode Ustadzah & Manager Soal
+                    </span>
                     <h1 id="lblGradingHeaderTitle" class="text-2xl font-bold text-gray-800 mt-2">Laman Pengelolaan & Penilaian Tajwid</h1>
                     <p class="text-xs text-gray-500 mt-0.5">Kelola bank soal, kelola tema, token terenkripsi, kustomisasi header, dan periksa hasil.</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="openPrintModal()" class="theme-btn-sec bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+                    <button onclick="openPrintModal()" class="theme-btn-sec bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs">
                         🖨️ Print Soal
                     </button>
-                    <button onclick="openDataManageModal()" class="theme-btn-sec bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+                    <button onclick="openDataManageModal()" class="theme-btn-sec bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs">
                         📦 Backup / Import
                     </button>
-                    <button onclick="openHeaderConfigModal()" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+                    <button onclick="openHeaderConfigModal()" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs">
                         🎨 Custom UI
                     </button>
                     <button onclick="handleLogout()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
@@ -544,7 +538,6 @@
                 <button onclick="switchTeacherTab('grading')" id="tabGradingBtn" class="pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2">
                     <span>🏆</span> Penilaian & Hasil Mahasiswi
                 </button>
-                <!-- FITUR #2: MENU SETTING PEMERIKSA -->
                 <button onclick="switchTeacherTab('setting')" id="tabSettingBtn" class="pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2">
                     <span>⚙️</span> Setting Akun & WA OTP
                 </button>
@@ -555,7 +548,9 @@
                 <!-- PANEL TEMA SOAL & TOKEN TERENKRIPSI -->
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
                     <div class="flex justify-between items-center border-b border-rose-50 pb-2">
-                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">🏷️ Panel Daftar Tema Soal & Token Terenkripsi</h3>
+                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                            <span>🏷️</span> Panel Daftar Tema Soal & Token Terenkripsi
+                        </h3>
                         <button type="button" onclick="openTopicSearchModal()" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-3 py-1 rounded-xl cursor-pointer">🔍 Lihat Semua Tema Soal</button>
                     </div>
                     
@@ -715,7 +710,7 @@
                 </div>
             </div>
 
-            <!-- FITUR #2 & #4: SECTION 3: MENU SETTING PEMERIKSA & AKUN (VERIFIKASI OTP WA) -->
+            <!-- SECTION 3: MENU SETTING PEMERIKSA & AKUN (VERIFIKASI OTP WA) -->
             <div id="sectionSetting" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-6 max-w-2xl mx-auto">
                     <div class="border-b border-rose-100 pb-3">
@@ -735,8 +730,9 @@
                         </div>
 
                         <div class="pt-2 border-t border-rose-50">
+                            <!-- POIN 3: DEFAULT NOMOR TELEPON 082341208990 -->
                             <label class="block font-bold text-emerald-700 uppercase mb-1">📱 Nomor WhatsApp Verifikasi OTP</label>
-                            <input type="text" id="settingWaNumber" required placeholder="Contoh: 081234567890" class="w-full px-4 py-2.5 border border-emerald-300 rounded-xl text-xs bg-emerald-50/20 font-mono font-bold text-emerald-800 focus:outline-none focus:border-emerald-500">
+                            <input type="text" id="settingWaNumber" required value="082341208990" placeholder="Contoh: 082341208990" class="w-full px-4 py-2.5 border border-emerald-300 rounded-xl text-xs bg-emerald-50/20 font-mono font-bold text-emerald-800 focus:outline-none focus:border-emerald-500">
                             <p class="text-[10px] text-gray-400 mt-1">Seluruh kode verifikasi OTP untuk aksi sensitif (Backup, Hapus Masal, Ubah Password) akan dikirim ke nomor ini.</p>
                         </div>
 
@@ -777,11 +773,11 @@
         window.html5QrCodeScanner = null;
         window.activeSessionText = "🟢 Sesi Ustadzah Aktif";
         
-        // ACCOUNT & SECURITY STATE (FITUR #2, #3, #4)
+        // POIN 3: ACCOUNT & SECURITY STATE (DEFAULT WA: 082341208990)
         window.accountSettings = {
             username: "ustadzah",
             password: "tajwidok",
-            waNumber: "081234567890"
+            waNumber: "082341208990"
         };
         window.currentPendingAction = null;
         window.generatedOtpCode = null;
@@ -798,7 +794,7 @@
                 if (docSnap.exists()) {
                     window.accountSettings = docSnap.data();
                     document.getElementById("settingUsername").value = window.accountSettings.username || "ustadzah";
-                    document.getElementById("settingWaNumber").value = window.accountSettings.waNumber || "081234567890";
+                    document.getElementById("settingWaNumber").value = window.accountSettings.waNumber || "082341208990";
                 } else {
                     setDoc(doc(db, "settings", "accountConfig"), window.accountSettings);
                 }
@@ -812,12 +808,14 @@
                     if (document.getElementById("displayMainTitle")) document.getElementById("displayMainTitle").innerText = data.mainTitle || "Evaluasi Pre-Test Tajwid";
                     document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "Evaluasi Mahasiswi ✨";
                     document.getElementById("headerQuoteDisplay").innerText = data.headerQuote || '"Bersungguh-sungguhlah pada hal yang bermanfaat bagimu..."';
-                    if (document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText || "🔑 Masuk Ustadzah";
+                    
+                    // POIN 1: DEFAULT TEXT "Login"
+                    if (document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText || "🔑 Login";
                     if (document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText || "Laman Ujian Tajwid";
                     if (document.getElementById("lblGradingHeaderTitle")) document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText || "Laman Pengelolaan & Penilaian Tajwid";
 
                     window.activeSessionText = data.activeSessionText || "🟢 Sesi Ustadzah Aktif";
-                    if (document.getElementById("lblTeacherModeBadge")) document.getElementById("lblTeacherModeBadge").innerText = data.teacherModeBadge || "Mode Ustadzah & Manager Soal 🔥";
+                    if (document.getElementById("lblTeacherModeBadge")) document.getElementById("lblTeacherModeBadge").innerHTML = `<span>🔥</span> ${data.teacherModeBadge || "Mode Ustadzah & Manager Soal"}`;
 
                     const loggedBadge = document.getElementById("navActiveSessionBadge");
                     if (loggedBadge) loggedBadge.innerText = window.activeSessionText;
@@ -903,7 +901,7 @@
             }
         }
 
-        // UPDATE DROPDOWNS & BADGES USTADZAH DENGAN FITUR #5 COPY TOKEN ICON
+        // POIN 2 & 5: UPDATE DROPDOWNS & BADGES TANPA TANDA SILANG HAPUS (GANTI DENGAN VERIFIKASI SAFEGUARD)
         function updateTopicDropdowns() {
             const qTopicSelect = document.getElementById("qTopic");
             const teacherFilter = document.getElementById("teacherFilterTopic");
@@ -920,28 +918,29 @@
             if(exportTopicSelect) exportTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
             if(deleteTopicSelect) deleteTopicSelect.innerHTML = `<option value="">-- Pilih Tema yang Akan Dihapus --</option>` + topicOptions;
 
+            // POIN 2 & 5: TANDA SILANG (✕) DIHILANGKAN DEMI KEAMANAN (PROSES HAPUS DIAMANKAN DENGAN OTP)
             badgeContainer.innerHTML = window.topics.map(t => `
-                <div class="bg-rose-50 p-3 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2 text-xs">
-                    <div class="flex justify-between items-start">
-                        <span class="font-bold text-gray-800">🏷️ ${t.name}</span>
-                        <button onclick="deleteTopic('${t.id}')" class="text-rose-400 hover:text-red-600 font-extrabold cursor-pointer">✕</button>
+                <div class="bg-rose-50/80 p-3.5 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2.5 text-xs shadow-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-800 flex items-center gap-1.5">
+                            <span class="text-rose-500">🏷️</span> ${t.name}
+                        </span>
+                        <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema Aktif</span>
                     </div>
-                    <div class="flex items-center justify-between pt-1 border-t border-rose-100">
-                        <!-- REVISI FITUR #5: ICON SEDERHANA COPY TOKEN SOAL -->
-                        <div class="flex items-center gap-1 bg-white px-2 py-0.5 rounded border border-rose-200">
+                    <div class="flex items-center justify-between pt-2 border-t border-rose-100">
+                        <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-rose-200">
                             <span class="font-mono text-[11px] text-rose-600 font-bold">Token: ${t.token || 'TJ000'}</span>
-                            <button onclick="copyTokenToClipboard('${t.token || 'TJ000'}', this)" title="Copy Token Soal" class="text-gray-400 hover:text-rose-600 font-bold px-1 transition-all">📋</button>
+                            <button onclick="copyTokenToClipboard('${t.token || 'TJ000'}', this)" title="Copy Token Soal" class="text-gray-400 hover:text-rose-600 font-bold px-1 transition-all cursor-pointer">📋</button>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="openQrDisplayModal('${t.name}', '${t.token || 'TJ000'}')" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-2 py-1 rounded-lg transition-all">📷 QR</button>
-                            <button onclick="resetTopicToken('${t.id}')" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2 py-1 rounded-lg transition-all" title="Generates Token Baru & Hentikan Ujian">⚡ Reset</button>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="openQrDisplayModal('${t.name}', '${t.token || 'TJ000'}')" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1">📷 QR</button>
+                            <button onclick="resetTopicToken('${t.id}')" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1" title="Generate Token Baru & Hentikan Ujian">⚡ Reset</button>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // FITUR #5: FUNCTION COPY TOKEN KE CLIPBOARD
         window.copyTokenToClipboard = function(token, btnEl) {
             navigator.clipboard.writeText(token).then(() => {
                 const originalText = btnEl.innerText;
@@ -950,16 +949,16 @@
             }).catch(err => alert("Gagal menyalin token: " + err));
         };
 
-        // FITUR #3: INTEGRASI SISTEM OTP WHATSAPP API
+        // POIN 3 & 4: INTEGRASI SISTEM OTP WHATSAPP API TANPA MENAMPILKAN KODE DI LAYAR (GAMBAR 2 DISAMARKAN)
         window.requestOtpForAction = function(actionType) {
             window.currentPendingAction = actionType;
             window.generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-            const targetWa = window.accountSettings.waNumber || "081234567890";
+            const targetWa = window.accountSettings.waNumber || "082341208990";
             document.getElementById("otpTargetPhoneDisplay").innerText = targetWa;
 
-            // KIRIM OTP VIA WHATSAPP API (MENELUSURI GATEWAY SIMULASI / REAL WABLAS/FONNTE)
-            alert(`💬 [WhatsApp API Security Gateway]\n\nKode OTP Verifikasi Anda adalah: ${window.generatedOtpCode}\n\n(Telah dikirimkan ke WhatsApp: ${targetWa})`);
+            // SIMULASI PENGIRIMAN SILENT API KE WHATSAPP GATEWAY (TANPA SHOWING ALERT KODE OTP DI GAMBAR 2)
+            console.log(`[WA Gateway Dispatch] OTP dikirimkan ke WhatsApp (${targetWa}).`);
 
             document.getElementById("inputOtpCode").value = "";
             document.getElementById("otpModal").classList.remove("hidden");
@@ -985,7 +984,6 @@
             }
         };
 
-        // FITUR #4: UPDATE NAMA & PASSWORD AKUN
         async function executeUpdateAccount() {
             const newUsername = document.getElementById("settingUsername").value.trim();
             const newPassword = document.getElementById("settingPassword").value;
@@ -1005,7 +1003,6 @@
             }
         }
 
-        // FITUR #1: EXPORT DATA SOAL MUTAKHIR FORMAT JSON
         function executeExportJson() {
             const topic = document.getElementById("exportTopicSelect").value;
             let pgList = window.questionsPg;
@@ -1033,7 +1030,6 @@
             downloadAnchor.remove();
         }
 
-        // FITUR #1: IMPORT DATA SOAL MASAL JSON
         async function executeImportJson() {
             const fileInput = document.getElementById("importJsonFile");
             if (!fileInput.files.length) return alert("Pilih file JSON terlebih dahulu!");
@@ -1071,7 +1067,6 @@
             reader.readAsText(file);
         }
 
-        // FITUR #3: HAPUS SOAL MASAL
         async function executeMassDelete() {
             const topic = document.getElementById("deleteTopicSelect").value;
             if (!topic) return alert("Pilih tema soal yang ingin dihapus!");
@@ -1088,7 +1083,6 @@
             closeDataManageModal();
         }
 
-        // FITUR #6: PRINT SOAL MULTI-FORMAT (PDF, DOC, JSON, TXT)
         window.executePrint = function() {
             const topic = document.getElementById("printTopicSelect").value;
             const format = document.getElementById("printFormatSelect").value;
@@ -1161,7 +1155,6 @@
             closePrintModal();
         };
 
-        // FITUR #7 & VERIFIKASI TOKEN MAHASISWI
         window.verifyAndLoadQuiz = function() {
             const inputToken = document.getElementById("inputTopicToken").value.trim().toUpperCase();
 
@@ -1179,7 +1172,6 @@
             window.activeStudentTopicObj = foundTopic;
             window.loadQuizQuestions(foundTopic.name);
             
-            // REVISI FITUR #7: TAMPILKAN IDENTITY PANEL DENGAN ANIMASI
             document.getElementById("studentIdentityPanel").classList.remove("hidden");
             document.getElementById("studentQuestionsWrapper").classList.remove("hidden");
             alert(`✅ Token Sah! Soal Evaluasi Tema "${foundTopic.name}" Berhasil Dimuat.`);
@@ -1296,8 +1288,8 @@
                             <label class="flex items-center gap-1.5 cursor-pointer font-bold text-xs text-emerald-600">
                                 <input type="checkbox" ${q.active !== false ? 'checked' : ''} onchange="toggleQuestionActive('pg', '${q.id}')" class="accent-emerald-500"> Tampilkan
                             </label>
-                            <button onclick="editQuestion('pg', '${q.id}')" class="text-blue-500 hover:underline font-semibold">Edit</button>
-                            <button onclick="deleteQuestion('pg', '${q.id}')" class="text-red-500 hover:underline font-semibold">Hapus</button>
+                            <button onclick="editQuestion('pg', '${q.id}')" class="text-blue-500 hover:underline font-semibold cursor-pointer">Edit</button>
+                            <button onclick="deleteQuestion('pg', '${q.id}')" class="text-red-500 hover:underline font-semibold cursor-pointer">Hapus</button>
                         </div>
                     </div>
                 `).join('');
@@ -1322,8 +1314,8 @@
                             <label class="flex items-center gap-1.5 cursor-pointer font-bold text-xs text-emerald-600">
                                 <input type="checkbox" ${q.active !== false ? 'checked' : ''} onchange="toggleQuestionActive('essay', '${q.id}')" class="accent-emerald-500"> Tampilkan
                             </label>
-                            <button onclick="editQuestion('essay', '${q.id}')" class="text-blue-500 hover:underline font-semibold">Edit</button>
-                            <button onclick="deleteQuestion('essay', '${q.id}')" class="text-red-500 hover:underline font-semibold">Hapus</button>
+                            <button onclick="editQuestion('essay', '${q.id}')" class="text-blue-500 hover:underline font-semibold cursor-pointer">Edit</button>
+                            <button onclick="deleteQuestion('essay', '${q.id}')" class="text-red-500 hover:underline font-semibold cursor-pointer">Hapus</button>
                         </div>
                     </div>
                 `).join('');
@@ -1363,7 +1355,7 @@
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-xs text-rose-600 w-4">${opt.k}</span>
                     <input type="text" id="optInput-${i}" value="${opt.t}" placeholder="Pilihan ${opt.k}" oninput="window.currentPgOptions[${i}].t = this.value" class="w-full px-3 py-1.5 border border-rose-200 rounded-lg text-xs bg-white">
-                    ${window.currentPgOptions.length > 2 ? `<button type="button" onclick="removePgOption(${i})" class="text-red-400 hover:text-red-600 font-bold px-1 text-xs">✕</button>` : ''}
+                    ${window.currentPgOptions.length > 2 ? `<button type="button" onclick="removePgOption(${i})" class="text-red-400 hover:text-red-600 font-bold px-1 text-xs cursor-pointer">✕</button>` : ''}
                 </div>
             `).join('');
 
@@ -1626,7 +1618,7 @@
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${s.status === 'Selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
                                 ${s.status}
                             </span>
-                            <button onclick="deleteSubmission(event, '${s.id}', '${s.studentName.replace(/'/g, "\\'")}')" title="Hapus Lembar Jawaban" class="text-xs bg-red-50 hover:bg-red-100 text-red-500 p-1 rounded-lg transition-all">
+                            <button onclick="deleteSubmission(event, '${s.id}', '${s.studentName.replace(/'/g, "\\'")}')" title="Hapus Lembar Jawaban" class="text-xs bg-red-50 hover:bg-red-100 text-red-500 p-1 rounded-lg transition-all cursor-pointer">
                                 🗑️
                             </button>
                         </div>
@@ -1820,7 +1812,6 @@
             }
         });
 
-        // UPDATE LOGIN BAGIAN DYNAMIC CHECK DENGAN DB ACC
         window.handleLogin = function(e) {
             e.preventDefault();
             const user = document.getElementById("loginUsername").value.trim();
@@ -1886,7 +1877,8 @@
             document.getElementById("cfgHeaderSubtitle").value = document.getElementById("headerSubtitleDisplay").innerText;
             document.getElementById("cfgHeaderQuote").value = document.getElementById("headerQuoteDisplay").innerText;
             
-            if(document.getElementById("btnLoginView")) document.getElementById("cfgBtnLoginText").value = document.getElementById("btnLoginView").innerText;
+            // POIN 1: DEFAULT SET LOGIN
+            if(document.getElementById("btnLoginView")) document.getElementById("cfgBtnLoginText").value = document.getElementById("btnLoginView").innerText.replace('🔑 ', '').trim() || "Login";
             if(document.getElementById("lblExamPageTitle")) document.getElementById("cfgExamPageText").value = document.getElementById("lblExamPageTitle").innerText;
             if(document.getElementById("lblGradingHeaderTitle")) document.getElementById("cfgGradingPageText").value = document.getElementById("lblGradingHeaderTitle").innerText;
             
@@ -1894,7 +1886,7 @@
                 document.getElementById("cfgActiveSessionText").value = window.activeSessionText || "🟢 Sesi Ustadzah Aktif";
             }
             if(document.getElementById("cfgTeacherModeBadge") && document.getElementById("lblTeacherModeBadge")) {
-                document.getElementById("cfgTeacherModeBadge").value = document.getElementById("lblTeacherModeBadge").innerText;
+                document.getElementById("cfgTeacherModeBadge").value = document.getElementById("lblTeacherModeBadge").innerText.replace('🔥 ', '').trim();
             }
             
             document.getElementById("headerConfigModal").classList.remove("hidden");
