@@ -204,15 +204,16 @@
         </div>
     </div>
 
-    <!-- MODAL BACKUP & IMPORT SOAL -->
+    <!-- MODAL BACKUP & IMPORT SOAL (DI-UPDATE DENGAN TOMBOL HAPUS SOAL FIREBASE) -->
     <div id="dataManageModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
-                <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">📦 Backup & Import Soal</h3>
+                <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">📦 Backup, Import & Hapus Soal</h3>
                 <button onclick="closeDataManageModal()" class="text-gray-400 hover:text-gray-600 font-bold cursor-pointer">✕</button>
             </div>
             
             <div class="space-y-4 text-xs">
+                <!-- EXPORT BACKUP -->
                 <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100 space-y-2">
                     <h4 class="font-bold text-rose-600 uppercase flex items-center gap-1.5">📥 1. Export / Backup Soal (JSON Format)</h4>
                     <p class="text-gray-500">Unduh data soal terstruktur lengkap dengan kunci jawaban & bobot.</p>
@@ -225,6 +226,7 @@
                     </div>
                 </div>
 
+                <!-- IMPORT SOAL -->
                 <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100 space-y-2">
                     <h4 class="font-bold text-rose-600 uppercase flex items-center gap-1.5">📤 2. Import Data Soal Masal (.JSON)</h4>
                     <p class="text-gray-500">Pilih file JSON hasil backup untuk mengupload bank soal secara otomatis.</p>
@@ -232,6 +234,28 @@
                     <button onclick="executeImportJson()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-xs mt-2 cursor-pointer">
                         📤 Upload & Import Soal
                     </button>
+                </div>
+
+                <!-- FITUR BARU: HAPUS SOAL FIREBASE -->
+                <div class="bg-red-50/60 p-4 rounded-2xl border border-red-200 space-y-3">
+                    <h4 class="font-bold text-red-600 uppercase flex items-center gap-1.5">🗑️ 3. Pembersihan Bank Soal (Firebase)</h4>
+                    <p class="text-gray-500">Hapus soal secara masal dari database Firebase. Harap berhati-hati karena data tidak dapat dikembalikan setelah dihapus.</p>
+                    
+                    <div class="space-y-2 pt-1">
+                        <!-- HAPUS BERDASARKAN TEMA -->
+                        <div class="flex gap-2">
+                            <select id="deleteTopicSelect" class="flex-1 px-3 py-2 border border-red-200 rounded-xl text-xs bg-white font-medium text-gray-700">
+                            </select>
+                            <button onclick="executeDeleteQuestionsByTopic()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap">
+                                🗑️ Hapus Per Tema
+                            </button>
+                        </div>
+
+                        <!-- HAPUS SEMUA SOAL -->
+                        <button onclick="executeDeleteAllQuestions()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5">
+                            🔥 Hapus SEMUA Soal di Firebase
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1110,6 +1134,7 @@
             const teacherFilter = document.getElementById("teacherFilterTopic");
             const printTopicSelect = document.getElementById("printTopicSelect");
             const exportTopicSelect = document.getElementById("exportTopicSelect");
+            const deleteTopicSelect = document.getElementById("deleteTopicSelect");
             const badgeContainer = document.getElementById("topicBadgeContainer");
 
             const topicOptions = window.topics.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
@@ -1118,6 +1143,7 @@
             teacherFilter.innerHTML = `<option value="">-- Pilih Tema Soal Dahulu --</option>` + topicOptions;
             if(printTopicSelect) printTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
             if(exportTopicSelect) exportTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
+            if(deleteTopicSelect) deleteTopicSelect.innerHTML = `<option value="">-- Pilih Tema yang Dihapus --</option>` + topicOptions;
 
             badgeContainer.innerHTML = window.topics.map(t => `
                 <div class="bg-rose-50/80 p-3.5 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2.5 text-xs shadow-xs">
@@ -1232,6 +1258,87 @@
                 }
             };
             reader.readAsText(file);
+        };
+
+        // FUNGSI BARU 1: HAPUS SOAL BERDASARKAN TEMA DI FIREBASE
+        window.executeDeleteQuestionsByTopic = async function() {
+            const selectedTopic = document.getElementById("deleteTopicSelect").value;
+            if (!selectedTopic) return alert("Silakan pilih tema soal yang ingin dihapus!");
+
+            const pgToDelete = window.questionsPg.filter(q => q.topic === selectedTopic);
+            const essayToDelete = window.questionsEssay.filter(q => q.topic === selectedTopic);
+            const totalCount = pgToDelete.length + essayToDelete.length;
+
+            if (totalCount === 0) {
+                return alert(`Tidak ditemukan soal PG maupun Esai pada tema "${selectedTopic}".`);
+            }
+
+            if (!confirm(`⚠️ PERINGATAN KETAT!\n\nApakah Ustadzah yakin ingin MENGHAPUS SEMUA SOAL (${totalCount} soal) pada tema "${selectedTopic}" secara permanen dari Firebase?`)) {
+                return;
+            }
+
+            try {
+                let deletedCount = 0;
+                
+                // Hapus PG
+                for (const q of pgToDelete) {
+                    await deleteDoc(doc(db, "questions_pg", q.id));
+                    deletedCount++;
+                }
+
+                // Hapus Essay
+                for (const q of essayToDelete) {
+                    await deleteDoc(doc(db, "questions_essay", q.id));
+                    deletedCount++;
+                }
+
+                alert(`✅ Berhasil menghapus ${deletedCount} soal pada tema "${selectedTopic}" dari Firebase!`);
+            } catch (err) {
+                alert("Gagal menghapus soal per tema: " + err.message);
+            }
+        };
+
+        // FUNGSI BARU 2: HAPUS SEMUA SOAL DI FIREBASE
+        window.executeDeleteAllQuestions = async function() {
+            const totalPg = window.questionsPg.length;
+            const totalEssay = window.questionsEssay.length;
+            const grandTotal = totalPg + totalEssay;
+
+            if (grandTotal === 0) {
+                return alert("Bank soal di Firebase saat ini sudah kosong.");
+            }
+
+            // Konfirmasi Lapis 1
+            if (!confirm(`🔥 BAHAYA: HAPUS SEMUA SOAL!\n\nApakah Anda yakin ingin MENGHAPUS SELURUH BANK SOAL (${grandTotal} soal) dari Firebase?`)) {
+                return;
+            }
+
+            // Konfirmasi Lapis 2
+            const checkText = prompt(`Ketik "HAPUS" untuk mengonfirmasi penghapusan seluruh data ${grandTotal} soal di Firebase:`);
+            if (checkText !== "HAPUS") {
+                return alert("Proses hapus semua soal dibatalkan (Kata kunci konfirmasi salah).");
+            }
+
+            try {
+                let deletedCount = 0;
+
+                // Hapus semua PG
+                for (const q of window.questionsPg) {
+                    await deleteDoc(doc(db, "questions_pg", q.id));
+                    deletedCount++;
+                }
+
+                // Hapus semua Essay
+                for (const q of window.questionsEssay) {
+                    await deleteDoc(doc(db, "questions_essay", q.id));
+                    deletedCount++;
+                }
+
+                alert(`💥 SELURUH BANK SOAL BERHASIL DIHAPUS!\n\nTotal ${deletedCount} soal telah dibersihkan dari Firebase.`);
+                closeDataManageModal();
+            } catch (err) {
+                alert("Gagal menghapus semua soal: " + err.message);
+            }
         };
 
         window.executePrint = function() {
