@@ -729,9 +729,10 @@
                         </div>
 
                         <div class="pt-2 border-t border-rose-50">
-                            <label class="block font-bold text-emerald-700 uppercase mb-1">📱 Nomor WhatsApp Verifikasi OTP</label>
-                            <input type="text" id="settingWaNumber" required value="082341208990" placeholder="Contoh: 082341208990" class="w-full px-4 py-2.5 border border-emerald-300 rounded-xl text-xs bg-emerald-50/20 font-mono font-bold text-emerald-800 focus:outline-none focus:border-emerald-500">
-                            <p class="text-[10px] text-gray-400 mt-1">Seluruh kode verifikasi OTP untuk aksi sensitif (Backup, Hapus Masal, Ubah Password) akan dikirim ke nomor ini.</p>
+                            <!-- NOMOR KONFIRMASI OTP UTAMA DIPERBARUI MENJADI 082341208990 -->
+                            <label class="block font-bold text-emerald-700 uppercase mb-1">📱 Nomor WhatsApp Verifikasi OTP Utama</label>
+                            <input type="text" id="settingWaNumber" required value="082341208990" placeholder="082341208990" class="w-full px-4 py-2.5 border border-emerald-300 rounded-xl text-xs bg-emerald-50/20 font-mono font-bold text-emerald-800 focus:outline-none focus:border-emerald-500">
+                            <p class="text-[10px] text-gray-400 mt-1">Seluruh kode verifikasi OTP untuk aksi sensitif (Backup, Hapus Masal, Ubah Password) secara otomatis dikonfirmasi ke nomor ini.</p>
                         </div>
 
                         <button type="button" onclick="requestOtpForAction('update_account')" class="w-full theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition-all shadow-md mt-2 cursor-pointer">
@@ -771,7 +772,7 @@
         window.html5QrCodeScanner = null;
         window.activeSessionText = "🟢 Sesi Ustadzah Aktif";
         
-        // ACCOUNT & SECURITY STATE
+        // ACCOUNT & SECURITY STATE (NOMOR UTAMA 082341208990 SET AS DEFAULT)
         window.accountSettings = {
             username: "ustadzah",
             password: "tajwidok",
@@ -791,8 +792,9 @@
             onSnapshot(doc(db, "settings", "accountConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     window.accountSettings = docSnap.data();
+                    if (!window.accountSettings.waNumber) window.accountSettings.waNumber = "082341208990";
                     document.getElementById("settingUsername").value = window.accountSettings.username || "ustadzah";
-                    document.getElementById("settingWaNumber").value = window.accountSettings.waNumber || "082341208990";
+                    document.getElementById("settingWaNumber").value = window.accountSettings.waNumber;
                 } else {
                     setDoc(doc(db, "settings", "accountConfig"), window.accountSettings);
                 }
@@ -988,7 +990,7 @@
             }).catch(err => alert("Gagal menyalin token: " + err));
         };
 
-        // INTEGRASI SYSTEM OTP WHATSAPP API
+        // INTEGRASI SYSTEM OTP WHATSAPP DENGAN NOMOR UTAMA: 082341208990
         window.requestOtpForAction = function(actionType) {
             window.currentPendingAction = actionType;
             window.generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -1025,7 +1027,7 @@
         async function executeUpdateAccount() {
             const newUsername = document.getElementById("settingUsername").value.trim();
             const newPassword = document.getElementById("settingPassword").value;
-            const newWa = document.getElementById("settingWaNumber").value.trim();
+            const newWa = document.getElementById("settingWaNumber").value.trim() || "082341208990";
 
             const updateData = {
                 username: newUsername,
