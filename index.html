@@ -22,7 +22,7 @@
         .arabic { font-family: 'Amiri', serif; font-size: 1.35rem; }
     </style>
 
-    <!-- SCRIPT PRE-RENDER DINI: MENCEGAH GLITCH FONT SEBELUM Halaman DIGAMBAR -->
+    <!-- SCRIPT PRE-RENDER DINI: MENCEGAH GLITCH FONT SEBELUM HALAMAN DIGAMBAR -->
     <script>
         (function applyCachedFontEarly() {
             try {
@@ -120,7 +120,7 @@
 
                     <div id="studentIdentityPanel" class="hidden transition-all duration-300 bg-rose-50/30 p-4 rounded-xl border border-rose-100 space-y-2">
                         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Identitas Mahasiswi: Nama Lengkap & NIM</label>
-                        <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-white">
+                        <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." oninput="saveStudentDraftAnswer()" class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-white">
                     </div>
                 </div>
 
@@ -750,6 +750,97 @@
         </main>
     </div>
 
+    <!-- SCRIPT OTOMATIS: PENYIMPANAN DRAFT SOAL & PEMERIKSAAN LOGIN SESI PERMANEN (0ms) -->
+    <script>
+        // 1. DRAFT JAWABAN MAHASISWI (LOCAL STORAGE)
+        window.saveStudentDraftAnswer = function() {
+            if (!window.activeStudentTopicObj) return;
+            const topicName = window.activeStudentTopicObj.name;
+            const draftKey = `draft_quiz_${topicName}`;
+
+            const draftData = {
+                studentName: document.getElementById("studentName")?.value || "",
+                answersPg: {},
+                answersEssay: {}
+            };
+
+            // Simpan Opsi PG
+            const activePg = window.questionsPg ? window.questionsPg.filter(q => q.active !== false && q.topic === topicName) : [];
+            activePg.forEach(q => {
+                const selected = document.querySelector(`input[name="pg-${q.id}"]:checked`);
+                if (selected) draftData.answersPg[q.id] = selected.value;
+            });
+
+            // Simpan Jawaban Esai
+            const activeEssay = window.questionsEssay ? window.questionsEssay.filter(q => q.active !== false && q.topic === topicName) : [];
+            activeEssay.forEach(q => {
+                const el = document.getElementById(`essay-${q.id}`);
+                if (el) draftData.answersEssay[q.id] = el.value;
+            });
+
+            localStorage.setItem(draftKey, JSON.stringify(draftData));
+        };
+
+        window.restoreStudentDraftAnswer = function(topicName) {
+            const draftKey = `draft_quiz_${topicName}`;
+            const cached = localStorage.getItem(draftKey);
+            if (!cached) return;
+
+            try {
+                const draftData = JSON.parse(cached);
+                if (draftData.studentName && document.getElementById("studentName")) {
+                    document.getElementById("studentName").value = draftData.studentName;
+                }
+
+                // Restore PG
+                if (draftData.answersPg) {
+                    Object.keys(draftData.answersPg).forEach(qId => {
+                        const val = draftData.answersPg[qId];
+                        const radio = document.querySelector(`input[name="pg-${qId}"][value="${val}"]`);
+                        if (radio) radio.checked = true;
+                    });
+                }
+
+                // Restore Essay
+                if (draftData.answersEssay) {
+                    Object.keys(draftData.answersEssay).forEach(qId => {
+                        const val = draftData.answersEssay[qId];
+                        const el = document.getElementById(`essay-${qId}`);
+                        if (el) el.value = val;
+                    });
+                }
+            } catch (e) { console.log(e); }
+        };
+
+        window.clearStudentDraftAnswer = function(topicName) {
+            const draftKey = `draft_quiz_${topicName}`;
+            localStorage.removeItem(draftKey);
+        };
+
+        // 2. CHECK SESSION LOGIN PERMANEN PEMERIKSA
+        (function checkPermanentTeacherSession() {
+            try {
+                const isLogged = localStorage.getItem("isTeacherLoggedIn");
+                if (isLogged === "true") {
+                    window.addEventListener("DOMContentLoaded", () => {
+                        document.getElementById("studentView")?.classList.add("hidden");
+                        document.getElementById("teacherView")?.classList.remove("hidden");
+                        
+                        const sessionLabel = window.activeSessionText || "🟢 Sesi Ustadzah Aktif";
+                        const navRight = document.getElementById("navRight");
+                        if (navRight) {
+                            navRight.innerHTML = `
+                                <span id="navActiveSessionBadge" class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
+                                    ${sessionLabel}
+                                </span>
+                            `;
+                        }
+                    });
+                }
+            } catch(e) {}
+        })();
+    </script>
+
     <!-- FIREBASE SDK V10 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -800,7 +891,7 @@
                 }
             });
 
-            // 1. Config Header & Interface UI Realtime (SINKRON DENGAN CACHING LOCALSTORAGE BEBAS GLITCH)
+            // 1. Config Header & Interface UI Realtime
             onSnapshot(doc(db, "settings", "headerConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -1178,6 +1269,10 @@
             
             document.getElementById("studentIdentityPanel").classList.remove("hidden");
             document.getElementById("studentQuestionsWrapper").classList.remove("hidden");
+
+            // RESTORE DRAFT JAWABAN JIKA TERSEDIA DI LOCALSTORAGE
+            window.restoreStudentDraftAnswer(foundTopic.name);
+
             alert(`✅ Token Sah! Soal Evaluasi Tema "${foundTopic.name}" Berhasil Dimuat.`);
         };
 
@@ -1204,7 +1299,7 @@
                         <div class="space-y-2 pt-1">
                             ${q.options.map(opt => `
                                 <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-rose-50/30 cursor-pointer transition-all">
-                                    <input type="radio" name="pg-${q.id}" value="${opt.k}" required class="accent-rose-500">
+                                    <input type="radio" name="pg-${q.id}" value="${opt.k}" required onchange="saveStudentDraftAnswer()" class="accent-rose-500">
                                     <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-md">${opt.k}</span>
                                     <span class="text-xs font-medium text-gray-700 ${opt.arabic ? 'arabic ml-auto' : ''}">${opt.t}</span>
                                 </label>
@@ -1230,7 +1325,7 @@
                         </div>
                         ${q.img ? `<img src="${q.img.src}" class="${q.img.width || 'max-w-md'} ${q.img.align || 'mx-auto block'} rounded-xl border border-rose-100 mb-2">` : ''}
                         <p class="text-sm font-semibold text-gray-800">${q.text}</p>
-                        <textarea id="essay-${q.id}" required rows="4" placeholder="Ketikkan jawaban Anda secara rinci di sini..." class="w-full px-4 py-3 border border-rose-200/60 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-rose-50/10 placeholder-gray-400"></textarea>
+                        <textarea id="essay-${q.id}" required rows="4" oninput="saveStudentDraftAnswer()" placeholder="Ketikkan jawaban Anda secara rinci di sini..." class="w-full px-4 py-3 border border-rose-200/60 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-rose-50/10 placeholder-gray-400"></textarea>
                     </div>
                 `).join('');
             }
@@ -1458,7 +1553,7 @@
             }
         });
 
-        // SUBMIT KUIS MAHASISWI
+        // SUBMIT KUIS MAHASISWI (LENGKAP DENGAN HAPUS DRAFT CACHE DARI LOCAL STORAGE)
         let startTime = Date.now();
 
         document.getElementById("quizForm").addEventListener("submit", async (e) => {
@@ -1522,6 +1617,9 @@
 
             try {
                 await addDoc(collection(db, "submissions"), submissionData);
+
+                // BERSIHKAN CACHE JAWABAN DRAFT KARENA SUDAH TERKIRIM
+                window.clearStudentDraftAnswer(selectedTopic);
 
                 document.getElementById("modalStudentName").innerText = studentName;
                 document.getElementById("modalStudentTopic").innerText = selectedTopic;
@@ -1816,6 +1914,7 @@
             }
         });
 
+        // HANDLE LOGIN PEMERIKSA (DENGAN SESI PERMANEN)
         window.handleLogin = function(e) {
             e.preventDefault();
             const user = document.getElementById("loginUsername").value.trim();
@@ -1825,6 +1924,9 @@
             const validPass = window.accountSettings.password || "tajwidok";
 
             if (user === validUser && pass === validPass) {
+                // SIMPAN STATUS LOGIN PERMANEN KE LOCAL STORAGE
+                localStorage.setItem("isTeacherLoggedIn", "true");
+
                 document.getElementById("loginModal").classList.add("hidden");
                 document.getElementById("studentView").classList.add("hidden");
                 document.getElementById("teacherView").classList.remove("hidden");
@@ -1839,6 +1941,14 @@
                 const errDiv = document.getElementById("loginError");
                 errDiv.classList.remove("hidden");
                 setTimeout(() => errDiv.classList.add("hidden"), 3000);
+            }
+        };
+
+        // HANDLE LOGOUT MANUAL PEMERIKSA
+        window.handleLogout = function() {
+            if (confirm("Apakah Ustadzah yakin ingin keluar dari Mode Pemeriksa?")) {
+                localStorage.removeItem("isTeacherLoggedIn");
+                window.location.reload();
             }
         };
 
@@ -1971,10 +2081,6 @@
 
         function closeStudentModal() {
             document.getElementById("studentSuccessModal").classList.add("hidden");
-            window.location.reload();
-        }
-
-        function handleLogout() {
             window.location.reload();
         }
 
