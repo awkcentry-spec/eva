@@ -61,8 +61,12 @@
                 const cached = localStorage.getItem("headerConfig_cache");
                 if (cached) {
                     const data = JSON.parse(cached);
-                    if (data.navTitle) document.getElementById("navBarTitle").innerText = data.navTitle;
-                    if (data.btnLoginText) document.getElementById("btnLoginView").innerText = data.btnLoginText;
+                    if (data.navTitle && document.getElementById("navBarTitle")) {
+                        document.getElementById("navBarTitle").innerText = data.navTitle;
+                    }
+                    if (data.btnLoginText && document.getElementById("btnLoginView")) {
+                        document.getElementById("btnLoginView").innerText = data.btnLoginText;
+                    }
                 }
             } catch(e) {}
         })();
@@ -144,6 +148,31 @@
                 </div>
             </form>
         </main>
+    </div>
+
+    <!-- MODAL EDIT TEMA SOAL -->
+    <div id="editTopicModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-rose-100 pb-3">
+                <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">✏️ Edit Nama Tema Soal</h3>
+                <button onclick="closeEditTopicModal()" class="text-gray-400 hover:text-gray-600 font-bold cursor-pointer">✕</button>
+            </div>
+            <form id="editTopicForm" class="space-y-3">
+                <input type="hidden" id="editTopicId">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nama Tema Soal</label>
+                    <input type="text" id="editTopicNameInput" required class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold bg-white focus:outline-none focus:border-rose-400">
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="submit" class="flex-1 theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md cursor-pointer">
+                        Simpan
+                    </button>
+                    <button type="button" onclick="closeEditTopicModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold py-2.5 rounded-xl transition-all cursor-pointer">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- MODAL POPUP PRINT & CETAK SOAL -->
@@ -898,10 +927,10 @@
                     
                     localStorage.setItem("headerConfig_cache", JSON.stringify(data));
 
-                    document.getElementById("navBarTitle").innerText = data.navTitle || "Daarunnisaa";
+                    if (document.getElementById("navBarTitle")) document.getElementById("navBarTitle").innerText = data.navTitle || "Daarunnisaa";
                     if (document.getElementById("displayMainTitle")) document.getElementById("displayMainTitle").innerText = data.mainTitle || "Lembar Soal Digital";
-                    document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "EVALUASI TAJWID METODE ASY-SYAFI'I ✨";
-                    document.getElementById("headerQuoteDisplay").innerText = data.headerQuote || '"Bersungguh-sungguhlah pada hal yang bermanfaat bagimu..."';
+                    if (document.getElementById("headerSubtitleDisplay")) document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "EVALUASI TAJWID METODE ASY-SYAFI'I ✨";
+                    if (document.getElementById("headerQuoteDisplay")) document.getElementById("headerQuoteDisplay").innerText = data.headerQuote || '"Bersungguh-sungguhlah pada hal yang bermanfaat bagimu..."';
                     
                     if (document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText || "Login";
                     if (document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText || "LAMAN UJIAN";
@@ -979,6 +1008,32 @@
                 alert("Gagal menghapus tema: " + err.message);
             }
         };
+
+        // BUKA MODAL EDIT TEMA SOAL
+        window.openEditTopicModal = function(topicId, currentName) {
+            document.getElementById("editTopicId").value = topicId;
+            document.getElementById("editTopicNameInput").value = currentName;
+            document.getElementById("editTopicModal").classList.remove("hidden");
+        };
+
+        window.closeEditTopicModal = function() {
+            document.getElementById("editTopicModal").classList.add("hidden");
+        };
+
+        // SUBMIT EDIT TEMA SOAL
+        document.getElementById("editTopicForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const topicId = document.getElementById("editTopicId").value;
+            const newName = document.getElementById("editTopicNameInput").value.trim();
+            if (!newName || !topicId) return;
+
+            try {
+                await updateDoc(doc(db, "topics", topicId), { name: newName });
+                closeEditTopicModal();
+            } catch(err) {
+                alert("Gagal mengubah nama tema: " + err.message);
+            }
+        });
 
         // SUBMIT TEMA BARU
         document.getElementById("topicForm").addEventListener("submit", async (e) => {
@@ -1071,6 +1126,7 @@
                             <span class="text-rose-500">🏷️</span> ${t.name}
                         </span>
                         <div class="flex items-center gap-1.5">
+                            <button onclick="openEditTopicModal('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Edit Nama Tema" class="text-blue-500 hover:text-blue-700 font-bold px-1.5 py-0.5 rounded-md hover:bg-blue-100 transition-all cursor-pointer text-xs">✏️ Edit</button>
                             <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema Aktif</span>
                             <button onclick="deleteTopic('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Hapus Tema Soal" class="text-red-400 hover:text-red-600 font-bold px-1.5 py-0.5 rounded-md hover:bg-red-100 transition-all cursor-pointer text-xs">✕</button>
                         </div>
@@ -1982,10 +2038,10 @@
         }
 
         function openHeaderConfigModal() {
-            document.getElementById("cfgNavTitle").value = document.getElementById("navBarTitle").innerText;
+            document.getElementById("cfgNavTitle").value = document.getElementById("navBarTitle") ? document.getElementById("navBarTitle").innerText : "Daarunnisaa";
             document.getElementById("cfgMainTitle").value = document.getElementById("displayMainTitle") ? document.getElementById("displayMainTitle").innerText : "Lembar Soal Digital";
-            document.getElementById("cfgHeaderSubtitle").value = document.getElementById("headerSubtitleDisplay").innerText;
-            document.getElementById("cfgHeaderQuote").value = document.getElementById("headerQuoteDisplay").innerText;
+            document.getElementById("cfgHeaderSubtitle").value = document.getElementById("headerSubtitleDisplay") ? document.getElementById("headerSubtitleDisplay").innerText : "";
+            document.getElementById("cfgHeaderQuote").value = document.getElementById("headerQuoteDisplay") ? document.getElementById("headerQuoteDisplay").innerText : "";
             
             if(document.getElementById("btnLoginView")) document.getElementById("cfgBtnLoginText").value = document.getElementById("btnLoginView").innerText.trim() || "Login";
             if(document.getElementById("lblExamPageTitle")) document.getElementById("cfgExamPageText").value = document.getElementById("lblExamPageTitle").innerText;
