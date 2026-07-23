@@ -895,25 +895,20 @@
 
         // 3. LOGIKA PENGAMAN LEMBAR JAWABAN (BEFOREUNLOAD)
         window.addEventListener("beforeunload", function (e) {
-            // Cek apakah tema soal sedang dimuat
             if (window.activeStudentTopicObj) {
                 const studentNameVal = document.getElementById("studentName")?.value.trim() || "";
-                
-                // Cek apakah ada pilihan ganda yang sudah dipilih
                 const hasPgAnswer = !!document.querySelector('#pgContainer input[type="radio"]:checked');
                 
-                // Cek apakah ada lembar esai yang sudah diisi
                 let hasEssayAnswer = false;
                 const essayTextareas = document.querySelectorAll('#essayContainer textarea');
                 essayTextareas.forEach(ta => {
                     if (ta.value.trim() !== "") hasEssayAnswer = true;
                 });
 
-                // Jika nama terisi ATAU ada jawaban yang terisi, aktifkan peringatan
                 if (studentNameVal !== "" || hasPgAnswer || hasEssayAnswer) {
                     const confirmationMessage = "Apakah Anda yakin ingin meninggalkan lembar soal? Jawaban yang belum terkirim mungkin akan hilang.";
                     e.preventDefault();
-                    e.returnValue = confirmationMessage; // Standard browser check
+                    e.returnValue = confirmationMessage;
                     return confirmationMessage;
                 }
             }
@@ -953,19 +948,17 @@
             password: "tajwidok"
         };
 
-        // HELPER UTILS: ROUND FLOAT AGAR TIDAK TERJADI FLOATING POINT ERROR (misal 10.050000000002)
+        // HELPER UTILS
         window.roundNum = function(num) {
             return Math.round((num + Number.EPSILON) * 100) / 100;
         };
 
-        // HELPER UTILS: GENERATE RANDOM TOKEN ENKRIPSI
         window.generateRandomToken = function() {
             return 'TJ' + Math.random().toString(36).substring(2, 7).toUpperCase();
         };
 
         // LISTEN REALTIME SNAPSHOTS FIREBASE
         function initFirebaseListeners() {
-            // Load Settings Account Realtime
             onSnapshot(doc(db, "settings", "accountConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     window.accountSettings = docSnap.data();
@@ -975,7 +968,6 @@
                 }
             });
 
-            // 1. Config Header & Interface UI Realtime
             onSnapshot(doc(db, "settings", "headerConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -1001,14 +993,14 @@
                 }
             });
 
-            // 2. Load Topics & Token Realtime
+            // Load Topics & Token Realtime
             onSnapshot(collection(db, "topics"), (snapshot) => {
                 window.topics = [];
                 snapshot.forEach(doc => window.topics.push({ id: doc.id, ...doc.data() }));
 
                 const hasAllData = window.topics.some(t => t.name === "All data");
                 if (!hasAllData) {
-                    addDoc(collection(db, "topics"), { name: "All data", token: window.generateRandomToken() });
+                    addDoc(collection(db, "topics"), { name: "All data", token: window.generateRandomToken(), visible: true });
                 }
 
                 updateTopicDropdowns();
@@ -1025,21 +1017,21 @@
                 }
             });
 
-            // 3. Load Questions PG
+            // Load Questions PG
             onSnapshot(collection(db, "questions_pg"), (snapshot) => {
                 window.questionsPg = [];
                 snapshot.forEach(doc => window.questionsPg.push({ id: doc.id, ...doc.data() }));
                 window.renderTeacherManageQuestions();
             });
 
-            // 4. Load Questions Essay
+            // Load Questions Essay
             onSnapshot(collection(db, "questions_essay"), (snapshot) => {
                 window.questionsEssay = [];
                 snapshot.forEach(doc => window.questionsEssay.push({ id: doc.id, ...doc.data() }));
                 window.renderTeacherManageQuestions();
             });
 
-            // 5. Load Submissions
+            // Load Submissions
             const subQuery = query(collection(db, "submissions"), orderBy("submittedAt", "desc"));
             onSnapshot(subQuery, (snapshot) => {
                 window.submissions = [];
@@ -1048,6 +1040,30 @@
                 renderLeaderboard();
             });
         }
+
+        // ==========================================
+        // FITUR SINKRONISASI CHECKLIST TEMA & SOAL
+        // ==========================================
+        window.toggleTopicVisibility = async function(topicId, topicName, isChecked) {
+            try {
+                // Update status tema
+                await updateDoc(doc(db, "topics", topicId), { visible: isChecked });
+
+                // Update seluruh soal PG yang ada pada tema ini
+                const pgToUpdate = window.questionsPg.filter(q => q.topic === topicName);
+                for (const q of pgToUpdate) {
+                    await updateDoc(doc(db, "questions_pg", q.id), { active: isChecked });
+                }
+
+                // Update seluruh soal Esai yang ada pada tema ini
+                const essayToUpdate = window.questionsEssay.filter(q => q.topic === topicName);
+                for (const q of essayToUpdate) {
+                    await updateDoc(doc(db, "questions_essay", q.id), { active: isChecked });
+                }
+            } catch (err) {
+                alert("Gagal memperbarui status centang tema: " + err.message);
+            }
+        };
 
         // RESET TOKEN
         window.resetTopicToken = async function(topicId) {
@@ -1142,7 +1158,7 @@
                 return;
             }
 
-            await addDoc(collection(db, "topics"), { name, token: window.generateRandomToken() });
+            await addDoc(collection(db, "topics"), { name, token: window.generateRandomToken(), visible: true });
             nameInput.value = "";
         });
 
@@ -1222,19 +1238,26 @@
 
             badgeContainer.innerHTML = window.topics.map(t => {
                 const isSystemAllData = t.name === "All data";
+                const isVisible = t.visible !== false;
+
                 return `
                 <div class="bg-rose-50/80 p-3.5 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2.5 text-xs shadow-xs">
                     <div class="flex justify-between items-center">
-                        <span class="font-bold text-gray-800 flex items-center gap-1.5">
-                            <span class="text-rose-500">🏷️</span> ${t.name}
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <label class="flex items-center gap-1.5 cursor-pointer font-bold text-xs text-rose-600 bg-white px-2 py-1 rounded-lg border border-rose-200">
+                                <input type="checkbox" ${isVisible ? 'checked' : ''} onchange="toggleTopicVisibility('${t.id}', '${t.name.replace(/'/g, "\\'")}', this.checked)" class="accent-rose-500">
+                                <span>Tampilkan Soal</span>
+                            </label>
+                            <span class="font-bold text-gray-800 flex items-center gap-1">
+                                ${t.name}
+                            </span>
+                        </div>
                         <div class="flex items-center gap-1.5">
                             ${!isSystemAllData ? `
                                 <button onclick="openEditTopicModal('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Edit Nama Tema" class="text-blue-500 hover:text-blue-700 font-bold px-1.5 py-0.5 rounded-md hover:bg-blue-100 transition-all cursor-pointer text-xs">✏️ Edit</button>
-                                <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema Aktif</span>
                                 <button onclick="deleteTopic('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Hapus Tema Soal" class="text-red-400 hover:text-red-600 font-bold px-1.5 py-0.5 rounded-md hover:bg-red-100 transition-all cursor-pointer text-xs">✕</button>
                             ` : `
-                                <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">🔒 Bawaan Sistem (Permanen)</span>
+                                <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">🔒 Bawaan Sistem</span>
                             `}
                         </div>
                     </div>
@@ -1264,9 +1287,7 @@
             const newUsername = document.getElementById("settingUsername").value.trim();
             const newPassword = document.getElementById("settingPassword").value;
 
-            const updateData = {
-                username: newUsername
-            };
+            const updateData = { username: newUsername };
             if (newPassword) updateData.password = newPassword;
 
             try {
@@ -1867,7 +1888,6 @@
                 document.getElementById("modalStudentDuration").innerText = durationText;
                 document.getElementById("modalStudentScore").innerText = `${pgScoreCalculated} Poin`;
 
-                // Reset active topic object agar sebelum reload tidak terdeteksi penutupan yang belum selesai
                 window.activeStudentTopicObj = null;
 
                 document.getElementById("studentSuccessModal").classList.remove("hidden");
