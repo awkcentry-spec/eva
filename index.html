@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📑 pojoksoal.me</title>
+    <title>pojoksoal.me - Sistem Evaluasi Tajwid</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Google Fonts Loaders -->
@@ -106,7 +106,7 @@
                     <h3 id="lblExamPageTitle" class="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-rose-50 pb-2">LAMAN UJIAN</h3>
                     
                     <div>
-                        <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">SCAN QR CODE / MASUKKAN KODE TOKEN SOAL</label>
+                        <label id="lblTokenInputHeader" class="block text-xs font-semibold text-rose-600 uppercase mb-1">SCAN QR CODE / MASUKKAN KODE TOKEN SOAL</label>
                         <div class="flex gap-2">
                             <input type="text" id="inputTopicToken" placeholder="KETIK KODE TOKEN UJIAN..." class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-xs sm:text-sm uppercase font-mono font-bold text-rose-600 bg-rose-50/10 focus:outline-none focus:border-rose-400">
                             <button type="button" onclick="openQrScannerModal()" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5">
@@ -123,6 +123,20 @@
                         <input type="text" id="studentName" required placeholder="Masukkan nama dan nomor induk mahasiswi..." oninput="saveStudentDraftAnswer()" class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all bg-white">
                     </div>
                 </div>
+
+                <!-- SCRIPT CACHE INSTAN LAMAN UJIAN & TOMBOL BUKA SOAL (0ms) -->
+                <script>
+                    (function restoreExamPanelCache() {
+                        try {
+                            const cached = localStorage.getItem("headerConfig_cache");
+                            if (cached) {
+                                const data = JSON.parse(cached);
+                                if (data.examPageText) document.getElementById("lblExamPageTitle").innerText = data.examPageText;
+                                if (data.btnOpenQuizText) document.getElementById("btnOpenQuiz").innerText = data.btnOpenQuizText;
+                            }
+                        } catch(e) {}
+                    })();
+                </script>
 
                 <!-- CONTAINER WADAH SOAL -->
                 <div id="studentQuestionsWrapper" class="hidden space-y-6">
@@ -343,8 +357,8 @@
                             <input type="text" id="cfgExamPageText" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Nama Lembar Pemeriksaan</label>
-                            <input type="text" id="cfgGradingPageText" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Nama Tombol Buka Soal</label>
+                            <input type="text" id="cfgBtnOpenQuizText" value="Buka Soal" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
                         </div>
                     </div>
 
@@ -764,14 +778,12 @@
                 answersEssay: {}
             };
 
-            // Simpan Opsi PG
             const activePg = window.questionsPg ? window.questionsPg.filter(q => q.active !== false && q.topic === topicName) : [];
             activePg.forEach(q => {
                 const selected = document.querySelector(`input[name="pg-${q.id}"]:checked`);
                 if (selected) draftData.answersPg[q.id] = selected.value;
             });
 
-            // Simpan Jawaban Esai
             const activeEssay = window.questionsEssay ? window.questionsEssay.filter(q => q.active !== false && q.topic === topicName) : [];
             activeEssay.forEach(q => {
                 const el = document.getElementById(`essay-${q.id}`);
@@ -792,7 +804,6 @@
                     document.getElementById("studentName").value = draftData.studentName;
                 }
 
-                // Restore PG
                 if (draftData.answersPg) {
                     Object.keys(draftData.answersPg).forEach(qId => {
                         const val = draftData.answersPg[qId];
@@ -801,7 +812,6 @@
                     });
                 }
 
-                // Restore Essay
                 if (draftData.answersEssay) {
                     Object.keys(draftData.answersEssay).forEach(qId => {
                         const val = draftData.answersEssay[qId];
@@ -891,7 +901,7 @@
                 }
             });
 
-            // 1. Config Header & Interface UI Realtime
+            // 1. Config Header & Interface UI Realtime (MEMBERSIHKAN GLITCH SELURUH ELEMEN CUSTOM)
             onSnapshot(doc(db, "settings", "headerConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -905,6 +915,7 @@
                     
                     if (document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText || "Login";
                     if (document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText || "LAMAN UJIAN";
+                    if (document.getElementById("btnOpenQuiz")) document.getElementById("btnOpenQuiz").innerText = data.btnOpenQuizText || "Buka Soal";
                     if (document.getElementById("lblGradingHeaderTitle")) document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText || "Laman Pengelolaan & Penilaian Tajwid";
 
                     window.activeSessionText = data.activeSessionText || "🟢 Sesi Ustadzah Aktif";
@@ -991,7 +1002,7 @@
             nameInput.value = "";
         });
 
-        // SIMPAN CUSTOM UI CONFIG KE FIREBASE
+        // SIMPAN CUSTOM UI CONFIG KE FIREBASE (MENYIMPAN DENGAN ELEMEN BUKA SOAL)
         document.getElementById("headerConfigForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const configData = {
@@ -1000,6 +1011,7 @@
                 headerSubtitle: document.getElementById("cfgHeaderSubtitle").value.trim(),
                 btnLoginText: document.getElementById("cfgBtnLoginText").value.trim(),
                 examPageText: document.getElementById("cfgExamPageText").value.trim(),
+                btnOpenQuizText: document.getElementById("cfgBtnOpenQuizText").value.trim(),
                 gradingPageText: document.getElementById("cfgGradingPageText").value.trim(),
                 activeSessionText: document.getElementById("cfgActiveSessionText").value.trim(),
                 teacherModeBadge: document.getElementById("cfgTeacherModeBadge").value.trim(),
@@ -1270,7 +1282,6 @@
             document.getElementById("studentIdentityPanel").classList.remove("hidden");
             document.getElementById("studentQuestionsWrapper").classList.remove("hidden");
 
-            // RESTORE DRAFT JAWABAN JIKA TERSEDIA DI LOCALSTORAGE
             window.restoreStudentDraftAnswer(foundTopic.name);
 
             alert(`✅ Token Sah! Soal Evaluasi Tema "${foundTopic.name}" Berhasil Dimuat.`);
@@ -1553,7 +1564,7 @@
             }
         });
 
-        // SUBMIT KUIS MAHASISWI (LENGKAP DENGAN HAPUS DRAFT CACHE DARI LOCAL STORAGE)
+        // SUBMIT KUIS MAHASISWI
         let startTime = Date.now();
 
         document.getElementById("quizForm").addEventListener("submit", async (e) => {
@@ -1618,7 +1629,6 @@
             try {
                 await addDoc(collection(db, "submissions"), submissionData);
 
-                // BERSIHKAN CACHE JAWABAN DRAFT KARENA SUDAH TERKIRIM
                 window.clearStudentDraftAnswer(selectedTopic);
 
                 document.getElementById("modalStudentName").innerText = studentName;
@@ -1914,7 +1924,7 @@
             }
         });
 
-        // HANDLE LOGIN PEMERIKSA (DENGAN SESI PERMANEN)
+        // HANDLE LOGIN PEMERIKSA (SESI PERMANEN)
         window.handleLogin = function(e) {
             e.preventDefault();
             const user = document.getElementById("loginUsername").value.trim();
@@ -1924,7 +1934,6 @@
             const validPass = window.accountSettings.password || "tajwidok";
 
             if (user === validUser && pass === validPass) {
-                // SIMPAN STATUS LOGIN PERMANEN KE LOCAL STORAGE
                 localStorage.setItem("isTeacherLoggedIn", "true");
 
                 document.getElementById("loginModal").classList.add("hidden");
@@ -1989,6 +1998,7 @@
             
             if(document.getElementById("btnLoginView")) document.getElementById("cfgBtnLoginText").value = document.getElementById("btnLoginView").innerText.trim() || "Login";
             if(document.getElementById("lblExamPageTitle")) document.getElementById("cfgExamPageText").value = document.getElementById("lblExamPageTitle").innerText;
+            if(document.getElementById("btnOpenQuiz")) document.getElementById("cfgBtnOpenQuizText").value = document.getElementById("btnOpenQuiz").innerText.trim() || "Buka Soal";
             if(document.getElementById("lblGradingHeaderTitle")) document.getElementById("cfgGradingPageText").value = document.getElementById("lblGradingHeaderTitle").innerText;
             
             if(document.getElementById("cfgActiveSessionText")) {
