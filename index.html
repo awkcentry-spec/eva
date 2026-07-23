@@ -478,7 +478,6 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Bobot Soal (Poin)</label>
-                        <!-- PERBAIKAN: Diizinkan menerima desimal dengan step="any" / step="0.1" dan min="0.1" -->
                         <input type="number" id="qWeight" value="10" min="0.1" step="any" required class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 focus:outline-none focus:border-rose-400 bg-rose-50/10">
                     </div>
                 </div>
@@ -893,6 +892,32 @@
                 }
             } catch(e) {}
         })();
+
+        // 3. LOGIKA PENGAMAN LEMBAR JAWABAN (BEFOREUNLOAD)
+        window.addEventListener("beforeunload", function (e) {
+            // Cek apakah tema soal sedang dimuat
+            if (window.activeStudentTopicObj) {
+                const studentNameVal = document.getElementById("studentName")?.value.trim() || "";
+                
+                // Cek apakah ada pilihan ganda yang sudah dipilih
+                const hasPgAnswer = !!document.querySelector('#pgContainer input[type="radio"]:checked');
+                
+                // Cek apakah ada lembar esai yang sudah diisi
+                let hasEssayAnswer = false;
+                const essayTextareas = document.querySelectorAll('#essayContainer textarea');
+                essayTextareas.forEach(ta => {
+                    if (ta.value.trim() !== "") hasEssayAnswer = true;
+                });
+
+                // Jika nama terisi ATAU ada jawaban yang terisi, aktifkan peringatan
+                if (studentNameVal !== "" || hasPgAnswer || hasEssayAnswer) {
+                    const confirmationMessage = "Apakah Anda yakin ingin meninggalkan lembar soal? Jawaban yang belum terkirim mungkin akan hilang.";
+                    e.preventDefault();
+                    e.returnValue = confirmationMessage; // Standard browser check
+                    return confirmationMessage;
+                }
+            }
+        });
     </script>
 
     <!-- FIREBASE SDK V10 -->
@@ -1631,7 +1656,6 @@
             }
         };
 
-        // PERBAIKAN: kalkulasi max score menggunakan parseFloat & roundNum
         window.getMaxScores = function() {
             const activePg = window.questionsPg.filter(q => q.active !== false);
             const activeEssay = window.questionsEssay.filter(q => q.active !== false);
@@ -1724,7 +1748,6 @@
             document.getElementById("questionModal").classList.remove("hidden");
         };
 
-        // PERBAIKAN: Simpan bobot menggunakan parseFloat()
         document.getElementById("questionForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const editId = document.getElementById("qEditId").value;
@@ -1771,7 +1794,6 @@
             }
         });
 
-        // PERBAIKAN: Hitung skor kuis mahasiswi dengan parseFloat
         let startTime = Date.now();
 
         document.getElementById("quizForm").addEventListener("submit", async (e) => {
@@ -1845,11 +1867,13 @@
                 document.getElementById("modalStudentDuration").innerText = durationText;
                 document.getElementById("modalStudentScore").innerText = `${pgScoreCalculated} Poin`;
 
+                // Reset active topic object agar sebelum reload tidak terdeteksi penutupan yang belum selesai
+                window.activeStudentTopicObj = null;
+
                 document.getElementById("studentSuccessModal").classList.remove("hidden");
                 document.getElementById("quizForm").reset();
                 document.getElementById("studentQuestionsWrapper").classList.add("hidden");
                 document.getElementById("studentIdentityPanel").classList.add("hidden");
-                window.activeStudentTopicObj = null;
             } catch (err) {
                 alert("Gagal mengirim jawaban: " + err.message);
                 btnSubmit.disabled = false;
@@ -2006,7 +2030,6 @@
                 `;
             }).join('');
 
-            // PERBAIKAN: Input penilain esai dengan step="any" agar Ustadzah bisa memberi nilai desimal (misal 2.5)
             const essayGradingContainer = document.getElementById("essayGradingContainer");
             if (hasEssay) {
                 essayGradingContainer.innerHTML = activeEssay.map(q => {
@@ -2049,7 +2072,6 @@
             document.getElementById("gradingArea").scrollIntoView({ behavior: 'smooth' });
         };
 
-        // PERBAIKAN: kalkulasi real-time nilai esai & skor total dengan parseFloat & roundNum
         window.calculateRealtimeEssayScore = function() {
             let totalEssay = 0;
             const sub = window.submissions.find(s => s.id === activeGradingId);
@@ -2095,7 +2117,6 @@
             `;
         };
 
-        // PERBAIKAN: Simpan hasil penilaian dengan parseFloat & roundNum
         document.getElementById("btnSaveGrading").addEventListener("click", async () => {
             if (!activeGradingId) return;
 
