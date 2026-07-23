@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -30,7 +29,7 @@
         <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <span class="text-xl">✨</span>
-                <span id="navBarTitle" class="font-bold text-gray-800 text-sm md:text-base">Pre-Test Tajwid</span>
+                <span id="navBarTitle" class="font-bold text-gray-800 text-sm md:text-base">Daarunnisaa</span>
             </div>
             <div id="navRight">
                 <button onclick="toggleLoginModal(true)" id="btnLoginView" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer">
@@ -47,8 +46,8 @@
             <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-100 rounded-full opacity-40 blur-lg"></div>
             
             <div class="max-w-3xl mx-auto px-4 py-8 text-center relative z-10">
-                <span id="headerSubtitleDisplay" class="text-xs font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded-full">Evaluasi Mahasiswi ✨</span>
-                <h1 id="displayMainTitle" class="text-2xl md:text-3xl font-bold text-gray-850 mt-3 tracking-wide">Evaluasi Pre-Test Tajwid</h1>
+                <span id="headerSubtitleDisplay" class="text-xs font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-3 py-1 rounded-full">EVALUASI TAJWID METODE ASY-SYAFI'I ✨</span>
+                <h1 id="displayMainTitle" class="text-2xl md:text-3xl font-bold text-gray-850 mt-3 tracking-wide">Lembar Soal Digital</h1>
                 <p id="displaySheetTitle" class="text-xs font-semibold text-gray-500 mt-1 uppercase tracking-wider hidden"></p>
                 <p id="headerQuoteDisplay" class="text-xs md:text-sm text-rose-600/80 italic mt-2 font-medium">
                     "Bersungguh-sungguhlah pada hal yang bermanfaat bagimu dan mintalah pertolongan Allah" (Al-Hadits)
@@ -60,12 +59,12 @@
             <form id="quizForm" class="space-y-6">
                 <!-- AKSES TOKEN & INFORMASI MAHASISWI -->
                 <div id="panelStudentInfo" class="theme-panel bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-4">
-                    <h3 id="lblExamPageTitle" class="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-rose-50 pb-2">Laman Ujian Tajwid</h3>
+                    <h3 id="lblExamPageTitle" class="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-rose-50 pb-2">LAMAN UJIAN</h3>
                     
                     <div>
-                        <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Scan QR Code / Masukkan Kode Token Soal</label>
+                        <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">SCAN QR CODE / MASUKKAN KODE TOKEN SOAL</label>
                         <div class="flex gap-2">
-                            <input type="text" id="inputTopicToken" placeholder="Ketik Kode Token Ujian..." class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-xs sm:text-sm uppercase font-mono font-bold text-rose-600 bg-rose-50/10 focus:outline-none focus:border-rose-400">
+                            <input type="text" id="inputTopicToken" placeholder="KETIK KODE TOKEN UJIAN..." class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-xs sm:text-sm uppercase font-mono font-bold text-rose-600 bg-rose-50/10 focus:outline-none focus:border-rose-400">
                             <button type="button" onclick="openQrScannerModal()" class="theme-btn-sec bg-rose-100 hover:bg-rose-200 text-rose-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5">
                                 📷 Scan QR
                             </button>
@@ -132,7 +131,7 @@
         </div>
     </div>
 
-    <!-- MODAL BACKUP, IMPORT, & HAPUS SOAL MASAL (LANGSUNG DILAKUKAN TANPA OTP) -->
+    <!-- MODAL BACKUP, IMPORT, & HAPUS SOAL MASAL -->
     <div id="dataManageModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
@@ -690,7 +689,7 @@
                 </div>
             </div>
 
-            <!-- SECTION 3: MENU SETTING PEMERIKSA & AKUN (TANPA OTP) -->
+            <!-- SECTION 3: MENU SETTING PEMERIKSA & AKUN -->
             <div id="sectionSetting" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-6 max-w-2xl mx-auto">
                     <div class="border-b border-rose-100 pb-3">
@@ -723,6 +722,25 @@
 
         </main>
     </div>
+
+    <!-- SCRIPT INSTAN UNTUK MEMBACA LOCAL STORAGE SEBELUM FIREBASE MEMUAT (MENGHILANGKAN GLITCH 0ms) -->
+    <script>
+        (function applyCachedUI() {
+            try {
+                const cachedConfig = localStorage.getItem("headerConfig_cache");
+                if (cachedConfig) {
+                    const data = JSON.parse(cachedConfig);
+                    if (data.navTitle) document.getElementById("navBarTitle").innerText = data.navTitle;
+                    if (data.mainTitle && document.getElementById("displayMainTitle")) document.getElementById("displayMainTitle").innerText = data.mainTitle;
+                    if (data.headerSubtitle) document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle;
+                    if (data.headerQuote) document.getElementById("headerQuoteDisplay").innerText = data.headerQuote;
+                    if (data.btnLoginText && document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText;
+                    if (data.examPageText && document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText;
+                    if (data.gradingPageText && document.getElementById("lblGradingHeaderTitle")) document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText;
+                }
+            } catch (e) { console.log(e); }
+        })();
+    </script>
 
     <!-- FIREBASE SDK V10 -->
     <script type="module">
@@ -777,17 +795,21 @@
                 }
             });
 
-            // 1. Config Header & Interface UI Realtime
+            // 1. Config Header & Interface UI Realtime (LENGKAP DENGAN CACHING LOCALSTORAGE)
             onSnapshot(doc(db, "settings", "headerConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.getElementById("navBarTitle").innerText = data.navTitle || "Pre-Test Tajwid";
-                    if (document.getElementById("displayMainTitle")) document.getElementById("displayMainTitle").innerText = data.mainTitle || "Evaluasi Pre-Test Tajwid";
-                    document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "Evaluasi Mahasiswi ✨";
+                    
+                    // SIMPAN KE LOCAL STORAGE AGAR LOAD BERIKUTNYA 0MS (BEBAS GLITCH)
+                    localStorage.setItem("headerConfig_cache", JSON.stringify(data));
+
+                    document.getElementById("navBarTitle").innerText = data.navTitle || "Daarunnisaa";
+                    if (document.getElementById("displayMainTitle")) document.getElementById("displayMainTitle").innerText = data.mainTitle || "Lembar Soal Digital";
+                    document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "EVALUASI TAJWID METODE ASY-SYAFI'I ✨";
                     document.getElementById("headerQuoteDisplay").innerText = data.headerQuote || '"Bersungguh-sungguhlah pada hal yang bermanfaat bagimu..."';
                     
                     if (document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText || "🔑 Login";
-                    if (document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText || "Laman Ujian Tajwid";
+                    if (document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText || "LAMAN UJIAN";
                     if (document.getElementById("lblGradingHeaderTitle")) document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText || "Laman Pengelolaan & Penilaian Tajwid";
 
                     window.activeSessionText = data.activeSessionText || "🟢 Sesi Ustadzah Aktif";
@@ -882,6 +904,7 @@
 
             try {
                 await setDoc(doc(db, "settings", "headerConfig"), configData);
+                localStorage.setItem("headerConfig_cache", JSON.stringify(configData));
                 closeHeaderConfigModal();
                 alert("✅ Konfigurasi Tampilan Interface Berhasil Disimpan ke Firebase!");
             } catch (err) {
@@ -967,7 +990,6 @@
             }).catch(err => alert("Gagal menyalin token: " + err));
         };
 
-        // EKSEKUSI LANGSUNG TANPA OTP
         window.executeUpdateAccount = async function() {
             const newUsername = document.getElementById("settingUsername").value.trim();
             const newPassword = document.getElementById("settingPassword").value;
@@ -1853,7 +1875,7 @@
 
         function openHeaderConfigModal() {
             document.getElementById("cfgNavTitle").value = document.getElementById("navBarTitle").innerText;
-            document.getElementById("cfgMainTitle").value = document.getElementById("displayMainTitle") ? document.getElementById("displayMainTitle").innerText : "Evaluasi Pre-Test Tajwid";
+            document.getElementById("cfgMainTitle").value = document.getElementById("displayMainTitle") ? document.getElementById("displayMainTitle").innerText : "Lembar Soal Digital";
             document.getElementById("cfgHeaderSubtitle").value = document.getElementById("headerSubtitleDisplay").innerText;
             document.getElementById("cfgHeaderQuote").value = document.getElementById("headerQuoteDisplay").innerText;
             
