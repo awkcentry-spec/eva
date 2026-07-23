@@ -21,6 +21,21 @@
         body { font-family: var(--primary-font); }
         .arabic { font-family: 'Amiri', serif; font-size: 1.35rem; }
     </style>
+
+    <!-- SCRIPT PRE-RENDER DINI: MENCEGAH GLITCH FONT & TEKS SEBELUM DOM DITAMPILKAN (0ms) -->
+    <script>
+        (function applyCachedUIEarly() {
+            try {
+                const cachedConfig = localStorage.getItem("headerConfig_cache");
+                if (cachedConfig) {
+                    const data = JSON.parse(cachedConfig);
+                    if (data.themeFont) {
+                        document.documentElement.style.setProperty('--primary-font', `'${data.themeFont}', sans-serif`);
+                    }
+                }
+            } catch (e) { console.log(e); }
+        })();
+    </script>
 </head>
 <body id="appBody" class="bg-rose-50/40 text-gray-700 min-h-screen transition-colors duration-300">
 
@@ -131,11 +146,11 @@
         </div>
     </div>
 
-    <!-- MODAL BACKUP, IMPORT, & HAPUS SOAL MASAL -->
+    <!-- MODAL BACKUP & IMPORT SOAL -->
     <div id="dataManageModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
-                <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">📦 Backup, Import & Hapus Masal</h3>
+                <h3 class="text-sm font-bold text-gray-800 uppercase flex items-center gap-2">📦 Backup & Import Soal</h3>
                 <button onclick="closeDataManageModal()" class="text-gray-400 hover:text-gray-600 font-bold cursor-pointer">✕</button>
             </div>
             
@@ -159,18 +174,6 @@
                     <button onclick="executeImportJson()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-xs mt-2 cursor-pointer">
                         📤 Upload & Import Soal
                     </button>
-                </div>
-
-                <div class="bg-red-50/50 p-4 rounded-2xl border border-red-100 space-y-2">
-                    <h4 class="font-bold text-red-600 uppercase flex items-center gap-1.5">🗑️ 3. Hapus Data Soal Masal</h4>
-                    <p class="text-gray-500">Hapus seluruh soal berdasarkan tema pilihan secara permanen.</p>
-                    <div class="flex gap-2 pt-1">
-                        <select id="deleteTopicSelect" class="flex-1 px-3 py-2 border border-red-200 rounded-xl text-xs bg-white">
-                        </select>
-                        <button onclick="executeMassDelete()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer">
-                            🗑️ Hapus Masal
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -694,7 +697,7 @@
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-6 max-w-2xl mx-auto">
                     <div class="border-b border-rose-100 pb-3">
                         <h3 class="text-base font-bold text-gray-800 uppercase flex items-center gap-2">⚙️ Pengaturan Akun Pemeriksa</h3>
-                        <p class="text-xs text-gray-400 mt-1">Kelola kredensial akun login ustadzah & nomor kontak laporan.</p>
+                        <p class="text-xs text-gray-400 mt-1">Kelola kredensial akun login ustadzah.</p>
                     </div>
 
                     <form id="settingAccountForm" onsubmit="event.preventDefault(); executeUpdateAccount();" class="space-y-4 text-xs">
@@ -708,11 +711,6 @@
                             <input type="password" id="settingPassword" placeholder="••••••••" class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-xs bg-rose-50/10 focus:outline-none focus:border-rose-400">
                         </div>
 
-                        <div class="pt-2 border-t border-rose-50">
-                            <label class="block font-bold text-emerald-700 uppercase mb-1">📱 Nomor WhatsApp Utama</label>
-                            <input type="text" id="settingWaNumber" required value="082341208990" placeholder="082341208990" class="w-full px-4 py-2.5 border border-emerald-300 rounded-xl text-xs bg-emerald-50/20 font-mono font-bold text-emerald-800 focus:outline-none focus:border-emerald-500">
-                        </div>
-
                         <button type="submit" class="w-full theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition-all shadow-md mt-2 cursor-pointer">
                             💾 Simpan Perubahan Akun
                         </button>
@@ -722,25 +720,6 @@
 
         </main>
     </div>
-
-    <!-- SCRIPT INSTAN UNTUK MEMBACA LOCAL STORAGE SEBELUM FIREBASE MEMUAT (MENGHILANGKAN GLITCH 0ms) -->
-    <script>
-        (function applyCachedUI() {
-            try {
-                const cachedConfig = localStorage.getItem("headerConfig_cache");
-                if (cachedConfig) {
-                    const data = JSON.parse(cachedConfig);
-                    if (data.navTitle) document.getElementById("navBarTitle").innerText = data.navTitle;
-                    if (data.mainTitle && document.getElementById("displayMainTitle")) document.getElementById("displayMainTitle").innerText = data.mainTitle;
-                    if (data.headerSubtitle) document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle;
-                    if (data.headerQuote) document.getElementById("headerQuoteDisplay").innerText = data.headerQuote;
-                    if (data.btnLoginText && document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText;
-                    if (data.examPageText && document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText;
-                    if (data.gradingPageText && document.getElementById("lblGradingHeaderTitle")) document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText;
-                }
-            } catch (e) { console.log(e); }
-        })();
-    </script>
 
     <!-- FIREBASE SDK V10 -->
     <script type="module">
@@ -772,8 +751,7 @@
         // ACCOUNT STATE
         window.accountSettings = {
             username: "ustadzah",
-            password: "tajwidok",
-            waNumber: "082341208990"
+            password: "tajwidok"
         };
 
         // HELPER UTILS: GENERATE RANDOM TOKEN ENKRIPSI
@@ -787,20 +765,18 @@
             onSnapshot(doc(db, "settings", "accountConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     window.accountSettings = docSnap.data();
-                    if (!window.accountSettings.waNumber) window.accountSettings.waNumber = "082341208990";
                     document.getElementById("settingUsername").value = window.accountSettings.username || "ustadzah";
-                    document.getElementById("settingWaNumber").value = window.accountSettings.waNumber;
                 } else {
                     setDoc(doc(db, "settings", "accountConfig"), window.accountSettings);
                 }
             });
 
-            // 1. Config Header & Interface UI Realtime (LENGKAP DENGAN CACHING LOCALSTORAGE)
+            // 1. Config Header & Interface UI Realtime (LENGKAP DENGAN FONT CACHING)
             onSnapshot(doc(db, "settings", "headerConfig"), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // SIMPAN KE LOCAL STORAGE AGAR LOAD BERIKUTNYA 0MS (BEBAS GLITCH)
+                    // CASHING LENGKAP UNTUK MENCEGAH FONT DAN TEXT GLITCH SAAT RELOAD
                     localStorage.setItem("headerConfig_cache", JSON.stringify(data));
 
                     document.getElementById("navBarTitle").innerText = data.navTitle || "Daarunnisaa";
@@ -874,6 +850,17 @@
             await updateDoc(doc(db, "topics", topicId), { token: newToken });
         };
 
+        // HAPUS TEMA SOAL SECARA PERMANEN
+        window.deleteTopic = async function(topicId, topicName) {
+            if (!confirm(`⚠️ Apakah Ustadzah yakin ingin MENGHAPUS TEMA "${topicName}" secara permanen dari Firebase?`)) return;
+            try {
+                await deleteDoc(doc(db, "topics", topicId));
+                alert(`✅ Tema "${topicName}" Berhasil Dihapus.`);
+            } catch(err) {
+                alert("Gagal menghapus tema: " + err.message);
+            }
+        };
+
         // SUBMIT TEMA BARU
         document.getElementById("topicForm").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -885,7 +872,7 @@
             nameInput.value = "";
         });
 
-        // SIMPAN CUSTOM UI CONFIG KE FIREBASE
+        // SIMPAN CUSTOM UI CONFIG KE FIREBASE (SINKRON DENGAN LOCALSTORAGE)
         document.getElementById("headerConfigForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const configData = {
@@ -949,7 +936,6 @@
             const teacherFilter = document.getElementById("teacherFilterTopic");
             const printTopicSelect = document.getElementById("printTopicSelect");
             const exportTopicSelect = document.getElementById("exportTopicSelect");
-            const deleteTopicSelect = document.getElementById("deleteTopicSelect");
             const badgeContainer = document.getElementById("topicBadgeContainer");
 
             const topicOptions = window.topics.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
@@ -958,7 +944,6 @@
             teacherFilter.innerHTML = `<option value="">-- Pilih Tema Soal Dahulu --</option>` + topicOptions;
             if(printTopicSelect) printTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
             if(exportTopicSelect) exportTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
-            if(deleteTopicSelect) deleteTopicSelect.innerHTML = `<option value="">-- Pilih Tema yang Akan Dihapus --</option>` + topicOptions;
 
             badgeContainer.innerHTML = window.topics.map(t => `
                 <div class="bg-rose-50/80 p-3.5 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2.5 text-xs shadow-xs">
@@ -966,7 +951,10 @@
                         <span class="font-bold text-gray-800 flex items-center gap-1.5">
                             <span class="text-rose-500">🏷️</span> ${t.name}
                         </span>
-                        <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema Aktif</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-md">Tema Aktif</span>
+                            <button onclick="deleteTopic('${t.id}', '${t.name.replace(/'/g, "\\'")}')" title="Hapus Tema Soal" class="text-red-400 hover:text-red-600 font-bold px-1.5 py-0.5 rounded-md hover:bg-red-100 transition-all cursor-pointer text-xs">✕</button>
+                        </div>
                     </div>
                     <div class="flex items-center justify-between pt-2 border-t border-rose-100">
                         <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-rose-200">
@@ -993,11 +981,9 @@
         window.executeUpdateAccount = async function() {
             const newUsername = document.getElementById("settingUsername").value.trim();
             const newPassword = document.getElementById("settingPassword").value;
-            const newWa = document.getElementById("settingWaNumber").value.trim() || "082341208990";
 
             const updateData = {
-                username: newUsername,
-                waNumber: newWa
+                username: newUsername
             };
             if (newPassword) updateData.password = newPassword;
 
@@ -1071,22 +1057,6 @@
                 }
             };
             reader.readAsText(file);
-        };
-
-        window.executeMassDelete = async function() {
-            const topic = document.getElementById("deleteTopicSelect").value;
-            if (!topic) return alert("Pilih tema soal yang ingin dihapus!");
-
-            if (!confirm(`⚠️ PERINGATAN!\n\nApakah Ustadzah yakin ingin MENGHAPUS SELURUH SOAL pada tema "${topic}" secara permanen?`)) return;
-
-            const pgToDelete = window.questionsPg.filter(q => q.topic === topic);
-            const essayToDelete = window.questionsEssay.filter(q => q.topic === topic);
-
-            for (const q of pgToDelete) await deleteDoc(doc(db, "questions_pg", q.id));
-            for (const q of essayToDelete) await deleteDoc(doc(db, "questions_essay", q.id));
-
-            alert(`✅ Seluruh Soal Tema "${topic}" Berhasil Dihapus secara Masal.`);
-            closeDataManageModal();
         };
 
         window.executePrint = function() {
