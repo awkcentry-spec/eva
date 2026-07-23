@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -131,7 +132,7 @@
         </div>
     </div>
 
-    <!-- MODAL BACKUP, IMPORT, & HAPUS SOAL MASAL DENGAN VERIFIKASI OTP WHATSAPP -->
+    <!-- MODAL BACKUP, IMPORT, & HAPUS SOAL MASAL (LANGSUNG DILAKUKAN TANPA OTP) -->
     <div id="dataManageModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl border border-rose-100 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-rose-100 pb-3">
@@ -146,7 +147,7 @@
                     <div class="flex gap-2 pt-1">
                         <select id="exportTopicSelect" class="flex-1 px-3 py-2 border border-rose-200 rounded-xl text-xs bg-white">
                         </select>
-                        <button onclick="requestOtpForAction('export')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer">
+                        <button onclick="executeExportJson()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer">
                             📥 Download Backup
                         </button>
                     </div>
@@ -156,42 +157,22 @@
                     <h4 class="font-bold text-rose-600 uppercase flex items-center gap-1.5">📤 2. Import Data Soal Masal (.JSON)</h4>
                     <p class="text-gray-500">Pilih file JSON hasil backup untuk mengupload bank soal secara otomatis.</p>
                     <input type="file" id="importJsonFile" accept=".json" class="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-100 file:text-rose-700">
-                    <button onclick="requestOtpForAction('import')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-xs mt-2 cursor-pointer">
+                    <button onclick="executeImportJson()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-xs mt-2 cursor-pointer">
                         📤 Upload & Import Soal
                     </button>
                 </div>
 
                 <div class="bg-red-50/50 p-4 rounded-2xl border border-red-100 space-y-2">
                     <h4 class="font-bold text-red-600 uppercase flex items-center gap-1.5">🗑️ 3. Hapus Data Soal Masal</h4>
-                    <p class="text-gray-500">Hapus seluruh soal berdasarkan tema pilihan (Memerlukan OTP WhatsApp).</p>
+                    <p class="text-gray-500">Hapus seluruh soal berdasarkan tema pilihan secara permanen.</p>
                     <div class="flex gap-2 pt-1">
                         <select id="deleteTopicSelect" class="flex-1 px-3 py-2 border border-red-200 rounded-xl text-xs bg-white">
                         </select>
-                        <button onclick="requestOtpForAction('delete_mass')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer">
+                        <button onclick="executeMassDelete()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer">
                             🗑️ Hapus Masal
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL POPUP VERIFIKASI CODE OTP WHATSAPP -->
-    <div id="otpModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4">
-        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100 space-y-4 text-center">
-            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">📲</div>
-            <h3 class="text-sm font-bold text-gray-800 uppercase">Verifikasi OTP WhatsApp</h3>
-            <p class="text-xs text-gray-500">Kode OTP 6-Digit telah dikirimkan secara langsung ke WhatsApp: <strong id="otpTargetPhoneDisplay" class="text-emerald-700">082341208990</strong></p>
-            
-            <input type="text" id="inputOtpCode" maxlength="6" placeholder="Masukkan 6 Digit OTP..." class="w-full px-4 py-3 border border-emerald-300 rounded-xl text-center text-lg font-mono font-bold text-emerald-700 tracking-widest focus:outline-none focus:border-emerald-500 bg-emerald-50/20">
-            
-            <div class="flex gap-2 pt-2">
-                <button onclick="verifyAndExecuteAction()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md cursor-pointer">
-                    Verifikasi Kode
-                </button>
-                <button onclick="closeOtpModal()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer">
-                    Batal
-                </button>
             </div>
         </div>
     </div>
@@ -538,7 +519,7 @@
                     <span>🏆</span> Penilaian & Hasil Mahasiswi
                 </button>
                 <button onclick="switchTeacherTab('setting')" id="tabSettingBtn" class="pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2">
-                    <span>⚙️</span> Setting Akun & WA OTP
+                    <span>⚙️</span> Setting Akun Utama
                 </button>
             </div>
 
@@ -709,15 +690,15 @@
                 </div>
             </div>
 
-            <!-- SECTION 3: MENU SETTING PEMERIKSA & AKUN (VERIFIKASI OTP WA) -->
+            <!-- SECTION 3: MENU SETTING PEMERIKSA & AKUN (TANPA OTP) -->
             <div id="sectionSetting" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-xs border border-rose-100/60 space-y-6 max-w-2xl mx-auto">
                     <div class="border-b border-rose-100 pb-3">
-                        <h3 class="text-base font-bold text-gray-800 uppercase flex items-center gap-2">⚙️ Pengaturan Akun & Keamanan WhatsApp OTP</h3>
-                        <p class="text-xs text-gray-400 mt-1">Kelola kredensial akun login ustadzah & nomor WhatsApp penerima verifikasi OTP.</p>
+                        <h3 class="text-base font-bold text-gray-800 uppercase flex items-center gap-2">⚙️ Pengaturan Akun Pemeriksa</h3>
+                        <p class="text-xs text-gray-400 mt-1">Kelola kredensial akun login ustadzah & nomor kontak laporan.</p>
                     </div>
 
-                    <form id="settingAccountForm" class="space-y-4 text-xs">
+                    <form id="settingAccountForm" onsubmit="event.preventDefault(); executeUpdateAccount();" class="space-y-4 text-xs">
                         <div>
                             <label class="block font-bold text-gray-600 uppercase mb-1">Nama / Username Akun Ustadzah</label>
                             <input type="text" id="settingUsername" required class="w-full px-4 py-2.5 border border-rose-200 rounded-xl text-xs bg-rose-50/10 focus:outline-none focus:border-rose-400 font-bold">
@@ -729,14 +710,12 @@
                         </div>
 
                         <div class="pt-2 border-t border-rose-50">
-                            <!-- NOMOR KONFIRMASI OTP UTAMA DIPERBARUI MENJADI 082341208990 -->
-                            <label class="block font-bold text-emerald-700 uppercase mb-1">📱 Nomor WhatsApp Verifikasi OTP Utama</label>
+                            <label class="block font-bold text-emerald-700 uppercase mb-1">📱 Nomor WhatsApp Utama</label>
                             <input type="text" id="settingWaNumber" required value="082341208990" placeholder="082341208990" class="w-full px-4 py-2.5 border border-emerald-300 rounded-xl text-xs bg-emerald-50/20 font-mono font-bold text-emerald-800 focus:outline-none focus:border-emerald-500">
-                            <p class="text-[10px] text-gray-400 mt-1">Seluruh kode verifikasi OTP untuk aksi sensitif (Backup, Hapus Masal, Ubah Password) secara otomatis dikonfirmasi ke nomor ini.</p>
                         </div>
 
-                        <button type="button" onclick="requestOtpForAction('update_account')" class="w-full theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition-all shadow-md mt-2 cursor-pointer">
-                            💾 Simpan Perubahan Akun (Kirim OTP WA)
+                        <button type="submit" class="w-full theme-btn-pri bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition-all shadow-md mt-2 cursor-pointer">
+                            💾 Simpan Perubahan Akun
                         </button>
                     </form>
                 </div>
@@ -772,14 +751,12 @@
         window.html5QrCodeScanner = null;
         window.activeSessionText = "🟢 Sesi Ustadzah Aktif";
         
-        // ACCOUNT & SECURITY STATE (NOMOR UTAMA 082341208990 SET AS DEFAULT)
+        // ACCOUNT STATE
         window.accountSettings = {
             username: "ustadzah",
             password: "tajwidok",
             waNumber: "082341208990"
         };
-        window.currentPendingAction = null;
-        window.generatedOtpCode = null;
 
         // HELPER UTILS: GENERATE RANDOM TOKEN ENKRIPSI
         window.generateRandomToken = function() {
@@ -990,41 +967,8 @@
             }).catch(err => alert("Gagal menyalin token: " + err));
         };
 
-        // INTEGRASI SYSTEM OTP WHATSAPP DENGAN NOMOR UTAMA: 082341208990
-        window.requestOtpForAction = function(actionType) {
-            window.currentPendingAction = actionType;
-            window.generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-            const targetWa = window.accountSettings.waNumber || "082341208990";
-            document.getElementById("otpTargetPhoneDisplay").innerText = targetWa;
-
-            console.log(`[WA Gateway Dispatch] OTP dikirimkan ke WhatsApp (${targetWa}). Kode OTP: ${window.generatedOtpCode}`);
-
-            document.getElementById("inputOtpCode").value = "";
-            document.getElementById("otpModal").classList.remove("hidden");
-        };
-
-        window.verifyAndExecuteAction = async function() {
-            const inputCode = document.getElementById("inputOtpCode").value.trim();
-            if (inputCode !== window.generatedOtpCode) {
-                return alert("❌ Kode OTP Verifikasi Salah atau Kadaluarsa!");
-            }
-
-            document.getElementById("otpModal").classList.add("hidden");
-            const action = window.currentPendingAction;
-
-            if (action === 'export') {
-                executeExportJson();
-            } else if (action === 'import') {
-                executeImportJson();
-            } else if (action === 'delete_mass') {
-                executeMassDelete();
-            } else if (action === 'update_account') {
-                executeUpdateAccount();
-            }
-        };
-
-        async function executeUpdateAccount() {
+        // EKSEKUSI LANGSUNG TANPA OTP
+        window.executeUpdateAccount = async function() {
             const newUsername = document.getElementById("settingUsername").value.trim();
             const newPassword = document.getElementById("settingPassword").value;
             const newWa = document.getElementById("settingWaNumber").value.trim() || "082341208990";
@@ -1037,13 +981,13 @@
 
             try {
                 await setDoc(doc(db, "settings", "accountConfig"), updateData, { merge: true });
-                alert("✅ Akun Ustadzah & Nomor WhatsApp Verifikasi Berhasil Diperbarui!");
+                alert("✅ Akun Ustadzah Berhasil Diperbarui!");
             } catch (err) {
                 alert("Gagal memperbarui akun: " + err.message);
             }
-        }
+        };
 
-        function executeExportJson() {
+        window.executeExportJson = function() {
             const topic = document.getElementById("exportTopicSelect").value;
             let pgList = window.questionsPg;
             let essayList = window.questionsEssay;
@@ -1068,9 +1012,9 @@
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
-        }
+        };
 
-        async function executeImportJson() {
+        window.executeImportJson = async function() {
             const fileInput = document.getElementById("importJsonFile");
             if (!fileInput.files.length) return alert("Pilih file JSON terlebih dahulu!");
 
@@ -1105,13 +1049,13 @@
                 }
             };
             reader.readAsText(file);
-        }
+        };
 
-        async function executeMassDelete() {
+        window.executeMassDelete = async function() {
             const topic = document.getElementById("deleteTopicSelect").value;
             if (!topic) return alert("Pilih tema soal yang ingin dihapus!");
 
-            if (!confirm(`⚠️ PERINGATAN BERSYARAT!\n\nApakah Ustadzah yakin ingin MENGHAPUS SELURUH SOAL pada tema "${topic}" secara permanen?`)) return;
+            if (!confirm(`⚠️ PERINGATAN!\n\nApakah Ustadzah yakin ingin MENGHAPUS SELURUH SOAL pada tema "${topic}" secara permanen?`)) return;
 
             const pgToDelete = window.questionsPg.filter(q => q.topic === topic);
             const essayToDelete = window.questionsEssay.filter(q => q.topic === topic);
@@ -1121,7 +1065,7 @@
 
             alert(`✅ Seluruh Soal Tema "${topic}" Berhasil Dihapus secara Masal.`);
             closeDataManageModal();
-        }
+        };
 
         window.executePrint = function() {
             const topic = document.getElementById("printTopicSelect").value;
@@ -1905,10 +1849,6 @@
 
         function closeDataManageModal() {
             document.getElementById("dataManageModal").classList.add("hidden");
-        }
-
-        function closeOtpModal() {
-            document.getElementById("otpModal").classList.add("hidden");
         }
 
         function openHeaderConfigModal() {
