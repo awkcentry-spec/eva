@@ -320,7 +320,6 @@
                             <input type="text" id="cfgHeaderSubtitle" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
                         </div>
                         <div>
-                            <!-- POIN 1: DEFAULT VALUE "Login" -->
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-0.5">Nama Tombol Login</label>
                             <input type="text" id="cfgBtnLoginText" value="Login" required class="w-full px-3 py-1.5 border border-rose-200 rounded-xl text-xs bg-white">
                         </div>
@@ -730,7 +729,6 @@
                         </div>
 
                         <div class="pt-2 border-t border-rose-50">
-                            <!-- POIN 3: DEFAULT NOMOR TELEPON 082341208990 -->
                             <label class="block font-bold text-emerald-700 uppercase mb-1">📱 Nomor WhatsApp Verifikasi OTP</label>
                             <input type="text" id="settingWaNumber" required value="082341208990" placeholder="Contoh: 082341208990" class="w-full px-4 py-2.5 border border-emerald-300 rounded-xl text-xs bg-emerald-50/20 font-mono font-bold text-emerald-800 focus:outline-none focus:border-emerald-500">
                             <p class="text-[10px] text-gray-400 mt-1">Seluruh kode verifikasi OTP untuk aksi sensitif (Backup, Hapus Masal, Ubah Password) akan dikirim ke nomor ini.</p>
@@ -749,7 +747,7 @@
     <!-- FIREBASE SDK V10 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         // CONFIG FIREBASE
         const firebaseConfig = {
@@ -773,7 +771,7 @@
         window.html5QrCodeScanner = null;
         window.activeSessionText = "🟢 Sesi Ustadzah Aktif";
         
-        // POIN 3: ACCOUNT & SECURITY STATE (DEFAULT WA: 082341208990)
+        // ACCOUNT & SECURITY STATE
         window.accountSettings = {
             username: "ustadzah",
             password: "tajwidok",
@@ -809,7 +807,6 @@
                     document.getElementById("headerSubtitleDisplay").innerText = data.headerSubtitle || "Evaluasi Mahasiswi ✨";
                     document.getElementById("headerQuoteDisplay").innerText = data.headerQuote || '"Bersungguh-sungguhlah pada hal yang bermanfaat bagimu..."';
                     
-                    // POIN 1: DEFAULT TEXT "Login"
                     if (document.getElementById("btnLoginView")) document.getElementById("btnLoginView").innerText = data.btnLoginText || "🔑 Login";
                     if (document.getElementById("lblExamPageTitle")) document.getElementById("lblExamPageTitle").innerText = data.examPageText || "Laman Ujian Tajwid";
                     if (document.getElementById("lblGradingHeaderTitle")) document.getElementById("lblGradingHeaderTitle").innerText = data.gradingPageText || "Laman Pengelolaan & Penilaian Tajwid";
@@ -869,6 +866,50 @@
             });
         }
 
+        // RESET TOKEN
+        window.resetTopicToken = async function(topicId) {
+            if (!confirm("Generate token baru? Token lama tidak dapat digunakan lagi.")) return;
+            const newToken = window.generateRandomToken();
+            await updateDoc(doc(db, "topics", topicId), { token: newToken });
+        };
+
+        // SUBMIT TEMA BARU
+        document.getElementById("topicForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById("newTopicInput");
+            const name = nameInput.value.trim();
+            if (!name) return;
+
+            await addDoc(collection(db, "topics"), { name, token: window.generateRandomToken() });
+            nameInput.value = "";
+        });
+
+        // SIMPAN CUSTOM UI CONFIG KE FIREBASE
+        document.getElementById("headerConfigForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const configData = {
+                navTitle: document.getElementById("cfgNavTitle").value.trim(),
+                mainTitle: document.getElementById("cfgMainTitle").value.trim(),
+                headerSubtitle: document.getElementById("cfgHeaderSubtitle").value.trim(),
+                btnLoginText: document.getElementById("cfgBtnLoginText").value.trim(),
+                examPageText: document.getElementById("cfgExamPageText").value.trim(),
+                gradingPageText: document.getElementById("cfgGradingPageText").value.trim(),
+                activeSessionText: document.getElementById("cfgActiveSessionText").value.trim(),
+                teacherModeBadge: document.getElementById("cfgTeacherModeBadge").value.trim(),
+                headerQuote: document.getElementById("cfgHeaderQuote").value.trim(),
+                themeColor: document.getElementById("cfgThemeColor").value,
+                themeFont: document.getElementById("cfgThemeFont").value
+            };
+
+            try {
+                await setDoc(doc(db, "settings", "headerConfig"), configData);
+                closeHeaderConfigModal();
+                alert("✅ Konfigurasi Tampilan Interface Berhasil Disimpan ke Firebase!");
+            } catch (err) {
+                alert("Gagal menyimpan konfigurasi UI: " + err.message);
+            }
+        });
+
         function applyThemeStyle(colorScheme, fontName) {
             document.documentElement.style.setProperty('--primary-font', `'${fontName}', sans-serif`);
             const body = document.getElementById("appBody");
@@ -901,7 +942,6 @@
             }
         }
 
-        // POIN 2 & 5: UPDATE DROPDOWNS & BADGES TANPA TANDA SILANG HAPUS (GANTI DENGAN VERIFIKASI SAFEGUARD)
         function updateTopicDropdowns() {
             const qTopicSelect = document.getElementById("qTopic");
             const teacherFilter = document.getElementById("teacherFilterTopic");
@@ -918,7 +958,6 @@
             if(exportTopicSelect) exportTopicSelect.innerHTML = `<option value="all">Semua Tema Soal</option>` + topicOptions;
             if(deleteTopicSelect) deleteTopicSelect.innerHTML = `<option value="">-- Pilih Tema yang Akan Dihapus --</option>` + topicOptions;
 
-            // POIN 2 & 5: TANDA SILANG (✕) DIHILANGKAN DEMI KEAMANAN (PROSES HAPUS DIAMANKAN DENGAN OTP)
             badgeContainer.innerHTML = window.topics.map(t => `
                 <div class="bg-rose-50/80 p-3.5 rounded-2xl border border-rose-100 flex flex-col justify-between gap-2.5 text-xs shadow-xs">
                     <div class="flex justify-between items-center">
@@ -949,7 +988,7 @@
             }).catch(err => alert("Gagal menyalin token: " + err));
         };
 
-        // POIN 3 & 4: INTEGRASI SISTEM OTP WHATSAPP API TANPA MENAMPILKAN KODE DI LAYAR (GAMBAR 2 DISAMARKAN)
+        // INTEGRASI SYSTEM OTP WHATSAPP API
         window.requestOtpForAction = function(actionType) {
             window.currentPendingAction = actionType;
             window.generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -957,8 +996,7 @@
             const targetWa = window.accountSettings.waNumber || "082341208990";
             document.getElementById("otpTargetPhoneDisplay").innerText = targetWa;
 
-            // SIMULASI PENGIRIMAN SILENT API KE WHATSAPP GATEWAY (TANPA SHOWING ALERT KODE OTP DI GAMBAR 2)
-            console.log(`[WA Gateway Dispatch] OTP dikirimkan ke WhatsApp (${targetWa}).`);
+            console.log(`[WA Gateway Dispatch] OTP dikirimkan ke WhatsApp (${targetWa}). Kode OTP: ${window.generatedOtpCode}`);
 
             document.getElementById("inputOtpCode").value = "";
             document.getElementById("otpModal").classList.remove("hidden");
@@ -1877,7 +1915,6 @@
             document.getElementById("cfgHeaderSubtitle").value = document.getElementById("headerSubtitleDisplay").innerText;
             document.getElementById("cfgHeaderQuote").value = document.getElementById("headerQuoteDisplay").innerText;
             
-            // POIN 1: DEFAULT SET LOGIN
             if(document.getElementById("btnLoginView")) document.getElementById("cfgBtnLoginText").value = document.getElementById("btnLoginView").innerText.replace('🔑 ', '').trim() || "Login";
             if(document.getElementById("lblExamPageTitle")) document.getElementById("cfgExamPageText").value = document.getElementById("lblExamPageTitle").innerText;
             if(document.getElementById("lblGradingHeaderTitle")) document.getElementById("cfgGradingPageText").value = document.getElementById("lblGradingHeaderTitle").innerText;
@@ -2024,7 +2061,7 @@
                 tabPgContent.classList.remove("hidden");
                 tabEssayContent.classList.add("hidden");
             } else {
-                tabEssayBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
+                tabEssayBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-rose-600 cursor-pointer flex items-center gap-2";
                 tabPgBtn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer flex items-center gap-2";
                 tabEssayContent.classList.remove("hidden");
                 tabPgContent.classList.add("hidden");
