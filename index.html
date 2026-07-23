@@ -478,7 +478,8 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-rose-600 uppercase mb-1">Bobot Soal (Poin)</label>
-                        <input type="number" id="qWeight" value="10" min="1" required class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 focus:outline-none focus:border-rose-400 bg-rose-50/10">
+                        <!-- PERBAIKAN: Diizinkan menerima desimal dengan step="any" / step="0.1" dan min="0.1" -->
+                        <input type="number" id="qWeight" value="10" min="0.1" step="any" required class="w-full px-3 py-2 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 focus:outline-none focus:border-rose-400 bg-rose-50/10">
                     </div>
                 </div>
 
@@ -927,6 +928,11 @@
             password: "tajwidok"
         };
 
+        // HELPER UTILS: ROUND FLOAT AGAR TIDAK TERJADI FLOATING POINT ERROR (misal 10.050000000002)
+        window.roundNum = function(num) {
+            return Math.round((num + Number.EPSILON) * 100) / 100;
+        };
+
         // HELPER UTILS: GENERATE RANDOM TOKEN ENKRIPSI
         window.generateRandomToken = function() {
             return 'TJ' + Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -970,12 +976,11 @@
                 }
             });
 
-            // 2. Load Topics & Token Realtime (PERBAIKAN RULE TEMA PERMANEN ALL DATA)
+            // 2. Load Topics & Token Realtime
             onSnapshot(collection(db, "topics"), (snapshot) => {
                 window.topics = [];
                 snapshot.forEach(doc => window.topics.push({ id: doc.id, ...doc.data() }));
 
-                // Pastikan tema "All data" selalu ada di database
                 const hasAllData = window.topics.some(t => t.name === "All data");
                 if (!hasAllData) {
                     addDoc(collection(db, "topics"), { name: "All data", token: window.generateRandomToken() });
@@ -1026,7 +1031,7 @@
             await updateDoc(doc(db, "topics", topicId), { token: newToken });
         };
 
-        // HAPUS TEMA SOAL SECARA PERMANEN & PINDAHKAN SOALNYA KE "All data"
+        // HAPUS TEMA SOAL
         window.deleteTopic = async function(topicId, topicName) {
             if (topicName === "All data") {
                 alert("⚠️ Tema 'All data' adalah tema utama bawaan sistem dan TIDAK BISA dihapus!");
@@ -1036,19 +1041,16 @@
             if (!confirm(`⚠️ Apakah Ustadzah yakin ingin MENGHAPUS TEMA "${topicName}"?\n\nSemua soal yang berada di tema ini akan SECARA OTOMATIS dialihkan ke tema "All data".`)) return;
             
             try {
-                // 1. Ubah semua soal PG yang memiliki tema ini menjadi "All data"
                 const pgToUpdate = window.questionsPg.filter(q => q.topic === topicName);
                 for (const q of pgToUpdate) {
                     await updateDoc(doc(db, "questions_pg", q.id), { topic: "All data" });
                 }
 
-                // 2. Ubah semua soal Esai yang memiliki tema ini menjadi "All data"
                 const essayToUpdate = window.questionsEssay.filter(q => q.topic === topicName);
                 for (const q of essayToUpdate) {
                     await updateDoc(doc(db, "questions_essay", q.id), { topic: "All data" });
                 }
 
-                // 3. Hapus dokumen tema di Firebase
                 await deleteDoc(doc(db, "topics", topicId));
                 alert(`✅ Tema "${topicName}" berhasil dihapus. Semua soal terkait telah dipindahkan ke tema "All data".`);
             } catch(err) {
@@ -1056,7 +1058,6 @@
             }
         };
 
-        // BUKA MODAL EDIT TEMA SOAL
         window.openEditTopicModal = function(topicId, currentName) {
             if (currentName === "All data") {
                 alert("⚠️ Tema 'All data' adalah tema bawaan sistem dan TIDAK BISA diubah namanya!");
@@ -1071,7 +1072,6 @@
             document.getElementById("editTopicModal").classList.add("hidden");
         };
 
-        // SUBMIT EDIT TEMA SOAL
         document.getElementById("editTopicForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const topicId = document.getElementById("editTopicId").value;
@@ -1084,13 +1084,11 @@
             }
 
             try {
-                // Cari nama lama tema
                 const oldTopic = window.topics.find(t => t.id === topicId);
                 const oldName = oldTopic ? oldTopic.name : null;
 
                 await updateDoc(doc(db, "topics", topicId), { name: newName });
 
-                // Jika nama berubah, update semua soal yang terkait ke nama tema baru
                 if (oldName && oldName !== newName) {
                     const pgToUpdate = window.questionsPg.filter(q => q.topic === oldName);
                     for (const q of pgToUpdate) {
@@ -1108,7 +1106,6 @@
             }
         });
 
-        // SUBMIT TEMA BARU
         document.getElementById("topicForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById("newTopicInput");
@@ -1124,7 +1121,6 @@
             nameInput.value = "";
         });
 
-        // SIMPAN CUSTOM UI CONFIG KE FIREBASE
         document.getElementById("headerConfigForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const configData = {
@@ -1320,7 +1316,6 @@
             reader.readAsText(file);
         };
 
-        // HAPUS SOAL BERDASARKAN TEMA DI FIREBASE
         window.executeDeleteQuestionsByTopic = async function() {
             const selectedTopic = document.getElementById("deleteTopicSelect").value;
             if (!selectedTopic) return alert("Silakan pilih tema soal yang ingin dihapus!");
@@ -1340,13 +1335,11 @@
             try {
                 let deletedCount = 0;
                 
-                // Hapus PG
                 for (const q of pgToDelete) {
                     await deleteDoc(doc(db, "questions_pg", q.id));
                     deletedCount++;
                 }
 
-                // Hapus Essay
                 for (const q of essayToDelete) {
                     await deleteDoc(doc(db, "questions_essay", q.id));
                     deletedCount++;
@@ -1358,7 +1351,6 @@
             }
         };
 
-        // HAPUS SEMUA SOAL DI FIREBASE
         window.executeDeleteAllQuestions = async function() {
             const totalPg = window.questionsPg.length;
             const totalEssay = window.questionsEssay.length;
@@ -1368,12 +1360,10 @@
                 return alert("Bank soal di Firebase saat ini sudah kosong.");
             }
 
-            // Konfirmasi Lapis 1
             if (!confirm(`🔥 BAHAYA: HAPUS SEMUA SOAL!\n\nApakah Anda yakin ingin MENGHAPUS SELURUH BANK SOAL (${grandTotal} soal) dari Firebase?`)) {
                 return;
             }
 
-            // Konfirmasi Lapis 2
             const checkText = prompt(`Ketik "HAPUS" untuk mengonfirmasi penghapusan seluruh data ${grandTotal} soal di Firebase:`);
             if (checkText !== "HAPUS") {
                 return alert("Proses hapus semua soal dibatalkan (Kata kunci konfirmasi salah).");
@@ -1382,13 +1372,11 @@
             try {
                 let deletedCount = 0;
 
-                // Hapus semua PG
                 for (const q of window.questionsPg) {
                     await deleteDoc(doc(db, "questions_pg", q.id));
                     deletedCount++;
                 }
 
-                // Hapus semua Essay
                 for (const q of window.questionsEssay) {
                     await deleteDoc(doc(db, "questions_essay", q.id));
                     deletedCount++;
@@ -1493,7 +1481,6 @@
             document.getElementById("studentIdentityPanel").classList.remove("hidden");
             document.getElementById("studentQuestionsWrapper").classList.remove("hidden");
 
-            // RESTORE DRAFT JAWABAN JIKA TERSEDIA DI LOCALSTORAGE
             window.restoreStudentDraftAnswer(foundTopic.name);
 
             alert(`✅ Token Sah! Soal Evaluasi Tema "${foundTopic.name}" Berhasil Dimuat.`);
@@ -1504,7 +1491,6 @@
             displayTitle.innerText = `Tema: ${selectedTopic}`;
             displayTitle.classList.remove("hidden");
 
-            // Jika tema yang dipilih adalah "All data", muat seluruh soal aktif
             const activePg = window.questionsPg.filter(q => q.active !== false && (selectedTopic === "All data" || q.topic === selectedTopic));
             const activeEssay = window.questionsEssay.filter(q => q.active !== false && (selectedTopic === "All data" || q.topic === selectedTopic));
 
@@ -1645,13 +1631,19 @@
             }
         };
 
+        // PERBAIKAN: kalkulasi max score menggunakan parseFloat & roundNum
         window.getMaxScores = function() {
             const activePg = window.questionsPg.filter(q => q.active !== false);
             const activeEssay = window.questionsEssay.filter(q => q.active !== false);
 
-            const maxPg = activePg.reduce((sum, q) => sum + (parseInt(q.weight) || 10), 0);
-            const maxEssay = activeEssay.reduce((sum, q) => sum + (parseInt(q.weight) || 10), 0);
-            return { maxPg, maxEssay, totalMax: maxPg + maxEssay };
+            const maxPg = activePg.reduce((sum, q) => sum + (parseFloat(q.weight) || 10), 0);
+            const maxEssay = activeEssay.reduce((sum, q) => sum + (parseFloat(q.weight) || 10), 0);
+            
+            return { 
+                maxPg: window.roundNum(maxPg), 
+                maxEssay: window.roundNum(maxEssay), 
+                totalMax: window.roundNum(maxPg + maxEssay) 
+            };
         };
 
         window.toggleQuestionActive = async function(type, id) {
@@ -1715,7 +1707,7 @@
             document.getElementById("qTopic").value = target.topic || (window.topics[0]?.name || '');
             document.getElementById("qType").value = type;
             document.getElementById("qText").value = target.text;
-            document.getElementById("qWeight").value = target.weight || 10;
+            document.getElementById("qWeight").value = target.weight !== undefined ? target.weight : 10;
 
             window.uploadedImageData = target.img || null;
 
@@ -1732,13 +1724,15 @@
             document.getElementById("questionModal").classList.remove("hidden");
         };
 
+        // PERBAIKAN: Simpan bobot menggunakan parseFloat()
         document.getElementById("questionForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             const editId = document.getElementById("qEditId").value;
             const topic = document.getElementById("qTopic").value;
             const type = document.getElementById("qType").value;
             const text = document.getElementById("qText").value.trim();
-            const weight = parseInt(document.getElementById("qWeight").value) || 10;
+            const weightInput = document.getElementById("qWeight").value;
+            const weight = parseFloat(weightInput) || 10;
 
             let imgData = null;
             const urlInput = document.getElementById("imgUrlInput").value.trim();
@@ -1777,7 +1771,7 @@
             }
         });
 
-        // SUBMIT KUIS MAHASISWI
+        // PERBAIKAN: Hitung skor kuis mahasiswi dengan parseFloat
         let startTime = Date.now();
 
         document.getElementById("quizForm").addEventListener("submit", async (e) => {
@@ -1807,9 +1801,11 @@
                 answersPg[q.id] = ansVal;
                 if (ansVal === q.key) {
                     correctCount++;
-                    pgScoreCalculated += (parseInt(q.weight) || 10);
+                    pgScoreCalculated += (parseFloat(q.weight) || 10);
                 }
             });
+
+            pgScoreCalculated = window.roundNum(pgScoreCalculated);
 
             const answersEssay = {};
             activeEssay.forEach(q => {
@@ -1842,7 +1838,6 @@
             try {
                 await addDoc(collection(db, "submissions"), submissionData);
 
-                // BERSIHKAN CACHE JAWABAN DRAFT KARENA SUDAH TERKIRIM
                 window.clearStudentDraftAnswer(selectedTopic);
 
                 document.getElementById("modalStudentName").innerText = studentName;
@@ -1998,11 +1993,12 @@
             pgGradingContainer.innerHTML = activePg.map(q => {
                 const userAns = sub.answersPg[q.id] || "Belum diisi";
                 const isCorrect = userAns === q.key;
+                const weightVal = parseFloat(q.weight) || 10;
                 return `
                     <div class="bg-gray-50 p-4 rounded-xl border ${isCorrect ? 'border-emerald-100 bg-emerald-50/10' : 'border-rose-100 bg-rose-50/10'} text-xs">
                         <div class="flex justify-between font-bold mb-1">
-                            <span>Soal Tema: ${q.topic || 'Umum'} (Bobot: ${q.weight || 10})</span>
-                            <span class="${isCorrect ? 'text-emerald-600' : 'text-rose-500'}">${isCorrect ? `✓ Benar (+${q.weight || 10})` : '✗ Salah (0)'}</span>
+                            <span>Soal Tema: ${q.topic || 'Umum'} (Bobot: ${weightVal})</span>
+                            <span class="${isCorrect ? 'text-emerald-600' : 'text-rose-500'}">${isCorrect ? `✓ Benar (+${weightVal})` : '✗ Salah (0)'}</span>
                         </div>
                         <p class="text-gray-700 font-medium">${q.text}</p>
                         <p class="mt-2 text-gray-500">Jawaban Mahasiswi: <strong class="text-gray-800">${userAns}</strong> (Kunci PG: ${q.key})</p>
@@ -2010,19 +2006,20 @@
                 `;
             }).join('');
 
+            // PERBAIKAN: Input penilain esai dengan step="any" agar Ustadzah bisa memberi nilai desimal (misal 2.5)
             const essayGradingContainer = document.getElementById("essayGradingContainer");
             if (hasEssay) {
                 essayGradingContainer.innerHTML = activeEssay.map(q => {
                     const userAns = sub.answersEssay[q.id] || "(Kosong / Belum Diisi)";
                     const currentGrade = sub.essayGrades ? (sub.essayGrades[q.id] || 0) : 0;
-                    const maxW = q.weight || 10;
+                    const maxW = parseFloat(q.weight) || 10;
                     return `
                         <div class="bg-white p-5 rounded-2xl shadow-xs border border-rose-100/60 space-y-3 text-xs">
                             <div class="flex justify-between items-center border-b border-gray-100 pb-2">
                                 <span class="font-bold text-gray-700">Soal Tema: ${q.topic || 'Umum'}</span>
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-400 font-medium">Beri Nilai (0-${maxW}):</span>
-                                    <input type="number" id="grade-essay-${q.id}" value="${currentGrade}" min="0" max="${maxW}" oninput="calculateRealtimeEssayScore()" class="w-16 px-2.5 py-1.5 border border-rose-200 rounded-lg text-center font-bold text-rose-600 focus:outline-none focus:border-rose-500 bg-rose-50/10">
+                                    <input type="number" id="grade-essay-${q.id}" value="${currentGrade}" min="0" max="${maxW}" step="any" oninput="calculateRealtimeEssayScore()" class="w-16 px-2.5 py-1.5 border border-rose-200 rounded-lg text-center font-bold text-rose-600 focus:outline-none focus:border-rose-500 bg-rose-50/10">
                                 </div>
                             </div>
                             <p class="font-semibold text-gray-800">${q.text}</p>
@@ -2052,6 +2049,7 @@
             document.getElementById("gradingArea").scrollIntoView({ behavior: 'smooth' });
         };
 
+        // PERBAIKAN: kalkulasi real-time nilai esai & skor total dengan parseFloat & roundNum
         window.calculateRealtimeEssayScore = function() {
             let totalEssay = 0;
             const sub = window.submissions.find(s => s.id === activeGradingId);
@@ -2063,16 +2061,17 @@
                 activeEssay.forEach(q => {
                     const input = document.getElementById(`grade-essay-${q.id}`);
                     if (input) {
-                        const maxW = q.weight || 10;
+                        const maxW = parseFloat(q.weight) || 10;
                         totalEssay += Math.min(maxW, Math.max(0, parseFloat(input.value) || 0));
                     }
                 });
             }
 
+            totalEssay = window.roundNum(totalEssay);
             document.getElementById("essayCurrentScoreDisplay").innerText = totalEssay;
 
-            const currentPg = sub.pgScore || 0;
-            const grandTotal = currentPg + totalEssay;
+            const currentPg = parseFloat(sub.pgScore) || 0;
+            const grandTotal = window.roundNum(currentPg + totalEssay);
             const { totalMax } = getMaxScores();
             const percentage = totalMax > 0 ? Math.round((grandTotal / totalMax) * 100) : 0;
 
@@ -2096,6 +2095,7 @@
             `;
         };
 
+        // PERBAIKAN: Simpan hasil penilaian dengan parseFloat & roundNum
         document.getElementById("btnSaveGrading").addEventListener("click", async () => {
             if (!activeGradingId) return;
 
@@ -2109,13 +2109,14 @@
             const grades = {};
             let totalEssay = 0;
             activeEssay.forEach(q => {
-                const maxW = q.weight || 10;
+                const maxW = parseFloat(q.weight) || 10;
                 const inputVal = Math.min(maxW, Math.max(0, parseFloat(document.getElementById(`grade-essay-${q.id}`)?.value) || 0));
-                grades[q.id] = inputVal;
+                grades[q.id] = window.roundNum(inputVal);
                 totalEssay += inputVal;
             });
 
-            const totalScoreFinal = (currentSub?.pgScore || 0) + totalEssay;
+            totalEssay = window.roundNum(totalEssay);
+            const totalScoreFinal = window.roundNum((parseFloat(currentSub?.pgScore) || 0) + totalEssay);
 
             try {
                 const docRef = doc(db, "submissions", activeGradingId);
@@ -2331,7 +2332,7 @@
                 sectionManageQuestions.classList.add("hidden");
                 sectionSetting.classList.add("hidden");
             } else if (tab === 'setting') {
-                tabSettingBtn.className = "pb-3 font-bold text-sm border-b-2 border-rose-500 text-rose-600 cursor-pointer flex items-center gap-2";
+                tabSettingBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-rose-600 cursor-pointer flex items-center gap-2";
                 tabManageBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
                 tabGradingBtn.className = "pb-3 font-bold text-sm border-b-2 border-transparent text-gray-400 hover:text-gray-600 cursor-pointer flex items-center gap-2";
                 sectionSetting.classList.remove("hidden");
