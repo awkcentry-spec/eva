@@ -736,16 +736,25 @@
                 </div>
 
                 <div id="gradingArea" class="hidden bg-white p-6 rounded-2xl border border-rose-200/80 shadow-sm space-y-6">
+                    <!-- BANNER PEMERIKSAAN HASIL MAHASISWI -->
                     <div id="gradingBanner" class="bg-gradient-to-r from-rose-500 to-pink-600 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative">
-                        <div class="flex-1">
+                        <div class="flex-1 space-y-2">
+                            <!-- HEADING STATUS & NAMA MAHASISWI -->
                             <div class="flex items-center gap-2 flex-wrap">
-                                <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Sedang Diperiksa</span>
-                                <button onclick="printStudentGradedResult(activeGradingId)" class="bg-white text-rose-600 hover:bg-rose-50 font-bold px-3 py-1 rounded-full transition-all cursor-pointer text-xs flex items-center gap-1 shadow-sm">
+                                <span class="bg-white/20 backdrop-blur-xs text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Sedang Diperiksa</span>
+                            </div>
+                            
+                            <!-- DESAIN BARU: LAYOUT RESPONSIF NAMA + TOMBOL CETAK -->
+                            <div class="flex flex-wrap items-center gap-3 pt-1">
+                                <h2 id="gradingStudentName" class="text-xl md:text-2xl font-extrabold tracking-tight">--</h2>
+                                
+                                <!-- TOMBOL CETAK MODERN RESPONSIF -->
+                                <button type="button" onclick="printStudentGradedResult()" class="bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white border border-white/30 font-bold px-3.5 py-1.5 rounded-xl transition-all active:scale-95 cursor-pointer text-xs flex items-center gap-1.5 shadow-sm">
                                     🖨️ Cetak Hasil Koreksi
                                 </button>
                             </div>
-                            <h2 id="gradingStudentName" class="text-xl font-bold mt-2">--</h2>
-                            <p id="gradingMeta" class="text-xs opacity-90 mt-1">--</p>
+
+                            <p id="gradingMeta" class="text-xs opacity-90">--</p>
                         </div>
                         
                         <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
@@ -1458,9 +1467,16 @@
             }
         };
 
-        // CETAK LEMBAR JAWABAN KOREKSI PER MAHASISWI
+        // CETAK LEMBAR JAWABAN KOREKSI PER MAHASISWI (PENYEMPURNAAN AMAN & RESPONSIF)
         window.printStudentGradedResult = function(subId) {
-            const sub = window.submissions.find(s => s.id === subId);
+            const targetId = subId || window.activeGradingId;
+
+            if (!targetId) {
+                alert("⚠️ Silakan pilih/klik lembar jawaban mahasiswi terlebih dahulu untuk diperiksa!");
+                return;
+            }
+
+            const sub = window.submissions.find(s => s.id === targetId);
             if (!sub) return alert("Data jawaban mahasiswi tidak ditemukan!");
 
             const topicName = sub.topic || 'Semua Tema';
@@ -1472,6 +1488,11 @@
             const maxTotal = totalPgWeight + totalEssayWeight;
 
             const printWindow = window.open('', '', 'width=850,height=700');
+            if (!printWindow) {
+                alert("⚠️ Gagal membuka jendela cetak. Pastikan Anda mengizinkan Pop-Up di browser HP/Laptop Anda!");
+                return;
+            }
+
             printWindow.document.write(`
                 <html>
                     <head>
@@ -2160,7 +2181,8 @@
             }
         });
 
-        let activeGradingId = null;
+        // MASIH MENINGGALKAN VARIABLE GLOBAL DENGAN AMAN
+        window.activeGradingId = null;
 
         window.deleteSubmission = async function(e, subId, studentName) {
             e.stopPropagation();
@@ -2168,9 +2190,9 @@
 
             try {
                 await deleteDoc(doc(db, "submissions", subId));
-                if (activeGradingId === subId) {
+                if (window.activeGradingId === subId) {
                     document.getElementById("gradingArea").classList.add("hidden");
-                    activeGradingId = null;
+                    window.activeGradingId = null;
                 }
             } catch (err) {
                 alert("Gagal menghapus lembar jawaban: " + err.message);
@@ -2195,7 +2217,7 @@
 
             const sorted = [...window.submissions].sort((a, b) => {
                 if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-                return (a.durationSeconds || 999999) - (b.durationSeconds || 999999);
+                return (a.durationSeconds || 999999) - (a.durationSeconds || 999999);
             });
 
             leaderboardBody.innerHTML = sorted.map((s, index) => {
@@ -2235,16 +2257,13 @@
             }
 
             listContainer.innerHTML = filtered.map(s => `
-                <div onclick="selectSubmissionForGrading('${s.id}')" class="bg-white p-4 rounded-xl border ${activeGradingId === s.id ? 'border-rose-500 ring-2 ring-rose-100' : 'border-gray-100'} hover:border-rose-300 transition-all cursor-pointer relative group">
+                <div onclick="selectSubmissionForGrading('${s.id}')" class="bg-white p-4 rounded-xl border ${window.activeGradingId === s.id ? 'border-rose-500 ring-2 ring-rose-100' : 'border-gray-100'} hover:border-rose-300 transition-all cursor-pointer relative group">
                     <div class="flex justify-between items-start gap-2">
                         <h4 class="text-xs sm:text-sm font-bold text-gray-800 truncate flex-1">${s.studentName}</h4>
                         <div class="flex items-center gap-1">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${s.status === 'Selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
                                 ${s.status}
                             </span>
-                            <button onclick="event.stopPropagation(); printStudentGradedResult('${s.id}')" title="Cetak Lembar Hasil Koreksi Mahasiswi" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 p-1 rounded-lg transition-all cursor-pointer">
-                                🖨️
-                            </button>
                             <button onclick="deleteSubmission(event, '${s.id}', '${s.studentName.replace(/'/g, "\\'")}')" title="Hapus Lembar Jawaban" class="text-xs bg-red-50 hover:bg-red-100 text-red-500 p-1 rounded-lg transition-all cursor-pointer">
                                 🗑️
                             </button>
@@ -2263,7 +2282,7 @@
         document.getElementById("searchStudentInput").addEventListener("input", renderSubmissionList);
 
         window.selectSubmissionForGrading = function(id) {
-            activeGradingId = id;
+            window.activeGradingId = id;
             const sub = window.submissions.find(s => s.id === id);
             if (!sub) return;
 
@@ -2356,7 +2375,7 @@
 
         window.calculateRealtimeEssayScore = function() {
             let totalEssay = 0;
-            const sub = window.submissions.find(s => s.id === activeGradingId);
+            const sub = window.submissions.find(s => s.id === window.activeGradingId);
             if (!sub) return;
 
             const activeEssay = window.questionsEssay.filter(q => q.active !== false && (sub.topic === "All data" || sub.topic === "Semua Tema" || !sub.topic || q.topic === sub.topic));
@@ -2400,13 +2419,13 @@
         };
 
         document.getElementById("btnSaveGrading").addEventListener("click", async () => {
-            if (!activeGradingId) return;
+            if (!window.activeGradingId) return;
 
             const btn = document.getElementById("btnSaveGrading");
             btn.disabled = true;
             btn.innerText = "Menyimpan ke Firebase... ⏳";
 
-            const currentSub = window.submissions.find(s => s.id === activeGradingId);
+            const currentSub = window.submissions.find(s => s.id === window.activeGradingId);
             const activeEssay = window.questionsEssay.filter(q => q.active !== false && (currentSub.topic === "All data" || currentSub.topic === "Semua Tema" || !currentSub.topic || q.topic === currentSub.topic));
 
             const grades = {};
@@ -2422,7 +2441,7 @@
             const totalScoreFinal = window.roundNum((parseFloat(currentSub?.pgScore) || 0) + totalEssay);
 
             try {
-                const docRef = doc(db, "submissions", activeGradingId);
+                const docRef = doc(db, "submissions", window.activeGradingId);
                 await updateDoc(docRef, {
                     essayGrades: grades,
                     essayScore: totalEssay,
