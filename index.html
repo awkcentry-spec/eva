@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pojoksoal.me - Evaluasi Tajwid</title>
     
+    <!-- PWA Manifest & Theme -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#db2777">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pojoksoal.me">
+    
     <!-- Tailwind CSS v4 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     
@@ -486,6 +493,15 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- PUSH NOTIFICATION -->
+                        <div class="border-t border-pink-100 pt-4 space-y-3">
+                            <h4 class="font-bold text-slate-800 uppercase text-[11px]">Push Notification Perangkat</h4>
+                            <p class="text-slate-500 text-[11px]">Aktifkan izin push notification agar Ustadzah menerima pemberitahuan instan saat mahasiswi mengirim jawaban.</p>
+                            <button type="button" onclick="window.requestPushNotificationPermission()" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2">
+                                Aktifkan Izin Push Notification
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -493,6 +509,18 @@
     </div>
 
     <!-- ALL MODALS -->
+    <!-- CUSTOM THEMED MODAL DIALOG (ALERT & CONFIRM) -->
+    <div id="customDialogModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 no-print">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full border border-pink-100 space-y-4 text-center shadow-xl">
+            <div id="dialogIconBox" class="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">!</div>
+            <h3 id="dialogTitle" class="text-sm font-bold text-slate-800 uppercase tracking-wide">Pemberitahuan</h3>
+            <p id="dialogMessage" class="text-xs text-slate-600 font-medium leading-relaxed"></p>
+            <div id="dialogButtonContainer" class="flex gap-2 pt-2">
+                <button type="button" id="dialogBtnOk" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-xs">OK</button>
+                <button type="button" id="dialogBtnCancel" class="hidden flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer">Batal</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL CETAK HASIL PER TEMA -->
     <div id="printByTopicModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 no-print">
@@ -527,12 +555,8 @@
                     <input type="text" id="editTopicNameInput" required class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs font-bold bg-white text-slate-800 focus:outline-none focus:border-pink-500">
                 </div>
                 <div class="flex gap-2 pt-1">
-                    <button type="button" onclick="window.submitEditTopic()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold py-2 rounded-xl transition-all cursor-pointer shadow-xs">
-                        Simpan
-                    </button>
-                    <button type="button" onclick="closeEditTopicModal()" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 rounded-xl transition-all cursor-pointer">
-                        Batal
-                    </button>
+                    <button type="button" onclick="window.submitEditTopic()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold py-2 rounded-xl transition-all cursor-pointer shadow-xs">Simpan</button>
+                    <button type="button" onclick="closeEditTopicModal()" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 rounded-xl transition-all cursor-pointer">Batal</button>
                 </div>
             </form>
         </div>
@@ -559,9 +583,7 @@
                         <option value="json">Format JSON (Backup Data)</option>
                     </select>
                 </div>
-                <button type="button" onclick="executePrint()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold py-2.5 rounded-xl transition-all mt-2 cursor-pointer shadow-xs">
-                    Cetak Sekarang
-                </button>
+                <button type="button" onclick="executePrint()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold py-2.5 rounded-xl transition-all mt-2 cursor-pointer shadow-xs">Cetak Sekarang</button>
             </div>
         </div>
     </div>
@@ -580,9 +602,7 @@
                     <p class="text-slate-500">Unduh data soal terstruktur lengkap dengan gambar, kunci & bobot.</p>
                     <div class="flex gap-2 pt-1">
                         <select id="exportTopicSelect" class="flex-1 px-3 py-2 border border-pink-200 rounded-xl text-xs bg-white text-slate-800"></select>
-                        <button type="button" onclick="executeExportJson()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-xs">
-                            Unduh
-                        </button>
+                        <button type="button" onclick="executeExportJson()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-xs">Unduh</button>
                     </div>
                 </div>
 
@@ -590,25 +610,18 @@
                     <h4 class="font-bold text-pink-600 uppercase flex items-center gap-1.5">2. Import Data Soal (.JSON)</h4>
                     <p class="text-slate-500">Pilih file JSON backup untuk mengunggah bank soal otomatis.</p>
                     <input type="file" id="importJsonFile" accept=".json" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-100 file:text-pink-700">
-                    <button type="button" onclick="executeImportJson()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl transition-all mt-2 cursor-pointer shadow-xs">
-                        Upload & Import Soal
-                    </button>
+                    <button type="button" onclick="executeImportJson()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl transition-all mt-2 cursor-pointer shadow-xs">Upload & Import Soal</button>
                 </div>
 
                 <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100 space-y-3">
                     <h4 class="font-bold text-rose-600 uppercase flex items-center gap-1.5">3. Pembersihan Soal (Firebase)</h4>
                     <p class="text-slate-500">Hapus soal secara masal dari database Firebase.</p>
-                    
                     <div class="space-y-2 pt-1">
                         <div class="flex gap-2">
                             <select id="deleteTopicSelect" class="flex-1 px-3 py-2 border border-rose-200 rounded-xl text-xs bg-white text-slate-800"></select>
-                            <button type="button" onclick="executeDeleteQuestionsByTopic()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap shadow-xs">
-                                Per Tema
-                            </button>
+                            <button type="button" onclick="executeDeleteQuestionsByTopic()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap shadow-xs">Per Tema</button>
                         </div>
-                        <button type="button" onclick="executeDeleteAllQuestions()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs">
-                            Hapus SEMUA Soal di Firebase
-                        </button>
+                        <button type="button" onclick="executeDeleteAllQuestions()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs">Hapus SEMUA Soal di Firebase</button>
                     </div>
                 </div>
             </div>
@@ -632,9 +645,7 @@
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full border border-pink-100 space-y-4 text-center shadow-lg">
             <h3 class="text-xs font-bold text-slate-800">Scan QR Code Token Ujian</h3>
             <div id="qrReader" class="w-full overflow-hidden rounded-2xl border border-pink-200"></div>
-            <button type="button" onclick="closeQrScannerModal()" class="w-full bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-semibold py-2 rounded-xl transition-all cursor-pointer">
-                Tutup Kamera
-            </button>
+            <button type="button" onclick="closeQrScannerModal()" class="w-full bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-semibold py-2 rounded-xl transition-all cursor-pointer">Tutup Kamera</button>
         </div>
     </div>
 
@@ -644,9 +655,7 @@
             <h3 id="qrModalTopicTitle" class="text-xs font-bold text-slate-800">QR Code Token</h3>
             <div id="qrcodeCanvas" class="flex justify-center p-3 bg-white rounded-2xl border border-pink-100"></div>
             <p id="qrModalTokenDisplay" class="text-xs font-mono font-bold text-pink-600 uppercase tracking-widest"></p>
-            <button type="button" onclick="closeQrDisplayModal()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold py-2 rounded-xl transition-all cursor-pointer shadow-xs">
-                Tutup
-            </button>
+            <button type="button" onclick="closeQrDisplayModal()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold py-2 rounded-xl transition-all cursor-pointer shadow-xs">Tutup</button>
         </div>
     </div>
 
@@ -674,9 +683,7 @@
                 </div>
             </div>
 
-            <button type="button" onclick="closeStudentModal()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold py-3 rounded-xl transition-all cursor-pointer shadow-xs">
-                Selesai & Selesaikan Sesi
-            </button>
+            <button type="button" onclick="closeStudentModal()" class="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold py-3 rounded-xl transition-all cursor-pointer shadow-xs">Selesai & Selesaikan Sesi</button>
         </div>
     </div>
 
@@ -700,15 +707,9 @@
                     <label for="loginPassword" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
                     <input type="password" id="loginPassword" required class="w-full px-4 py-2.5 border border-pink-200 rounded-xl text-sm focus:outline-none focus:border-pink-500 bg-white text-slate-800" placeholder="••••••••">
                 </div>
-                <div id="loginError" class="text-xs text-rose-500 font-medium hidden text-center">
-                    Username atau password salah!
-                </div>
-                <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-all cursor-pointer shadow-xs">
-                    Masuk Mode Pemeriksa
-                </button>
-                <button type="button" onclick="toggleLoginModal(false)" class="w-full text-xs text-slate-400 hover:text-slate-600 pt-2 cursor-pointer">
-                    Batal
-                </button>
+                <div id="loginError" class="text-xs text-rose-500 font-medium hidden text-center">Username atau password salah!</div>
+                <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-all cursor-pointer shadow-xs">Masuk Mode Pemeriksa</button>
+                <button type="button" onclick="toggleLoginModal(false)" class="w-full text-xs text-slate-400 hover:text-slate-600 pt-2 cursor-pointer">Batal</button>
             </form>
         </div>
     </div>
@@ -716,20 +717,16 @@
     <!-- MODAL HEADER & CUSTOM PAGE TEMA -->
     <div id="headerConfigModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-6 no-print">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full border border-pink-100 space-y-4 my-auto shadow-lg">
-            <h3 class="text-xs font-bold text-slate-800 uppercase border-b border-pink-100 pb-2 flex items-center gap-2">
-                Custom Tampilan Interface UI/UX & Tema
-            </h3>
+            <h3 class="text-xs font-bold text-slate-800 uppercase border-b border-pink-100 pb-2 flex items-center gap-2">Custom Tampilan Interface UI/UX & Tema</h3>
             <form id="headerConfigForm" class="space-y-3" onsubmit="event.preventDefault();">
                 <div class="bg-pink-50/40 p-3 rounded-2xl border border-pink-100 space-y-2">
                     <p class="text-[11px] font-bold text-pink-600 uppercase">1. Teks & Judul Interface</p>
-
                     <div class="p-2.5 bg-white rounded-xl border border-pink-100 flex items-center justify-between">
                         <label for="cfgShowSubBrand" class="text-xs font-bold text-slate-700 cursor-pointer flex items-center gap-2">
                             <input type="checkbox" id="cfgShowSubBrand" checked class="accent-pink-500 w-4 h-4">
                             <span>Tampilkan Sub-Teks "Pojoksoal.me" pada Navbar</span>
                         </label>
                     </div>
-
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label for="cfgNavTitle" class="block text-[10px] font-bold text-slate-600 uppercase mb-0.5">Judul Navbar</label>
@@ -740,7 +737,6 @@
                             <input type="text" id="cfgMainTitle" required class="w-full px-3 py-1.5 border border-pink-200 rounded-xl text-xs bg-white text-slate-800">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label for="cfgHeaderSubtitle" class="block text-[10px] font-bold text-slate-600 uppercase mb-0.5">Sub-Judul</label>
@@ -751,7 +747,6 @@
                             <input type="text" id="cfgBtnLoginText" value="Login" required class="w-full px-3 py-1.5 border border-pink-200 rounded-xl text-xs bg-white text-slate-800">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label for="cfgExamPageText" class="block text-[10px] font-bold text-slate-600 uppercase mb-0.5">Laman Ujian</label>
@@ -762,7 +757,6 @@
                             <input type="text" id="cfgGradingPageText" required class="w-full px-3 py-1.5 border border-pink-200 rounded-xl text-xs bg-white text-slate-800">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label for="cfgActiveSessionText" class="block text-[10px] font-bold text-slate-600 uppercase mb-0.5">Teks Badge Navbar</label>
@@ -773,7 +767,6 @@
                             <input type="text" id="cfgTeacherModeBadge" required class="w-full px-3 py-1.5 border border-pink-200 rounded-xl text-xs bg-white text-slate-800" placeholder="Active Mode">
                         </div>
                     </div>
-
                     <div>
                         <label for="cfgHeaderQuote" class="block text-[10px] font-bold text-slate-600 uppercase mb-0.5">Quotes Header</label>
                         <textarea id="cfgHeaderQuote" rows="2" required class="w-full px-3 py-1.5 border border-pink-200 rounded-xl text-xs bg-white text-slate-800"></textarea>
@@ -781,9 +774,7 @@
                 </div>
 
                 <div class="bg-pink-50/40 p-3 rounded-2xl border border-pink-100 space-y-2">
-                    <p class="text-[11px] font-bold text-pink-600 uppercase flex items-center gap-1.5">
-                        2. Tema Warna & Typography
-                    </p>
+                    <p class="text-[11px] font-bold text-pink-600 uppercase">2. Tema Warna & Typography</p>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label for="cfgThemeColor" class="block text-[10px] font-bold text-slate-600 uppercase mb-0.5">Palet Warna Feminim</label>
@@ -812,12 +803,8 @@
                 </div>
 
                 <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="window.saveHeaderConfig()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-xs">
-                        Simpan ke Firestore
-                    </button>
-                    <button type="button" onclick="closeHeaderConfigModal()" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer">
-                        Batal
-                    </button>
+                    <button type="button" onclick="window.saveHeaderConfig()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer shadow-xs">Simpan ke Firestore</button>
+                    <button type="button" onclick="closeHeaderConfigModal()" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer">Batal</button>
                 </div>
             </form>
         </div>
@@ -827,15 +814,12 @@
     <div id="questionModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center hidden z-50 px-4 overflow-y-auto py-8 no-print">
         <div class="bg-white p-6 rounded-3xl max-w-lg w-full border border-pink-100 space-y-4 my-auto shadow-lg">
             <h3 id="questionModalTitle" class="text-sm font-bold text-slate-800 border-b border-pink-100 pb-2">Tambah Soal Baru</h3>
-            
             <form id="questionForm" class="space-y-4" onsubmit="event.preventDefault();">
                 <input type="hidden" id="qEditId">
-                
                 <div>
                     <label for="qTopic" class="block text-xs font-semibold text-pink-600 uppercase mb-1">Tema Soal</label>
                     <select id="qTopic" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs font-medium bg-pink-50/20 text-slate-800 focus:outline-none focus:border-pink-500"></select>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="qType" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tipe Soal</label>
@@ -845,30 +829,26 @@
                         </select>
                     </div>
                     <div>
-                        <label for="qWeight" class="block text-xs font-semibold text-pink-600 uppercase mb-1">Bobot Soal (Poin)</label>
+                        <label for="qWeight" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Bobot Soal (Poin)</label>
                         <input type="number" id="qWeight" value="10" min="0.1" step="any" required class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs font-bold text-pink-600 bg-pink-50/20 focus:outline-none focus:border-pink-500">
                     </div>
                 </div>
-
                 <div>
                     <label for="qText" class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teks Pertanyaan Soal</label>
                     <textarea id="qText" required rows="3" placeholder="Ketikkan pertanyaan..." class="w-full px-4 py-2 border border-pink-200 rounded-xl text-xs bg-pink-50/20 text-slate-800 focus:outline-none focus:border-pink-500"></textarea>
                 </div>
-
                 <div class="border border-pink-100 p-3.5 rounded-2xl bg-pink-50/30 space-y-3">
                     <label class="block text-xs font-bold text-slate-700 uppercase">Lampirkan Gambar Soal (Opsional)</label>
                     <div class="flex border-b border-pink-100 gap-3 text-xs">
                         <button type="button" onclick="switchImageTab('upload')" id="tabImgUploadBtn" class="pb-1.5 font-bold border-b-2 border-pink-500 text-pink-600">Upload File</button>
                         <button type="button" onclick="switchImageTab('url')" id="tabImgUrlBtn" class="pb-1.5 font-bold border-b-2 border-transparent text-slate-400">URL Gambar</button>
                     </div>
-
                     <div id="secImgUpload" class="space-y-3 text-xs">
                         <input type="file" id="imgFileInput" accept="image/*" onchange="handleImageFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-100 file:text-pink-700">
-                        
                         <div id="imgPreviewWrapper" class="hidden space-y-3 p-3 bg-white border border-pink-100 rounded-xl">
                             <p class="font-bold text-[11px] text-slate-600">Pratinjau & Penyesuaian Visual Gambar:</p>
                             <div class="overflow-hidden flex justify-center items-center bg-pink-50/20 rounded-lg p-2 min-h-[120px] max-h-56">
-                                <img id="imgAdjustPreview" alt="Preview Gambar" class="max-h-48 object-contain transition-all duration-150">
+                                <img id="imgAdjustPreview" alt="Preview" class="max-h-48 object-contain transition-all duration-150">
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
@@ -882,11 +862,9 @@
                             </div>
                         </div>
                     </div>
-
                     <div id="secImgUrl" class="hidden space-y-3 text-xs">
                         <input type="url" id="imgUrlInput" placeholder="Tempel URL link gambar..." class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-white text-slate-800">
                     </div>
-
                     <div class="grid grid-cols-2 gap-3 pt-1 border-t border-pink-100">
                         <div>
                             <label for="imgCustomWidth" class="text-[10px] font-bold text-slate-600 block mb-1">Ukuran Tampilan Gambar</label>
@@ -910,13 +888,9 @@
                 <div id="pgFormOptions" class="space-y-3 border-t border-pink-100 pt-3">
                     <div class="flex justify-between items-center">
                         <label class="block text-xs font-semibold text-pink-600 uppercase">Pilihan Jawaban (PG)</label>
-                        <button type="button" onclick="addPgOption()" class="text-[11px] font-bold bg-pink-50 text-pink-700 border border-pink-200 px-2.5 py-1 rounded-lg cursor-pointer flex items-center gap-1">
-                            <svg class="w-3 h-3 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Opsi
-                        </button>
+                        <button type="button" onclick="addPgOption()" class="text-[11px] font-bold bg-pink-50 text-pink-700 border border-pink-200 px-2.5 py-1 rounded-lg cursor-pointer flex items-center gap-1">Opsi</button>
                     </div>
-
                     <div id="pgOptionListContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
-
                     <div>
                         <label for="qKey" class="block text-xs font-semibold text-slate-600 uppercase mt-2 mb-1">Kunci Jawaban PG</label>
                         <select id="qKey" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-xs bg-pink-50/20 font-bold text-pink-600"></select>
@@ -935,6 +909,17 @@
             </form>
         </div>
     </div>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('Service Worker terdaftar:', reg.scope))
+                    .catch((err) => console.error('Pendaftaran Service Worker gagal:', err));
+            });
+        }
+    </script>
 
     <!-- MAIN JAVASCRIPT APP MODULE -->
     <script type="module" src="js/app.js"></script>

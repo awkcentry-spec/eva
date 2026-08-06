@@ -20,6 +20,13 @@ body {
     margin-right: auto;
 }
 
+@media all and (display-mode: standalone) {
+    body {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
 /* PRINT LAYOUT CUSTOMIZATION */
 @media print {
     body {
